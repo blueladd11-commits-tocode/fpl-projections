@@ -1,0 +1,19 @@
+{
+  "generated_at_utc": "2026-08-15T11:55:13.644636+00:00",
+  "gameweek": 1,
+  "snapshot": "20260811T202012Z_gw1",
+  "snapshot_sha256": {
+    "bootstrap.json": "b5535d7c6b4822d7a1dc01827e9b60b2f54125abe77ccd3ae35c11069e916d54",
+    "fixtures.json": "9e7484118381f8202830906ba993c176475d8ca1796571f5dd78cbfc2d73bd3e"
+  },
+  "deadline_utc": "2026-08-21T17:30:00Z",
+  "prior_season": "2025-26",
+  "model_version": "v0-baseline",
+  "minutes_model": [
+    "2024-25",
+    "2025-26"
+  ],
+  "calibration": 1.165,
+  "granular_team_strength": false,
+  "n_players": 483
+}

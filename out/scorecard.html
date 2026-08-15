@@ -1,0 +1,177 @@
+<style>
+:root{
+  --ground:#EDEFF1; --panel:#FFFFFF; --line:#D3D8DC;
+  --ink:#12171C; --ink-2:#4C565F; --ink-3:#78838C;
+  --accent:#0F7F6E; --accent-soft:#D9EFEA;
+  --pending:#9A6B12; --pending-soft:#F6ECD6;
+  --loss:#A83A2E; --loss-soft:#F6DEDA;
+  --mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --ground:#0D1116; --panel:#151B22; --line:#27313A;
+    --ink:#E6EBEF; --ink-2:#9AA7B2; --ink-3:#6B7883;
+    --accent:#3ED9BC; --accent-soft:#12312C;
+    --pending:#E0A83A; --pending-soft:#332912;
+    --loss:#E8705F; --loss-soft:#351B17;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0D1116; --panel:#151B22; --line:#27313A;
+  --ink:#E6EBEF; --ink-2:#9AA7B2; --ink-3:#6B7883;
+  --accent:#3ED9BC; --accent-soft:#12312C;
+  --pending:#E0A83A; --pending-soft:#332912;
+  --loss:#E8705F; --loss-soft:#351B17;
+}
+:root[data-theme="light"]{
+  --ground:#EDEFF1; --panel:#FFFFFF; --line:#D3D8DC;
+  --ink:#12171C; --ink-2:#4C565F; --ink-3:#78838C;
+  --accent:#0F7F6E; --accent-soft:#D9EFEA;
+  --pending:#9A6B12; --pending-soft:#F6ECD6;
+  --loss:#A83A2E; --loss-soft:#F6DEDA;
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);
+  line-height:1.55;margin:0;padding:clamp(1.1rem,4vw,3rem) clamp(1rem,5vw,2rem);
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:60rem;margin:0 auto;display:flex;flex-direction:column;gap:2.5rem}
+h1,h2,h3,.label,th,.chip,.stat-v{font-family:var(--mono)}
+h1{font-size:clamp(1.5rem,4.4vw,2.1rem);line-height:1.15;margin:0;
+  letter-spacing:-.02em;text-wrap:balance;font-weight:650}
+h2{font-size:.82rem;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink-2);margin:0 0 .9rem;font-weight:600}
+p{margin:0 0 .85rem;max-width:64ch;color:var(--ink-2)}
+p.lede{color:var(--ink);font-size:1.02rem;max-width:60ch}
+strong{color:var(--ink);font-weight:600}
+a{color:var(--accent)}
+header{border-bottom:2px solid var(--ink);padding-bottom:1.4rem;
+  display:flex;flex-direction:column;gap:.85rem}
+.label{font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--accent);font-weight:600}
+section{background:var(--panel);border:1px solid var(--line);
+  padding:clamp(1rem,3vw,1.6rem)}
+.seal{border-left:3px solid var(--accent);background:var(--accent-soft);
+  padding:1rem 1.2rem}
+.seal p{color:var(--ink);margin-bottom:0}
+.scroll{overflow-x:auto;margin:0 -.3rem}
+table{border-collapse:collapse;width:100%;font-size:.85rem;min-width:34rem}
+th{text-align:left;font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-3);font-weight:600;padding:.5rem .6rem;
+  border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:.55rem .6rem;border-bottom:1px solid var(--line);
+  font-variant-numeric:tabular-nums;color:var(--ink-2)}
+td.k{font-family:var(--mono);color:var(--ink)}
+tbody tr:last-child td{border-bottom:none}
+.chip{display:inline-block;font-size:.64rem;letter-spacing:.09em;padding:.16rem .5rem;
+  border:1px solid currentColor;font-weight:600}
+.c-pend{color:var(--pending);background:var(--pending-soft)}
+.c-ok{color:var(--accent);background:var(--accent-soft)}
+.c-bad{color:var(--loss);background:var(--loss-soft)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(9rem,1fr));
+  gap:1px;background:var(--line);border:1px solid var(--line)}
+.stat{background:var(--panel);padding:.9rem 1rem;display:flex;
+  flex-direction:column;gap:.2rem}
+.stat-k{font-size:.63rem;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-3)}
+.stat-v{font-size:1.32rem;font-variant-numeric:tabular-nums;color:var(--ink);font-weight:600}
+.stat-n{font-size:.72rem;color:var(--ink-3)}
+ul{margin:0;padding-left:1.1rem;color:var(--ink-2)}
+li{margin-bottom:.5rem;max-width:62ch}
+footer{color:var(--ink-3);font-size:.76rem;font-family:var(--mono);
+  border-top:1px solid var(--line);padding-top:1rem}
+.hash{font-family:var(--mono);font-size:.76rem;color:var(--ink-3)}
+</style>
+<div class="wrap">
+<header>
+  <span class="label">Pre-registered accuracy record</span>
+  <h1>Fantasy Premier League points projections &mdash; public scorecard</h1>
+  <p class="lede">Every projection below was written to disk <strong>before</strong> its
+  gameweek deadline, alongside the SHA-256 of the exact API snapshot it was built from.
+  This page shows how those projections actually performed &mdash; including the weeks
+  they were beaten by a three-line baseline.</p>
+</header>
+
+<section class="seal">
+  <h2>What we are committing to, in advance</h2>
+  <p>We publish a projection for every player before every deadline, and we score it
+  against the same two baselines every week: a player&rsquo;s <strong>mean score over
+  his last six gameweeks</strong>, and his points-per-game to date. The headline
+  comparison is against the last-six baseline, because it is the harder one and
+  beating only the easier one would not be a real claim. Weeks we lose are published
+  in this table in the same style as weeks we win.</p>
+</section>
+
+<section>
+  <h2>Season record &mdash; 2026/27</h2>
+  <div class="stats">
+    <div class="stat"><span class="stat-k">Gameweeks published</span>
+      <span class="stat-v">0</span><span class="stat-n">projections timestamped pre-deadline</span></div>
+    <div class="stat"><span class="stat-k">Scored so far</span>
+      <span class="stat-v">0</span><span class="stat-n">0 awaiting results</span></div>
+    <div class="stat"><span class="stat-k">Beat last-six baseline</span>
+      <span class="stat-v">—</span><span class="stat-n">of scored gameweeks</span></div>
+  </div>
+  <div class="scroll" style="margin-top:1.2rem">
+  <table>
+    <thead><tr><th>GW</th><th>Deadline (UTC)</th><th>Made</th><th>Snapshot</th>
+      <th>Status</th><th>Our &rho;</th><th>Baseline &rho;</th><th>&Delta;</th></tr></thead>
+    <tbody><tr><td colspan="8">No projections published yet.</td></tr></tbody>
+  </table>
+  </div>
+  <p style="margin-top:1rem;font-size:.84rem">&rho; is Spearman rank correlation between
+  projected and actual points across the eligible player pool. A gameweek stays
+  <em>pending</em> until its results are final. <strong>Made</strong> is how long
+  before the deadline the scored projection was written; any earlier horizons also
+  on record are listed after it. We publish from three days out and re-project as
+  team news lands &mdash; the scored entry is always the last one before the
+  deadline, and the earlier ones stay on the record so you can see how much the
+  projection improves as news arrives.</p>
+  <p style="font-size:.84rem"><strong>Check this yourself.</strong> Each row&rsquo;s
+  snapshot column is the SHA-256 of the API response the projection was built from,
+  recorded before the deadline. Running <code>verify.py</code> re-derives every
+  published projection from its own snapshot and confirms the output is identical;
+  it reports <em>fail</em> if an input was altered, and <em>drift</em> if the model
+  has been refitted since. We do not ask to be taken on trust.</p>
+</section>
+
+<section>
+  <h2>What we knew before launch</h2>
+  <p>Backtested walk-forward across past seasons under a strict as-of cutoff: for each
+  gameweek the model sees only earlier gameweeks plus the prior season. A truncation
+  test &mdash; delete every later row, re-run, require byte-identical output &mdash;
+  passes on 38/38 gameweeks across two seasons.</p>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Configuration</th><th>&rho;</th><th>&Delta; vs last-six</th>
+      <th>t</th><th>GWs won</th><th>Verdict</th></tr></thead>
+    <tbody><tr><td class="k">2024-25 + minutes model</td><td>0.441</td><td>+0.053</td><td>5.17</td><td>31/38</td><td><span class="chip c-ok">significant</span></td></tr>
+<tr><td class="k">2025-26 + minutes model</td><td>0.462</td><td>+0.111</td><td>7.57</td><td>35/38</td><td><span class="chip c-ok">significant</span></td></tr>
+<tr><td class="k">2023-24</td><td>0.403</td><td>+0.009</td><td>0.88</td><td>19/38</td><td><span class="chip c-bad">not significant</span></td></tr>
+<tr><td class="k">2024-25</td><td>0.392</td><td>+0.004</td><td>0.44</td><td>21/38</td><td><span class="chip c-bad">not significant</span></td></tr>
+<tr><td class="k">2025-26</td><td>0.364</td><td>+0.013</td><td>1.21</td><td>23/38</td><td><span class="chip c-bad">not significant</span></td></tr></tbody>
+  </table>
+  </div>
+  <p style="margin-top:1rem"><strong>Stated plainly: without the fitted expected-minutes
+  model there is no statistically detectable edge over the last-six baseline.</strong>
+  The minutes model is what the projection is actually for.</p>
+</section>
+
+<section>
+  <h2>Known limitations</h2>
+  <ul>
+    <li><strong>Opening gameweeks are the weakest.</strong> Before the season has data,
+    projections lean on last season and on price. Expect the largest errors in August.</li>
+    <li><strong>The bonus-point term is stale.</strong> FPL re-specified BPS for
+    2026/27; our term was fitted on the previous formula, so defender bonus is likely
+    over-projected until it is refit on this season&rsquo;s data.</li>
+    <li><strong>No news ingestion yet.</strong> Injury and rotation news reaches the
+    model only through FPL&rsquo;s own availability flags.</li>
+    <li><strong>Single-gameweek football is mostly noise.</strong> Even a perfect model
+    would correlate only modestly with one week&rsquo;s actual points. Judge any
+    projection service over a season, not over a gameweek &mdash; including this one.</li>
+  </ul>
+</section>
+
+<footer>Generated 2026-08-15 12:27 UTC &middot; projections and snapshot hashes are reproducible from
+the recorded snapshot &middot; baseline definitions unchanged since first publication</footer>
+</div>

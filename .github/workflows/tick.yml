@@ -1,0 +1,63 @@
+name: tick
+
+# The whole point of running this here rather than on a laptop: GitHub's
+# schedulers are always awake. A projection missed because a machine was
+# asleep is a permanent hole in the accuracy record.
+#
+# Note GitHub delays scheduled runs under load, sometimes by 10+ minutes.
+# That is why tick.py projects by HORIZON BAND rather than at an exact time —
+# it asks "am I inside T-72h/24h/6h/2h and have I already done that band",
+# so a late run still lands in the right band and a double run is a no-op.
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tick
+  cancel-in-progress: false
+
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # Only the prior season is needed live; the older seasons are for
+      # backtesting and are not fetched here.
+      - name: Cache historical data
+        uses: actions/cache@v4
+        with:
+          path: data/history
+          key: fpl-history-2025-26-v1
+
+      - name: Fetch prior season if not cached
+        run: python3 history.py 2025-26
+
+      - name: Run tick
+        id: tick
+        run: python3 tick.py
+
+      - name: Commit any change to the record
+        if: always()
+        run: |
+          git config user.name  "fpl-projections bot"
+          git config user.email "actions@github.com"
+          # data/ is gitignored; only the record can change.
+          if [ -z "$(git status --porcelain out)" ]; then
+            echo "record unchanged"
+            exit 0
+          fi
+          git add out
+          git commit -m "record: $(date -u '+%Y-%m-%d %H:%MZ') tick"
+          # Push is the external timestamp. A commit landing here before a
+          # deadline is third-party evidence that the projection predates it,
+          # which is stronger than any timestamp we write ourselves.
+          git push

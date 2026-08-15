@@ -1,0 +1,11 @@
+# Working cache — regenerable, and far too large for version control.
+# data/history/ is re-downloadable with history.py (24 MB).
+# data/snapshots/ accumulates one capture per hour (~13 GB a year).
+# The snapshots that actually produced a projection are preserved, gzipped,
+# under out/snapshots/ — those ARE committed, because a projection is only
+# verifiable if its exact inputs survive.
+data/
+
+__pycache__/
+*.pyc
+.DS_Store

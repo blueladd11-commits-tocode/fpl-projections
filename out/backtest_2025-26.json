@@ -1,0 +1,1592 @@
+{
+  "season": "2025-26",
+  "prior": "2024-25",
+  "minutes_model": false,
+  "minutes_train_seasons": null,
+  "in_sample": false,
+  "calibration": 1.12,
+  "bias": 0.987600798559461,
+  "aggregate": {
+    "mae": 2.1811342105263156,
+    "rmse": 2.9856000000000007,
+    "spearman": 0.3641578947368422,
+    "top10_hit": 0.10428947368421056,
+    "top30_hit": 0.24297368421052634
+  },
+  "significance": {
+    "naive_ppg": {
+      "delta": 0.126,
+      "se": 0.012,
+      "t": 10.47,
+      "wins": 37,
+      "n": 38
+    },
+    "naive_recent6": {
+      "delta": 0.0131,
+      "se": 0.0108,
+      "t": 1.21,
+      "wins": 23,
+      "n": 38
+    }
+  },
+  "per_gw": [
+    {
+      "model": "v0",
+      "n": 191,
+      "mae": 2.3609,
+      "rmse": 3.0189,
+      "spearman": 0.139,
+      "top10_hit": 0.0,
+      "top30_hit": 0.167,
+      "gw": 1,
+      "baselines": {
+        "naive_ppg": {
+          "model": "ppg",
+          "n": 191,
+          "mae": 2.4035,
+          "rmse": 2.9995,
+          "spearman": 0.2048,
+          "top10_hit": 0.2,
+          "top30_hit": 0.133
+        },
+        "naive_recent6": {
+          "model": "r6",
+          "n": 191,
+          "mae": 2.4035,
+          "rmse": 2.9995,
+          "spearman": 0.2048,
+          "top10_hit": 0.2,
+          "top30_hit": 0.133
+        },
+        "price_only": {
+          "model": "price",
+          "n": 191,
+          "mae": 4.199,
+          "rmse": 4.6014,
+          "spearman": 0.1222,
+          "top10_hit": 0.1,
+          "top30_hit": 0.159
+        }
+      },
+      "mean_pred": 2.714,
+      "mean_actual": 2.534
+    },
+    {
+      "model": "v0",
+      "n": 188,
+      "mae": 2.3283,
+      "rmse": 3.3671,
+      "spearman": 0.3419,
+      "top10_hit": 0.0,
+      "top30_hit": 0.18,
+      "gw": 2,
+      "baselines": {
+        "naive_ppg": {
+          "model": "ppg",
+          "n": 188,
+          "mae": 2.5167,
+          "rmse": 3.4544,
+          "spearman": 0.2288,
+          "top10_hit": 0.0,
+          "top30_hit": 0.153
+        },
+        "naive_recent6": {
+          "model": "r6",
+          "n": 188,
+          "mae": 2.3102,
+          "rmse": 3.9725,
+          "spearman": 0.518,
+          "top10_hit": 0.029,
+          "top30_hit": 0.258
+        },
+        "price_only": {
+          "model": "price",
+          "n": 188,
+          "mae": 4.3527,
+          "rmse": 4.9528,
+          "spearman": 0.1125,
+          "top10_hit": 0.0,
+          "top30_hit": 0.15
+        }
+      },
+      "mean_pred": 2.654,
+      "mean_actual": 2.527
+    },
+    {
+      "model": "v0",
+      "n": 193,
+      "mae": 2.1378,
+      "rmse": 2.8075,
+      "spearman": 0.4539,
+      "top10_hit": 0.35,
+      "top30_hit": 0.313,
+      "gw": 3,
+      "baselines": {
+        "naive_ppg": {
+          "model": "ppg",
+          "n": 193,
+          "mae": 2.3163,
+          "rmse": 2.9499,
+          "spearman": 0.2814,
+          "top10_hit": 0.2,
+          "top30_hit": 0.267
+        },
+        "naive_recent6": {
+          "model": "r6",
+          "n": 193,
+          "mae": 2.1402,
+          "rmse": 3.1962,
+          "spearman": 0.5224,
+          "top10_hit": 0.075,
+          "top30_hit": 0.216
+        },
+        "price_only": {
+          "model": "price",
+          "n": 193,
+          "mae": 4.0694,
+          "rmse": 4.5938,
+          "spearman": 0.1035,
+          "top10_hit": 0.15,
+          "top30_hit": 0.219
+        }
+      },
+      "mean_pred": 2.639,
+      "mean_actual": 2.56
+    },
+    {
+      "model": "v0",
+      "n": 227,
+      "mae": 2.2142,
+      "rmse": 2.8095,
+      "spearman": 0.3995,
+      "top10_hit": 0.28,
+      "top30_hit": 0.245,
+      "gw": 4,
+      "baselines": {
+        "naive_ppg": {
+          "model": "ppg",
+          "n": 227,
+          "mae": 2.434,
+          "rmse": 3.0096,
+          "spearman": 0.2241,
+          "top10_hit": 0.18,
+          "top30_hit": 0.185
+        },
+        "naive_recent6": {
+          "model": "r6",
+          "n": 227,
+          "mae": 2.0485,
+          "rmse": 2.8115,
+          "spearman": 0.4983,
+          "top10_hit": 0.2,
+          "top30_hit": 0.312
+        },
+        "price_only": {
+          "model": "price",
+          "n": 227,
+          "mae": 3.8317,
+          "rmse": 4.3881,
+          "spearman": 0.0355,
+          "top10_hit": 0.18,
+          "top30_hit": 0.194
+        }
+      },
+      "mean_pred": 2.699,
+      "mean_actual": 2.718
+    },
+    {
+      "model": "v0",
+      "n": 223,
+      "mae": 2.0162,
+      "rmse": 2.7111,
+      "spearman": 0.4425,
+      "top10_hit": 0.15,
+      "top30_hit": 0.267,
+      "gw": 5,
+      "baselines": {
+        "naive_ppg": {
+          "model": "ppg",
+          "n": 223,
+          "mae": 2.2548,
+          "rmse": 2.8844,
+          "spearman": 0.3434,
+          "top10_hit": 0.05,
+          "top30_hit": 0.2
+        },
+        "naive_recent6": {
+          "model": "r6",
+          "n": 223,
+          "mae": 2.0239,
+          "rmse": 2.9698,
+          "spearman": 0.5053,
+          "top10_hit": 0.05,
+          "top30_hit": 0.317
+        },
+        "price_only": {
+          "model": "price",
+          "n": 223,
+          "mae": 4.0848,
+          "rmse": 4.5717,
+          "spearman": 0.0261,
+          "top10_hit": 0.15,
+          "top30_hit": 0.2
+        }
+      },
+      "mean_pred": 2.651,
+      "mean_actual": 2.318
+    },
+    {
+      "model": "v0",
+      "n": 222,
+      "mae": 1.8868,
+      "rmse": 2.6576,
+      "spearman": 0.3997,
+      "top10_hit": 0.1,
+      "top30_hit": 0.3,
+      "gw": 6,
+      "baselines": {
+        "naive_ppg": {
+          "model": "ppg",
+          "n": 222,
+          "mae": 2.1576,
+          "rmse": 2.8064,
+          "spearman": 0.2736,
+          "top10_hit": 0.2,
+          "top30_hit": 0.289
+        },
+        "naive_recent6": {
+          "model": "r6",
+          "n": 222,
+          "mae": 1.9604,
+          "rmse": 2.7666,
+          "spearman": 0.4561,
+          "top10_hit": 0.1,
+          "top30_hit": 0.233
+        },
+        "price_only": {
+          "model": "price",
+          "n": 222,
+          "mae": 4.0135,
+          "rmse": 4.5084,
+          "spearman": 0.0526,
+          "top10_hit": 0.1,
+          "top30_hit": 0.133
+        }
+      },
+      "mean_pred": 2.619,
+      "mean_actual": 2.324
+    },
+    {
+      "model": "v0",
+      "n": 230,
+      "mae": 1.984,
+      "rmse": 2.7466,
+      "spearman": 0.4401,
+      "top10_hit": 0.1,
+      "top30_hit": 0.29,
+      "gw": 7,
+      "baselines": {
+        "naive_ppg": {
+          "model": "ppg",
+          "n": 230,
+          "mae": 2.2189,
+          "rmse": 2.912,
+          "spearman": 0.2992,
+          "top10_hit": 0.0,
+          "top30_hit": 0.186
+        },
+        "naive_recent6": {
+          "model": "r6",
+          "n": 230,
+          "mae": 2.0646,
+          "rmse": 2.8,
+          "spearman": 0.4297,
+          "top10_hit": 0.225,
+          "top30_hit": 0.343
+        },
+        "price_only": {
+          "model": "price",
+          "n": 230,
+          "mae": 3.9409,
+          "rmse": 4.4059,
+          "spearman": 0.2007,
+          "top10_hit": 0.0,
+          "top30_hit": 0.227
+        }
+      },
+      "mean_pred": 2.584,
+      "mean_actual": 2.47
+    },
+    {
+      "model": "v0",
+      "n": 225,
+      "mae": 1.9391,
+      "rmse": 2.8012,
+      "spearman": 0.4764,
+      "top10_hit": 0.2,
+      "top30_hit": 0.393,
+      "gw": 8,
+      "baselines": {
+        "naive_ppg": {
+          "model": "ppg",
+          "n": 225,
+          "mae": 2.198,
+          "rmse": 2.963,
+          "spearman": 0.3178,
+          "top10_hit": 0.1,
+          "top30_hit": 0.307
+        },
+        "naive_recent6": {
+          "model": "r6",
+          "n": 225,
+          "mae": 2.0399,
+          "rmse": 2.9043,
+          "spearman": 0.4853,
+          "top10_hit": 0.2,
+          "top30_hit": 0.26
+        },
+        "price_only": {
+          "model": "price",
+          "n": 225,
+          "mae": 3.9391,
+          "rmse": 4.4653,
+          "spearman": 0.12,
+          "top10_hit": 0.1,
+          "top30_hit": 0.244
+        }
+      },
+      "mean_pred": 2.623,
+      "mean_actual": 2.622
+    },
+    {
+      "model": "v0",
+      "n": 224,
+      "mae": 2.1021,
+      "rmse": 2.8834,
+      "spearman": 0.4129,
+      "top10_hit": 0.1,
+      "top30_hit": 0.172,
+      "gw": 9,
+      "baselines": {
+        "naive_ppg": {
+          "model": "ppg",
+          "n": 224,
+          "mae": 2.302,
+          "rmse": 3.0003,
+          "spearman": 0.3219,
+          "top10_hit": 0.1,
+          "top30_hit": 0.105
+        },
+        "naive_recent6": {
+          "model": "r6",
+          "n": 224,
+          "mae": 2.1638,
+          "rmse": 3.0302,
+          "spearman": 0.458,
+          "top10_hit": 0.0,
+          "top30_hit": 0.135
+        },
+        "price_only": {
+          "model": "price",
+          "n": 224,
+          "mae": 3.9446,
+          "rmse": 4.4214,
+          "spearman": 0.2263,
+          "top10_hit": 0.0,
+          "top30_hit": 0.138
+        }
+      },
+      "mean_pred": 2.615,
+      "mean_actual": 2.692
+    },
+    {
+      "model": "v0",
+      "n": 226,
+      "mae": 1.99,
+      "rmse": 2.6682,
+      "spearman": 0.4952,
+      "top10_hit": 0.233,
+      "top30_hit": 0.27,
+      "gw": 10,
+      "baselines": {
+        "naive_ppg": {
+          "model": "ppg",
+          "n": 226,
+          "mae": 2.2957,
+          "rmse": 2.8667,
+          "spearman": 0.2588,
+          "top10_hit": 0.2,
+          "top30_hit": 0.177
+        },
+        "naive_recent6": {
+          "model": "r6",
+          "n": 226,
+          "mae": 2.0752,
+          "rmse": 2.7619,
+          "spearman": 0.4354,
+          "top10_hit": 0.25,
+          "top30_hit": 0.283
+        },
+        "price_only": {
+          "model": "price",
+          "n": 226,
+          "mae": 3.6965,
+          "rmse": 4.1206,
+          "spearman": 0.2508,
+          "top10_hit": 0.2,
+          "top30_hit": 0.2
+        }
+      },
+      "mean_pred": 2.594,
+      "mean_actual": 2.765
+    },
+    {
+      "model": "v0",
+      "n": 226,
+      "mae": 2.1871,
+      "rmse": 3.0544,
+      "spearman": 0.4105,
+      "top10_hit": 0.0,
+      "top30_hit": 0.21,
+      "gw": 11,
+      "baselines": {
+        "naive_ppg": {
+          "model": "ppg",
+          "n": 226,
+          "mae": 2.4136,
+          "rmse": 3.2345,
+          "spearman": 0.1934,
+          "top10_hit": 0.0,
+          "top30_hit": 0.071
+        },
+        "naive_recent6": {
+          "model": "r6",
+          "n": 226,
+          "mae": 2.281,
+          "rmse": 3.24,
+          "spearman": 0.3786,
+          "top10_hit": 0.0,
+          "top30_hit": 0.11
+        },
+        "price_only": {
+          "model": "price",
+          "n": 226,
+          "mae": 3.8642,
+          "rmse": 4.4142,
+          "spearman": 0.1089,
+          "top10_hit": 0.1,
+          "top30_hit": 0.2
+        }
+      },
+      "mean_pred": 2.672,
+      "mean_actual": 2.858
+    },
+    {
+      "model": "v0",
+      "n": 222,
+      "mae": 2.2953,
+      "rmse": 3.2911,
+      "spearman": 0.3773,
+      "top10_hit": 0.1,
+      "top30_hit": 0.206,
+      "gw": 12,
+      "baselines": {
+        "naive_ppg": {
+          "model": "ppg",
+          "n": 222,
+          "mae": 2.4847,
+          "rmse": 3.4096,
+          "spearman": 0.2142,
+          "top10_hit": 0.0,
+          "top30_hit": 0.103
+        },
+        "naive_recent6": {
+          "model": "r6",
+          "n": 222,
+          "mae": 2.3754,
+          "rmse": 3.4421,
+          "spearman": 0.322,
+          "top10_hit": 0.0,
+          "top30_hit": 0.279
+        },
+        "price_only": {
+          "model": "price",
+          "n": 222,
+          "mae": 3.9725,
+          "rmse": 4.5827,
+          "spearman": 0.0576,
+          "top10_hit": 0.0,
+          "top30_hit": 0.1
+        }
+      },
+      "mean_pred": 2.69,
+      "mean_actual": 2.919
+    },
+    {
+      "model": "v0",
+      "n": 227,
+      "mae": 2.1217,
+      "rmse": 2.8716,
+      "spearman": 0.3075,
+      "top10_hit": 0.0,
+      "top30_hit": 0.16,
+      "gw": 13,
+      "baselines": {
+        "naive_ppg": {
+          "model": "ppg",
+          "n": 227,
+          "mae": 2.3145,
+          "rmse": 3.1287,
+          "spearman": 0.0587,
+          "top10_hit": 0.0,
+          "top30_hit": 0.093
+        },
+        "naive_recent6": {
+          "model": "r6",
+          "n": 227,
+          "mae": 2.3348,
+          "rmse": 3.2007,
+          "spearman": 0.2662,
+          "top10_hit": 0.0,
+          "top30_hit": 0.093
+        },
+        "price_only": {
+          "model": "price",
+          "n": 227,
+          "mae": 3.9295,
+          "rmse": 4.4701,
+          "spearman": 0.0699,
+          "top10_hit": 0.1,
+          "top30_hit": 0.193
+        }
+      },
+      "mean_pred": 2.705,
+      "mean_actual": 2.524
+    },
+    {
+      "model": "v0",
+      "n": 227,
+      "mae": 2.1559,
+      "rmse": 3.1201,
+      "spearman": 0.2314,
+      "top10_hit": 0.1,
+      "top30_hit": 0.203,
+      "gw": 14,
+      "baselines": {
+        "naive_ppg": {
+          "model": "ppg",
+          "n": 227,
+          "mae": 2.2464,
+          "rmse": 3.1415,
+          "spearman": 0.2055,
+          "top10_hit": 0.1,
+          "top30_hit": 0.236
+        },
+        "naive_recent6": {
+          "model": "r6",
+          "n": 227,
+          "mae": 2.4141,
+          "rmse": 3.3741,
+          "spearman": 0.1266,
+          "top10_hit": 0.2,
+          "top30_hit": 0.221
+        },
+        "price_only": {
+          "model": "price",
+          "n": 227,
+          "mae": 3.7247,
+          "rmse": 4.3205,
+          "spearman": 0.0924,
+          "top10_hit": 0.2,
+          "top30_hit": 0.187
+        }
+      },
+      "mean_pred": 2.674,
+      "mean_actual": 2.802
+    },
+    {
+      "model": "v0",
+      "n": 226,
+      "mae": 2.1723,
+      "rmse": 3.0754,
+      "spearman": 0.3462,
+      "top10_hit": 0.3,
+      "top30_hit": 0.292,
+      "gw": 15,
+      "baselines": {
+        "naive_ppg": {
+          "model": "ppg",
+          "n": 226,
+          "mae": 2.3846,
+          "rmse": 3.1871,
+          "spearman": 0.2009,
+          "top10_hit": 0.1,
+          "top30_hit": 0.183
+        },
+        "naive_recent6": {
+          "model": "r6",
+          "n": 226,
+          "mae": 2.1954,
+          "rmse": 3.0853,
+          "spearman": 0.4125,
+          "top10_hit": 0.15,
+          "top30_hit": 0.267
+        },
+        "price_only": {
+          "model": "price",
+          "n": 226,
+          "mae": 3.7478,
+          "rmse": 4.2919,
+          "spearman": 0.1638,
+          "top10_hit": 0.2,
+          "top30_hit": 0.208
+        }
+      },
+      "mean_pred": 2.658,
+      "mean_actual": 2.925
+    },
+    {
+      "model": "v0",
+      "n": 228,
+      "mae": 2.3581,
+      "rmse": 3.3147,
+      "spearman": 0.2999,
+      "top10_hit": 0.2,
+      "top30_hit": 0.186,
+      "gw": 16,
+      "baselines": {
+        "naive_ppg": {
+          "model": "ppg",
+          "n": 228,
+          "mae": 2.4073,
+          "rmse": 3.292,
+          "spearman": 0.2559,
+          "top10_hit": 0.2,
+          "top30_hit": 0.219
+        },
+        "naive_recent6": {
+          "model": "r6",
+          "n": 228,
+          "mae": 2.4576,
+          "rmse": 3.3825,
+          "spearman": 0.2577,
+          "top10_hit": 0.275,
+          "top30_hit": 0.222
+        },
+        "price_only": {
+          "model": "price",
+          "n": 228,
+          "mae": 3.7596,
+          "rmse": 4.2351,
+          "spearman": 0.2277,
+          "top10_hit": 0.5,
+          "top30_hit": 0.272
+        }
+      },
+      "mean_pred": 2.687,
+      "mean_actual": 2.943
+    },
+    {
+      "model": "v0",
+      "n": 229,
+      "mae": 2.4095,
+      "rmse": 3.3492,
+      "spearman": 0.218,
+      "top10_hit": 0.1,
+      "top30_hit": 0.206,
+      "gw": 17,
+      "baselines": {
+        "naive_ppg": {
+          "model": "ppg",
+          "n": 229,
+          "mae": 2.4542,
+          "rmse": 3.359,
+          "spearman": 0.1681,
+          "top10_hit": 0.325,
+          "top30_hit": 0.345
+        },
+        "naive_recent6": {
+          "model": "r6",
+          "n": 229,
+          "mae": 2.7256,
+          "rmse": 3.6321,
+          "spearman": 0.1466,
+          "top10_hit": 0.2,
+          "top30_hit": 0.179
+        },
+        "price_only": {
+          "model": "price",
+          "n": 229,
+          "mae": 3.9367,
+          "rmse": 4.4845,
+          "spearman": 0.0851,
+          "top10_hit": 0.1,
+          "top30_hit": 0.312
+        }
+      },
+      "mean_pred": 2.672,
+      "mean_actual": 2.738
+    },
+    {
+      "model": "v0",
+      "n": 224,
+      "mae": 2.2525,
+      "rmse": 3.1603,
+      "spearman": 0.2679,
+      "top10_hit": 0.0,
+      "top30_hit": 0.15,
+      "gw": 18,
+      "baselines": {
+        "naive_ppg": {
+          "model": "ppg",
+          "n": 224,
+          "mae": 2.4959,
+          "rmse": 3.3567,
+          "spearman": 0.0423,
+          "top10_hit": 0.0,
+          "top30_hit": 0.133
+        },
+        "naive_recent6": {
+          "model": "r6",
+          "n": 224,
+          "mae": 2.3854,
+          "rmse": 3.4144,
+          "spearman": 0.2723,
+          "top10_hit": 0.0,
+          "top30_hit": 0.175
+        },
+        "price_only": {
+          "model": "price",
+          "n": 224,
+          "mae": 3.9491,
+          "rmse": 4.5668,
+          "spearman": 0.0093,
+          "top10_hit": 0.1,
+          "top30_hit": 0.217
+        }
+      },
+      "mean_pred": 2.683,
+      "mean_actual": 2.688
+    },
+    {
+      "model": "v0",
+      "n": 228,
+      "mae": 2.3849,
+      "rmse": 3.1734,
+      "spearman": 0.2924,
+      "top10_hit": 0.0,
+      "top30_hit": 0.133,
+      "gw": 19,
+      "baselines": {
+        "naive_ppg": {
+          "model": "ppg",
+          "n": 228,
+          "mae": 2.526,
+          "rmse": 3.2418,
+          "spearman": 0.1248,
+          "top10_hit": 0.0,
+          "top30_hit": 0.233
+        },
+        "naive_recent6": {
+          "model": "r6",
+          "n": 228,
+          "mae": 2.4985,
+          "rmse": 3.4133,
+          "spearman": 0.293,
+          "top10_hit": 0.0,
+          "top30_hit": 0.095
+        },
+        "price_only": {
+          "model": "price",
+          "n": 228,
+          "mae": 3.8667,
+          "rmse": 4.4262,
+          "spearman": 0.1003,
+          "top10_hit": 0.0,
+          "top30_hit": 0.15
+        }
+      },
+      "mean_pred": 2.62,
+      "mean_actual": 2.864
+    },
+    {
+      "model": "v0",
+      "n": 228,
+      "mae": 2.1681,
+      "rmse": 2.9705,
+      "spearman": 0.4238,
+      "top10_hit": 0.0,
+      "top30_hit": 0.233,
+      "gw": 20,
+      "baselines": {
+        "naive_ppg": {
+          "model": "ppg",
+          "n": 228,
+          "mae": 2.3753,
+          "rmse": 3.1445,
+          "spearman": 0.1506,
+          "top10_hit": 0.0,
+          "top30_hit": 0.15
+        },
+        "naive_recent6": {
+          "model": "r6",
+          "n": 228,
+          "mae": 2.4035,
+          "rmse": 3.2535,
+          "spearman": 0.3257,
+          "top10_hit": 0.0,
+          "top30_hit": 0.117
+        },
+        "price_only": {
+          "model": "price",
+          "n": 228,
+          "mae": 3.9776,
+          "rmse": 4.5437,
+          "spearman": 0.1289,
+          "top10_hit": 0.0,
+          "top30_hit": 0.233
+        }
+      },
+      "mean_pred": 2.609,
+      "mean_actual": 2.491
+    },
+    {
+      "model": "v0",
+      "n": 228,
+      "mae": 2.1134,
+      "rmse": 2.8243,
+      "spearman": 0.3409,
+      "top10_hit": 0.1,
+      "top30_hit": 0.189,
+      "gw": 21,
+      "baselines": {
+        "naive_ppg": {
+          "model": "ppg",
+          "n": 228,
+          "mae": 2.2329,
+          "rmse": 2.9153,
+          "spearman": 0.2125,
+          "top10_hit": 0.0,
+          "top30_hit": 0.167
+        },
+        "naive_recent6": {
+          "model": "r6",
+          "n": 228,
+          "mae": 2.1842,
+          "rmse": 2.9243,
+          "spearman": 0.3868,
+          "top10_hit": 0.16,
+          "top30_hit": 0.264
+        },
+        "price_only": {
+          "model": "price",
+          "n": 228,
+          "mae": 3.7491,
+          "rmse": 4.3107,
+          "spearman": 0.1746,
+          "top10_hit": 0.0,
+          "top30_hit": 0.144
+        }
+      },
+      "mean_pred": 2.623,
+      "mean_actual": 2.671
+    },
+    {
+      "model": "v0",
+      "n": 230,
+      "mae": 2.1846,
+      "rmse": 2.822,
+      "spearman": 0.2783,
+      "top10_hit": 0.05,
+      "top30_hit": 0.142,
+      "gw": 22,
+      "baselines": {
+        "naive_ppg": {
+          "model": "ppg",
+          "n": 230,
+          "mae": 2.3455,
+          "rmse": 2.9246,
+          "spearman": 0.1175,
+          "top10_hit": 0.15,
+          "top30_hit": 0.146
+        },
+        "naive_recent6": {
+          "model": "r6",
+          "n": 230,
+          "mae": 2.4355,
+          "rmse": 3.1058,
+          "spearman": 0.2386,
+          "top10_hit": 0.1,
+          "top30_hit": 0.106
+        },
+        "price_only": {
+          "model": "price",
+          "n": 230,
+          "mae": 3.7465,
+          "rmse": 4.2982,
+          "spearman": 0.0121,
+          "top10_hit": 0.15,
+          "top30_hit": 0.156
+        }
+      },
+      "mean_pred": 2.597,
+      "mean_actual": 2.787
+    },
+    {
+      "model": "v0",
+      "n": 227,
+      "mae": 2.246,
+      "rmse": 2.9651,
+      "spearman": 0.3015,
+      "top10_hit": 0.0,
+      "top30_hit": 0.2,
+      "gw": 23,
+      "baselines": {
+        "naive_ppg": {
+          "model": "ppg",
+          "n": 227,
+          "mae": 2.3379,
+          "rmse": 2.9584,
+          "spearman": 0.2538,
+          "top10_hit": 0.2,
+          "top30_hit": 0.267
+        },
+        "naive_recent6": {
+          "model": "r6",
+          "n": 227,
+          "mae": 2.4728,
+          "rmse": 3.1882,
+          "spearman": 0.2521,
+          "top10_hit": 0.0,
+          "top30_hit": 0.2
+        },
+        "price_only": {
+          "model": "price",
+          "n": 227,
+          "mae": 3.9573,
+          "rmse": 4.4257,
+          "spearman": 0.0859,
+          "top10_hit": 0.0,
+          "top30_hit": 0.222
+        }
+      },
+      "mean_pred": 2.576,
+      "mean_actual": 2.626
+    },
+    {
+      "model": "v0",
+      "n": 228,
+      "mae": 2.1302,
+      "rmse": 2.8389,
+      "spearman": 0.3217,
+      "top10_hit": 0.1,
+      "top30_hit": 0.279,
+      "gw": 24,
+      "baselines": {
+        "naive_ppg": {
+          "model": "ppg",
+          "n": 228,
+          "mae": 2.233,
+          "rmse": 2.8493,
+          "spearman": 0.2707,
+          "top10_hit": 0.1,
+          "top30_hit": 0.318
+        },
+        "naive_recent6": {
+          "model": "r6",
+          "n": 228,
+          "mae": 2.3706,
+          "rmse": 3.1692,
+          "spearman": 0.1608,
+          "top10_hit": 0.1,
+          "top30_hit": 0.298
+        },
+        "price_only": {
+          "model": "price",
+          "n": 228,
+          "mae": 3.7469,
+          "rmse": 4.2322,
+          "spearman": 0.1928,
+          "top10_hit": 0.2,
+          "top30_hit": 0.318
+        }
+      },
+      "mean_pred": 2.569,
+      "mean_actual": 2.627
+    },
+    {
+      "model": "v0",
+      "n": 228,
+      "mae": 2.1763,
+      "rmse": 2.9735,
+      "spearman": 0.3353,
+      "top10_hit": 0.1,
+      "top30_hit": 0.183,
+      "gw": 25,
+      "baselines": {
+        "naive_ppg": {
+          "model": "ppg",
+          "n": 228,
+          "mae": 2.3089,
+          "rmse": 2.9995,
+          "spearman": 0.2747,
+          "top10_hit": 0.3,
+          "top30_hit": 0.283
+        },
+        "naive_recent6": {
+          "model": "r6",
+          "n": 228,
+          "mae": 2.3406,
+          "rmse": 3.1996,
+          "spearman": 0.296,
+          "top10_hit": 0.0,
+          "top30_hit": 0.179
+        },
+        "price_only": {
+          "model": "price",
+          "n": 228,
+          "mae": 3.8969,
+          "rmse": 4.3557,
+          "spearman": 0.1901,
+          "top10_hit": 0.4,
+          "top30_hit": 0.275
+        }
+      },
+      "mean_pred": 2.577,
+      "mean_actual": 2.487
+    },
+    {
+      "model": "v0",
+      "n": 225,
+      "mae": 2.1694,
+      "rmse": 2.9648,
+      "spearman": 0.4858,
+      "top10_hit": 0.1,
+      "top30_hit": 0.327,
+      "gw": 26,
+      "baselines": {
+        "naive_ppg": {
+          "model": "ppg",
+          "n": 225,
+          "mae": 2.374,
+          "rmse": 3.0754,
+          "spearman": 0.3529,
+          "top10_hit": 0.2,
+          "top30_hit": 0.273
+        },
+        "naive_recent6": {
+          "model": "r6",
+          "n": 225,
+          "mae": 2.3704,
+          "rmse": 3.2596,
+          "spearman": 0.4034,
+          "top10_hit": 0.2,
+          "top30_hit": 0.247
+        },
+        "price_only": {
+          "model": "price",
+          "n": 225,
+          "mae": 4.0627,
+          "rmse": 4.468,
+          "spearman": 0.1906,
+          "top10_hit": 0.2,
+          "top30_hit": 0.227
+        }
+      },
+      "mean_pred": 2.809,
+      "mean_actual": 2.542
+    },
+    {
+      "model": "v0",
+      "n": 221,
+      "mae": 2.1936,
+      "rmse": 3.0827,
+      "spearman": 0.4143,
+      "top10_hit": 0.0,
+      "top30_hit": 0.139,
+      "gw": 27,
+      "baselines": {
+        "naive_ppg": {
+          "model": "ppg",
+          "n": 221,
+          "mae": 2.3817,
+          "rmse": 3.1523,
+          "spearman": 0.3,
+          "top10_hit": 0.0,
+          "top30_hit": 0.073
+        },
+        "naive_recent6": {
+          "model": "r6",
+          "n": 221,
+          "mae": 2.2059,
+          "rmse": 3.2016,
+          "spearman": 0.3921,
+          "top10_hit": 0.1,
+          "top30_hit": 0.139
+        },
+        "price_only": {
+          "model": "price",
+          "n": 221,
+          "mae": 3.9593,
+          "rmse": 4.3689,
+          "spearman": 0.1353,
+          "top10_hit": 0.1,
+          "top30_hit": 0.139
+        }
+      },
+      "mean_pred": 2.603,
+      "mean_actual": 2.805
+    },
+    {
+      "model": "v0",
+      "n": 223,
+      "mae": 2.1987,
+      "rmse": 3.049,
+      "spearman": 0.391,
+      "top10_hit": 0.1,
+      "top30_hit": 0.292,
+      "gw": 28,
+      "baselines": {
+        "naive_ppg": {
+          "model": "ppg",
+          "n": 223,
+          "mae": 2.3426,
+          "rmse": 3.0656,
+          "spearman": 0.3258,
+          "top10_hit": 0.1,
+          "top30_hit": 0.279
+        },
+        "naive_recent6": {
+          "model": "r6",
+          "n": 223,
+          "mae": 2.2257,
+          "rmse": 3.1893,
+          "spearman": 0.3726,
+          "top10_hit": 0.1,
+          "top30_hit": 0.146
+        },
+        "price_only": {
+          "model": "price",
+          "n": 223,
+          "mae": 3.8413,
+          "rmse": 4.4006,
+          "spearman": 0.2392,
+          "top10_hit": 0.2,
+          "top30_hit": 0.249
+        }
+      },
+      "mean_pred": 2.583,
+      "mean_actual": 2.561
+    },
+    {
+      "model": "v0",
+      "n": 222,
+      "mae": 2.1867,
+      "rmse": 3.0635,
+      "spearman": 0.4482,
+      "top10_hit": 0.1,
+      "top30_hit": 0.308,
+      "gw": 29,
+      "baselines": {
+        "naive_ppg": {
+          "model": "ppg",
+          "n": 222,
+          "mae": 2.4131,
+          "rmse": 3.1898,
+          "spearman": 0.2352,
+          "top10_hit": 0.0,
+          "top30_hit": 0.342
+        },
+        "naive_recent6": {
+          "model": "r6",
+          "n": 222,
+          "mae": 2.2213,
+          "rmse": 3.1079,
+          "spearman": 0.4242,
+          "top10_hit": 0.1,
+          "top30_hit": 0.25
+        },
+        "price_only": {
+          "model": "price",
+          "n": 222,
+          "mae": 3.9437,
+          "rmse": 4.4267,
+          "spearman": 0.1196,
+          "top10_hit": 0.0,
+          "top30_hit": 0.3
+        }
+      },
+      "mean_pred": 2.576,
+      "mean_actual": 2.676
+    },
+    {
+      "model": "v0",
+      "n": 222,
+      "mae": 2.1969,
+      "rmse": 2.8753,
+      "spearman": 0.3506,
+      "top10_hit": 0.1,
+      "top30_hit": 0.2,
+      "gw": 30,
+      "baselines": {
+        "naive_ppg": {
+          "model": "ppg",
+          "n": 222,
+          "mae": 2.4391,
+          "rmse": 3.0435,
+          "spearman": 0.1659,
+          "top10_hit": 0.1,
+          "top30_hit": 0.133
+        },
+        "naive_recent6": {
+          "model": "r6",
+          "n": 222,
+          "mae": 2.3159,
+          "rmse": 3.0483,
+          "spearman": 0.3503,
+          "top10_hit": 0.1,
+          "top30_hit": 0.233
+        },
+        "price_only": {
+          "model": "price",
+          "n": 222,
+          "mae": 3.8153,
+          "rmse": 4.3037,
+          "spearman": 0.0074,
+          "top10_hit": 0.1,
+          "top30_hit": 0.2
+        }
+      },
+      "mean_pred": 2.59,
+      "mean_actual": 2.833
+    },
+    {
+      "model": "v0",
+      "n": 171,
+      "mae": 2.2263,
+      "rmse": 2.931,
+      "spearman": 0.3541,
+      "top10_hit": 0.1,
+      "top30_hit": 0.217,
+      "gw": 31,
+      "baselines": {
+        "naive_ppg": {
+          "model": "ppg",
+          "n": 171,
+          "mae": 2.3659,
+          "rmse": 2.9668,
+          "spearman": 0.2769,
+          "top10_hit": 0.1,
+          "top30_hit": 0.217
+        },
+        "naive_recent6": {
+          "model": "r6",
+          "n": 171,
+          "mae": 2.3333,
+          "rmse": 3.1458,
+          "spearman": 0.3059,
+          "top10_hit": 0.1,
+          "top30_hit": 0.2
+        },
+        "price_only": {
+          "model": "price",
+          "n": 171,
+          "mae": 3.5205,
+          "rmse": 4.0402,
+          "spearman": 0.1309,
+          "top10_hit": 0.2,
+          "top30_hit": 0.178
+        }
+      },
+      "mean_pred": 2.555,
+      "mean_actual": 2.93
+    },
+    {
+      "model": "v0",
+      "n": 220,
+      "mae": 2.1159,
+      "rmse": 3.1827,
+      "spearman": 0.3495,
+      "top10_hit": 0.0,
+      "top30_hit": 0.244,
+      "gw": 32,
+      "baselines": {
+        "naive_ppg": {
+          "model": "ppg",
+          "n": 220,
+          "mae": 2.2313,
+          "rmse": 3.2033,
+          "spearman": 0.2949,
+          "top10_hit": 0.1,
+          "top30_hit": 0.211
+        },
+        "naive_recent6": {
+          "model": "r6",
+          "n": 220,
+          "mae": 2.2303,
+          "rmse": 3.3027,
+          "spearman": 0.3604,
+          "top10_hit": 0.1,
+          "top30_hit": 0.111
+        },
+        "price_only": {
+          "model": "price",
+          "n": 220,
+          "mae": 4.0268,
+          "rmse": 4.5464,
+          "spearman": 0.1262,
+          "top10_hit": 0.0,
+          "top30_hit": 0.228
+        }
+      },
+      "mean_pred": 2.587,
+      "mean_actual": 2.6
+    },
+    {
+      "model": "v0",
+      "n": 218,
+      "mae": 2.4667,
+      "rmse": 3.4226,
+      "spearman": 0.4951,
+      "top10_hit": 0.1,
+      "top30_hit": 0.467,
+      "gw": 33,
+      "baselines": {
+        "naive_ppg": {
+          "model": "ppg",
+          "n": 218,
+          "mae": 2.7238,
+          "rmse": 3.6267,
+          "spearman": 0.3588,
+          "top10_hit": 0.2,
+          "top30_hit": 0.389
+        },
+        "naive_recent6": {
+          "model": "r6",
+          "n": 218,
+          "mae": 2.6399,
+          "rmse": 3.7112,
+          "spearman": 0.399,
+          "top10_hit": 0.3,
+          "top30_hit": 0.4
+        },
+        "price_only": {
+          "model": "price",
+          "n": 218,
+          "mae": 3.8206,
+          "rmse": 4.411,
+          "spearman": 0.0479,
+          "top10_hit": 0.2,
+          "top30_hit": 0.167
+        }
+      },
+      "mean_pred": 3.354,
+      "mean_actual": 3.628
+    },
+    {
+      "model": "v0",
+      "n": 155,
+      "mae": 2.2675,
+      "rmse": 3.0644,
+      "spearman": 0.2446,
+      "top10_hit": 0.0,
+      "top30_hit": 0.353,
+      "gw": 34,
+      "baselines": {
+        "naive_ppg": {
+          "model": "ppg",
+          "n": 155,
+          "mae": 2.337,
+          "rmse": 3.0891,
+          "spearman": 0.2023,
+          "top10_hit": 0.2,
+          "top30_hit": 0.253
+        },
+        "naive_recent6": {
+          "model": "r6",
+          "n": 155,
+          "mae": 2.3269,
+          "rmse": 3.0487,
+          "spearman": 0.29,
+          "top10_hit": 0.3,
+          "top30_hit": 0.253
+        },
+        "price_only": {
+          "model": "price",
+          "n": 155,
+          "mae": 3.9832,
+          "rmse": 4.4297,
+          "spearman": 0.1465,
+          "top10_hit": 0.0,
+          "top30_hit": 0.227
+        }
+      },
+      "mean_pred": 2.628,
+      "mean_actual": 2.677
+    },
+    {
+      "model": "v0",
+      "n": 220,
+      "mae": 2.1022,
+      "rmse": 2.874,
+      "spearman": 0.4246,
+      "top10_hit": 0.0,
+      "top30_hit": 0.262,
+      "gw": 35,
+      "baselines": {
+        "naive_ppg": {
+          "model": "ppg",
+          "n": 220,
+          "mae": 2.2394,
+          "rmse": 2.9273,
+          "spearman": 0.3415,
+          "top10_hit": 0.0,
+          "top30_hit": 0.29
+        },
+        "naive_recent6": {
+          "model": "r6",
+          "n": 220,
+          "mae": 2.3167,
+          "rmse": 3.1488,
+          "spearman": 0.3143,
+          "top10_hit": 0.0,
+          "top30_hit": 0.175
+        },
+        "price_only": {
+          "model": "price",
+          "n": 220,
+          "mae": 3.8514,
+          "rmse": 4.3514,
+          "spearman": 0.1416,
+          "top10_hit": 0.2,
+          "top30_hit": 0.257
+        }
+      },
+      "mean_pred": 2.607,
+      "mean_actual": 2.555
+    },
+    {
+      "model": "v0",
+      "n": 220,
+      "mae": 2.2014,
+      "rmse": 2.9526,
+      "spearman": 0.4293,
+      "top10_hit": 0.4,
+      "top30_hit": 0.229,
+      "gw": 36,
+      "baselines": {
+        "naive_ppg": {
+          "model": "ppg",
+          "n": 220,
+          "mae": 2.301,
+          "rmse": 2.9198,
+          "spearman": 0.3712,
+          "top10_hit": 0.4,
+          "top30_hit": 0.338
+        },
+        "naive_recent6": {
+          "model": "r6",
+          "n": 220,
+          "mae": 2.3455,
+          "rmse": 3.1686,
+          "spearman": 0.3983,
+          "top10_hit": 0.2,
+          "top30_hit": 0.338
+        },
+        "price_only": {
+          "model": "price",
+          "n": 220,
+          "mae": 3.8155,
+          "rmse": 4.3579,
+          "spearman": 0.1248,
+          "top10_hit": 0.1,
+          "top30_hit": 0.181
+        }
+      },
+      "mean_pred": 2.884,
+      "mean_actual": 2.836
+    },
+    {
+      "model": "v0",
+      "n": 218,
+      "mae": 2.1141,
+      "rmse": 2.9959,
+      "spearman": 0.3834,
+      "top10_hit": 0.1,
+      "top30_hit": 0.342,
+      "gw": 37,
+      "baselines": {
+        "naive_ppg": {
+          "model": "ppg",
+          "n": 218,
+          "mae": 2.2711,
+          "rmse": 3.0542,
+          "spearman": 0.2506,
+          "top10_hit": 0.0,
+          "top30_hit": 0.442
+        },
+        "naive_recent6": {
+          "model": "r6",
+          "n": 218,
+          "mae": 2.2026,
+          "rmse": 3.0628,
+          "spearman": 0.3913,
+          "top10_hit": 0.1,
+          "top30_hit": 0.307
+        },
+        "price_only": {
+          "model": "price",
+          "n": 218,
+          "mae": 3.8326,
+          "rmse": 4.3139,
+          "spearman": 0.1691,
+          "top10_hit": 0.1,
+          "top30_hit": 0.321
+        }
+      },
+      "mean_pred": 2.558,
+      "mean_actual": 2.656
+    },
+    {
+      "model": "v0",
+      "n": 220,
+      "mae": 2.1284,
+      "rmse": 2.7187,
+      "spearman": 0.3138,
+      "top10_hit": 0.2,
+      "top30_hit": 0.284,
+      "gw": 38,
+      "baselines": {
+        "naive_ppg": {
+          "model": "ppg",
+          "n": 220,
+          "mae": 2.3759,
+          "rmse": 2.8959,
+          "spearman": 0.0774,
+          "top10_hit": 0.45,
+          "top30_hit": 0.253
+        },
+        "naive_recent6": {
+          "model": "r6",
+          "n": 220,
+          "mae": 2.2485,
+          "rmse": 2.8764,
+          "spearman": 0.2908,
+          "top10_hit": 0.175,
+          "top30_hit": 0.202
+        },
+        "price_only": {
+          "model": "price",
+          "n": 220,
+          "mae": 3.8895,
+          "rmse": 4.3585,
+          "spearman": 0.0284,
+          "top10_hit": 0.275,
+          "top30_hit": 0.304
+        }
+      },
+      "mean_pred": 2.579,
+      "mean_actual": 2.405
+    }
+  ]
+}
