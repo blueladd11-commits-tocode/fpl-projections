@@ -20,6 +20,7 @@ import csv
 import glob
 import json
 import os
+import re
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -426,6 +427,11 @@ reproducible from its snapshot &mdash; <a href="scorecard.html" style="color:var
         now=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M"))
 
 
+def _without_stamp(html):
+    """The page minus its generated-at line, for change detection."""
+    return re.sub(r"Generated \d{4}-\d{2}-\d{2} \d{2}:\d{2} UTC", "", html)
+
+
 def lint_js(html):
     """Catch the failure mode that blanks the page without any visible error.
 
@@ -489,6 +495,19 @@ def main():
         for pr in problems:
             print("  - {}".format(pr))
         return 1
+
+    # Only rewrite when something a reader would notice has changed. The page
+    # carries a "Generated ... UTC" stamp, so a byte comparison always differs
+    # and the hourly job would commit 24 times a day saying nothing. Compare
+    # with that line masked out; git history already records when it ran.
+    if os.path.exists(args.out):
+        prev = open(args.out, encoding="utf-8").read()
+        if _without_stamp(prev) == _without_stamp(html):
+            print("projections page: unchanged, not rewritten")
+            if args.open:
+                subprocess.run(["open", args.out])
+            return 0
+
     with open(args.out, "w") as f:
         f.write(html)
     print("projections page: {}".format(args.out))
