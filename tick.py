@@ -204,7 +204,7 @@ def main():
     # 4b. the projections page always rebuilds. It reflects the latest snapshot,
     # which changed at step 1, so "nothing changed" is never true for it — and a
     # product page showing last week's numbers is worse than no product page.
-    if not run(["site.py"], "publish projections"):
+    if not run(["web.py"], "publish projections"):
         failures += 1
 
     # 5. the record must still hold

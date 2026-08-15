@@ -12,7 +12,7 @@ Self-contained: data is embedded as JSON, all interaction is client-side, no
 network calls. That is a hard requirement — it has to work as a static file,
 and the artifact sandbox blocks outbound requests anyway.
 
-Usage: python3 site.py [--out out/projections.html] [--open]
+Usage: python3 web.py [--out out/projections.html] [--open]
 """
 
 import argparse
@@ -72,6 +72,7 @@ def prepare(rows):
             ppm=round(xp / price, 3) if price else 0.0,
             f=int(r["n_fix"]),
             e=int(r["eligible"]),
+            i=int(r["element"]),
         ))
     out.sort(key=lambda d: -d["xp"])
     return out
@@ -81,19 +82,19 @@ CSS = """
 :root{
   --ground:#EDEFF1; --panel:#FFFFFF; --line:#D3D8DC;
   --ink:#12171C; --ink-2:#4C565F; --ink-3:#78838C;
-  --accent:#0F7F6E; --accent-soft:#D9EFEA; --warn:#9A6B12;
+  --accent:#0F7F6E; --accent-soft:#D9EFEA; --warn:#9A6B12; --loss:#A83A2E;
   --mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
   --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --ground:#0D1116; --panel:#151B22; --line:#27313A;
   --ink:#E6EBEF; --ink-2:#9AA7B2; --ink-3:#6B7883;
-  --accent:#3ED9BC; --accent-soft:#12312C; --warn:#E0A83A;
+  --accent:#3ED9BC; --accent-soft:#12312C; --warn:#E0A83A; --loss:#E8705F;
 }}
 :root[data-theme="dark"]{
   --ground:#0D1116; --panel:#151B22; --line:#27313A;
   --ink:#E6EBEF; --ink-2:#9AA7B2; --ink-3:#6B7883;
-  --accent:#3ED9BC; --accent-soft:#12312C; --warn:#E0A83A;
+  --accent:#3ED9BC; --accent-soft:#12312C; --warn:#E0A83A; --loss:#E8705F;
 }
 *{box-sizing:border-box}
 body{background:var(--ground);color:var(--ink);font-family:var(--sans);
@@ -137,6 +138,35 @@ tbody tr:hover{background:var(--accent-soft)}
 .risk{color:var(--warn)}
 footer{color:var(--ink-3);font-size:.76rem;font-family:var(--mono)}
 .empty{padding:2rem;text-align:center;color:var(--ink-3)}
+.layout{display:grid;grid-template-columns:1fr;gap:1.4rem}
+@media(min-width:1080px){.layout{grid-template-columns:1fr 21rem;align-items:start}}
+.squad{background:var(--panel);border:1px solid var(--line);padding:1rem;
+  position:sticky;top:1rem}
+.squad h2{font-family:var(--mono);font-size:.72rem;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ink-3);margin:0 0 .7rem}
+.tot{display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-bottom:.8rem}
+.tot div{background:var(--ground);border:1px solid var(--line);padding:.5rem .6rem}
+.tot .k{font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);
+  font-family:var(--mono)}
+.tot .v{font-family:var(--mono);font-size:1.1rem;color:var(--ink);font-weight:600;
+  font-variant-numeric:tabular-nums}
+.tot .v.bad{color:var(--loss)}
+.line{font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;color:var(--ink-3);
+  text-transform:uppercase;margin:.6rem 0 .25rem}
+.pick{display:flex;align-items:center;gap:.4rem;padding:.22rem .3rem;font-size:.8rem;
+  border-bottom:1px solid var(--line)}
+.pick .nm{flex:1;color:var(--ink);white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis}
+.pick .xp{font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--ink-2)}
+.pick button{background:none;border:0;color:var(--ink-3);cursor:pointer;font-size:1rem;
+  line-height:1;padding:0 .15rem}
+.pick button:hover{color:var(--loss)}
+.pick.benched .nm,.pick.benched .xp{opacity:.45}
+.warn{font-size:.76rem;color:var(--loss);margin:.5rem 0 0}
+.hint{font-size:.76rem;color:var(--ink-3);margin:.5rem 0 0}
+tr.picked{background:var(--accent-soft)}
+tr{cursor:pointer}
+.loss{color:var(--loss)}
 nav{display:flex;gap:.1rem;font-family:var(--mono);font-size:.72rem;
   letter-spacing:.06em;text-transform:uppercase}
 nav a{padding:.4rem .75rem;border:1px solid var(--line);color:var(--ink-2);
@@ -148,9 +178,9 @@ nav a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 """
 
-JS = """
-const COLS=[["n","Player",0],["t","Team",0],["p","Pos",0],["c","£",1],
-  ["xp","xP",1],["sd","±",1],["ppm","xP/£m",1],["ps","Start %",1],["m","xMins",1]];
+JS = r"""
+const COLS=[["n","Player",0],["t","Team",0],["p","Pos",0],["c","\u00A3",1],
+  ["xp","xP",1],["sd","\u00B1",1],["ppm","xP/\u00A3m",1],["ps","Start %",1],["m","xMins",1]];
 let sortKey="xp", sortDir=-1, posFilter="ALL", onlyEligible=true;
 const maxXp=Math.max(...DATA.map(d=>d.xp));
 
@@ -180,7 +210,7 @@ function render(){
   tb.innerHTML=rows.map(d=>{
     const w=Math.max(1,Math.round(d.xp/maxXp*46));
     const risky=d.ps<70;
-    return '<tr>'+
+    return '<tr data-i="'+d.i+'"'+(squad.includes(d.i)?' class="picked"':'')+'>'+
       '<td class="name">'+esc(d.n)+(d.f>1?' <span class="pill">DGW</span>':'')+'</td>'+
       '<td class="mono">'+d.t+'</td><td class="mono">'+d.p+'</td>'+
       '<td class="num mono">'+d.c.toFixed(1)+'</td>'+
@@ -191,10 +221,104 @@ function render(){
       '<td class="num mono'+(risky?' risk':'')+'">'+d.ps+'</td>'+
       '<td class="num mono">'+d.m+'</td></tr>';
   }).join("");
+  tb.querySelectorAll("tr[data-i]").forEach(tr=>
+    tr.addEventListener("click",()=>toggle(+tr.dataset.i)));
 }
 function esc(s){return s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));}
 
+
+// --- squad -----------------------------------------------------------------
+// FPL's actual constraints. Enforcing them is the point: a "my team" view that
+// lets you pick 6 forwards tells you nothing about a team you could field.
+const LIMITS={GKP:2,DEF:5,MID:5,FWD:3}, BUDGET=100.0, MAX_PER_CLUB=3;
+// Valid outfield shapes, always 1 GK. FPL allows anything from 3-4-3 to 5-4-1
+// provided at least 3 DEF and at least 1 FWD.
+const SHAPES=[[3,4,3],[3,5,2],[4,3,3],[4,4,2],[4,5,1],[5,3,2],[5,4,1],[5,2,3],[3,3,4]];
+let squad=[];
+const byId=Object.fromEntries(DATA.map(d=>[d.i,d]));
+
+function bestXI(members){
+  // Pick the highest-xP legal starting eleven. Bench is whatever is left.
+  const g=members.filter(d=>d.p==="GKP").sort((a,b)=>b.xp-a.xp);
+  const d=members.filter(d=>d.p==="DEF").sort((a,b)=>b.xp-a.xp);
+  const m=members.filter(d=>d.p==="MID").sort((a,b)=>b.xp-a.xp);
+  const f=members.filter(d=>d.p==="FWD").sort((a,b)=>b.xp-a.xp);
+  if(!g.length) return null;
+  let best=null;
+  for(const [nd,nm,nf] of SHAPES){
+    if(d.length<nd||m.length<nm||f.length<nf) continue;
+    const xi=[g[0],...d.slice(0,nd),...m.slice(0,nm),...f.slice(0,nf)];
+    const tot=xi.reduce((s,x)=>s+x.xp,0);
+    if(!best||tot>best.tot) best={xi,tot,shape:nd+"-"+nm+"-"+nf};
+  }
+  return best;
+}
+
+function squadIssues(members){
+  const out=[];
+  const cost=members.reduce((s,d)=>s+d.c,0);
+  if(cost>BUDGET) out.push("\u00A3"+(cost-BUDGET).toFixed(1)+"m over budget");
+  for(const [pos,max] of Object.entries(LIMITS)){
+    const n=members.filter(d=>d.p===pos).length;
+    if(n>max) out.push(n+" "+pos+" (max "+max+")");
+  }
+  const clubs={};
+  members.forEach(d=>{clubs[d.t]=(clubs[d.t]||0)+1;});
+  for(const [t,n] of Object.entries(clubs))
+    if(n>MAX_PER_CLUB) out.push(n+" from "+t+" (max "+MAX_PER_CLUB+")");
+  return out;
+}
+
+function renderSquad(){
+  const members=squad.map(i=>byId[i]).filter(Boolean);
+  const cost=members.reduce((s,d)=>s+d.c,0);
+  const xi=bestXI(members);
+  const issues=squadIssues(members);
+  const full=members.length===15;
+
+  document.getElementById("sq-n").textContent=members.length+"/15";
+  document.getElementById("sq-n").className="v"+(members.length>15?" bad":"");
+  document.getElementById("sq-cost").textContent="\u00A3"+cost.toFixed(1)+"m";
+  document.getElementById("sq-cost").className="v"+(cost>BUDGET?" bad":"");
+  document.getElementById("sq-xp").textContent=xi?xi.tot.toFixed(1):"\u2014";
+  document.getElementById("sq-shape").textContent=
+    xi&&full?xi.shape:(members.length?"\u2014":"\u2014");
+
+  const bench=xi?members.filter(d=>!xi.xi.includes(d)):members;
+  const body=document.getElementById("sq-list");
+  if(!members.length){
+    body.innerHTML='<p class="hint">Click any row in the table to add a player. '+
+      'Real FPL limits apply: 100m budget, 2/5/5/3 by position, max 3 per club.</p>';
+  }else{
+    const line=(label,arr,benched)=>arr.length?'<div class="line">'+label+'</div>'+
+      arr.map(d=>'<div class="pick'+(benched?" benched":"")+'">'+
+        '<span class="nm">'+esc(d.n)+' <span style="opacity:.5">'+d.t+'</span></span>'+
+        '<span class="xp">'+d.xp.toFixed(2)+'</span>'+
+        '<button data-rm="'+d.i+'" aria-label="Remove '+esc(d.n)+'">&times;</button>'+
+        '</div>').join(""):"";
+    body.innerHTML=
+      (xi?line("Starting "+xi.shape,xi.xi,false):"")+
+      line(xi?"Bench":"Squad",bench,!!xi)+
+      (issues.length?'<p class="warn">'+issues.map(esc).join("<br>")+'</p>':"")+
+      (!full?'<p class="hint">'+(15-members.length)+' more to a full squad.</p>':"");
+    body.querySelectorAll("button[data-rm]").forEach(b=>
+      b.addEventListener("click",e=>{
+        e.stopPropagation();
+        squad=squad.filter(i=>i!==+b.dataset.rm);
+        save();renderSquad();render();
+      }));
+  }
+}
+
+function toggle(id){
+  squad = squad.includes(id) ? squad.filter(i=>i!==id) : squad.concat([id]);
+  save();renderSquad();render();
+}
+function save(){try{localStorage.setItem("fpl.squad",JSON.stringify(squad));}catch(e){}}
+function load(){try{squad=JSON.parse(localStorage.getItem("fpl.squad")||"[]");}catch(e){squad=[];}}
+
 document.addEventListener("DOMContentLoaded",()=>{
+  load();
   const thead=document.getElementById("th");
   thead.innerHTML=COLS.map(([k,label,num])=>
     '<th data-k="'+k+'" class="'+(num?"num":"")+'" tabindex="0">'+label+'</th>').join("");
@@ -223,7 +347,7 @@ document.addEventListener("DOMContentLoaded",()=>{
   document.getElementById("team").addEventListener("change",render);
   document.getElementById("elig").addEventListener("change",e=>{
     onlyEligible=e.target.checked;render();});
-  render();
+  render();renderSquad();
 });
 """
 
@@ -271,11 +395,23 @@ def build(rows, meta, source="record"):
   <span class="count" id="count"></span>
 </div>
 
-<div class="scroll">
-  <table>
-    <thead><tr id="th"></tr></thead>
-    <tbody id="tb"></tbody>
-  </table>
+<div class="layout">
+  <div class="scroll">
+    <table>
+      <thead><tr id="th"></tr></thead>
+      <tbody id="tb"></tbody>
+    </table>
+  </div>
+  <aside class="squad" aria-label="Your squad">
+    <h2>Your squad</h2>
+    <div class="tot">
+      <div><span class="k">Players</span><span class="v" id="sq-n">0/15</span></div>
+      <div><span class="k">Cost</span><span class="v" id="sq-cost">&pound;0.0m</span></div>
+      <div><span class="k">Best XI xP</span><span class="v" id="sq-xp">&mdash;</span></div>
+      <div><span class="k">Shape</span><span class="v" id="sq-shape">&mdash;</span></div>
+    </div>
+    <div id="sq-list"></div>
+  </aside>
 </div>
 
 <footer>Generated {now} UTC &middot; every projection is timestamped and
@@ -290,6 +426,54 @@ reproducible from its snapshot &mdash; <a href="scorecard.html" style="color:var
         now=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M"))
 
 
+def lint_js(html):
+    """Catch the failure mode that blanks the page without any visible error.
+
+    A single unescaped quote inside a generated JS string literal throws a
+    SyntaxError, the whole script never executes, and the page still renders
+    its static shell — headers, filters, an empty table — looking merely empty
+    rather than broken. That shipped once. This is a cheap structural check, not
+    a parser, but it catches exactly that class of mistake.
+    """
+    js = html.split("<script>", 1)[1].rsplit("</script>", 1)[0]
+    problems = []
+    for n, line in enumerate(js.splitlines(), 1):
+        stripped = line.lstrip()
+        if stripped.startswith("//") or stripped.startswith("const DATA="):
+            continue  # the data literal is JSON and legitimately full of quotes
+        # Walk the line tracking string state. An apostrophe inside a
+        # double-quoted string is fine; an unescaped one closing a single-quoted
+        # string early is what blanks the page.
+        quote, i, esc = None, 0, False
+        while i < len(line):
+            ch = line[i]
+            if esc:
+                esc = False
+            elif ch == "\\":
+                esc = True
+            elif quote:
+                if ch == quote:
+                    quote = None
+            elif ch in "'\"":
+                quote = ch
+            elif ch == "/" and i + 1 < len(line) and line[i + 1] == "/":
+                break  # trailing comment
+            i += 1
+        if quote:
+            problems.append("line {}: unterminated {} string: {}".format(
+                n, "single" if quote == "'" else "double", stripped[:90]))
+    nonascii = sorted(set(c for c in js if ord(c) > 127))
+    if nonascii:
+        problems.append(
+            "non-ASCII in JS: {} - use \\uXXXX escapes. The page carries no "
+            "charset declaration, so raw UTF-8 renders as mojibake when served "
+            "over plain HTTP.".format(" ".join(nonascii)))
+    for needed in ("#tb", "#th", "sq-n", "DOMContentLoaded"):
+        if needed not in js and needed.lstrip("#") not in js:
+            problems.append("missing expected reference: {}".format(needed))
+    return problems
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default=os.path.join(OUT, "projections.html"))
@@ -298,8 +482,15 @@ def main():
     args = ap.parse_args()
 
     rows, meta, source = latest_projection(args.prior)
+    html = build(rows, meta, source)
+    problems = lint_js(html)
+    if problems:
+        print("REFUSING TO WRITE - generated JavaScript looks broken:")
+        for pr in problems:
+            print("  - {}".format(pr))
+        return 1
     with open(args.out, "w") as f:
-        f.write(build(rows, meta, source))
+        f.write(html)
     print("projections page: {}".format(args.out))
     print("  GW{}, {} players, {} established, source: {}".format(
         meta.get("gameweek"), len(rows),
