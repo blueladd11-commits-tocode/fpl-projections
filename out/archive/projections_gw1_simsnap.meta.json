@@ -17,7 +17,7 @@
   "minutes_model_sha256": "2b0a2165c0612cc64e3fed58a49993352b2af254f1b39c33278c8a63879aae65",
   "priors_sha256": "e5234955734ce28e6f74eed1d94d1f06fad368c9246ae5dc0a8e34ea9ce21b05",
   "n_players": 482,
-  "generated_at_utc": "2026-08-15T12:26:40.629847+00:00",
-  "horizon_h": 6.0,
-  "hours_before_deadline": 3.0
+  "generated_at_utc": "2026-08-15T13:12:28.390398+00:00",
+  "horizon_h": 72.0,
+  "hours_before_deadline": 2.24
 }

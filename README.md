@@ -66,6 +66,25 @@ projection at **any** horizon.
 
 ---
 
+## The two pages
+
+`site.py` builds **the product** — what the model thinks right now, for every
+player. `publish.py` builds **the scorecard** — what we committed to before each
+deadline and how it did. They are different artifacts with different jobs, and
+conflating them was a mistake worth not repeating: for a long stretch this repo
+had a rigorous accuracy record and nothing anyone could actually use.
+
+```bash
+python3 site.py --open        # the projections table
+python3 preview.py --open     # the scorecard, with simulated results
+```
+
+`site.py` works whether or not the record has entries. Before the first deadline
+it computes projections from the latest snapshot and says so on the page —
+"computed just now, not yet the committed pre-deadline projection" — because
+showing a live number as if it were a committed one would undermine the whole
+point of having a record.
+
 ## Repository layout
 
 - `out/` **is the record** and is committed: projections, their provenance
@@ -89,6 +108,8 @@ projection at **any** horizon.
 | `project.py` | Live path: latest snapshot → projections CSV + provenance metadata. | working |
 | `backtest.py` | Walk-forward harness with strict as-of cutoff, plus the three naive baselines. | working |
 | `priors.py` | Fits the per-90 positional priors from history. `--write` rewrites the block in `model.py`. | working |
+| `site.py` | **The product page.** Every player's projection, sortable and filterable, self-contained HTML. Falls back to computing live when the record is empty. | working |
+| `preview.py` | Renders the scorecard with simulated results, so the design can be reviewed before real ones exist. Never touches the record. | working |
 | `publish.py` | Generates the public scorecard page from the projection metadata, weekly scorecards and backtest evidence. Refuses to display in-sample results. | working |
 | `tick.py` | **The only thing that needs to be scheduled.** Idempotent hourly job: snapshot, project inside the deadline window, score settled gameweeks, publish, verify. | working, installed |
 | `verify.py` | Re-derives every published projection from its recorded snapshot and proves it matches. PASS / REPRODUCIBLE-WITH-DRIFT / FAIL. | working |
