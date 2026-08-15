@@ -19,11 +19,23 @@ anyone's pre-deadline predictions exists, for any season, and none can be
 reconstructed. That is precisely why owning one going forward is worth
 something. Get `snapshot.py` on a cron today; everything else can follow.
 
-```bash
-17 * * * * cd ~/fpl-projections && /usr/bin/python3 tick.py >> data/tick.log 2>&1
-```
+**Runs on GitHub Actions** (`.github/workflows/tick.yml`), hourly. That is the
+single writer of the record — do NOT also run `tick.py` from a local cron, or
+two machines produce two diverging records and only one of them gets committed.
 
-**Installed.** `tick.py` decides what to do from state, not from the clock —
+Running it in CI rather than on a laptop is the point: GitHub's schedulers are
+always awake, and a projection missed because a machine was asleep is a
+permanent hole. GitHub does delay scheduled runs under load, sometimes by 10+
+minutes, which is exactly why `tick.py` works in horizon *bands* rather than at
+exact times — a late run still lands in the right band, and a double run is a
+no-op.
+
+Each run that changes the record commits and pushes it. **The push is the
+external timestamp**: a commit landing on GitHub before a deadline is
+third-party evidence that the projection predates it, which is materially
+stronger than a timestamp we write into our own JSON.
+
+**Locally,** `tick.py` decides what to do from state, not from the clock —
 FPL deadlines move week to week. Each hour it snapshots, projects once per
 **horizon band** (T−72h, T−24h, T−6h, T−2h), scores any settled gameweek that
 has a projection but no scorecard, republishes if anything moved, and verifies
@@ -53,6 +65,17 @@ fragile. A laptop asleep at T−2h still has T−6h, T−24h and T−72h in the 
 projection at **any** horizon.
 
 ---
+
+## Repository layout
+
+- `out/` **is the record** and is committed: projections, their provenance
+  metadata, weekly scorecards, backtest evidence, and gzipped copies of the
+  exact API snapshots each projection was built from.
+- `data/` is a working cache and is gitignored. `data/history/` is
+  re-downloadable (24 MB); `data/snapshots/` accumulates one capture per hour,
+  which is ~13 GB a year. Only the snapshots that actually produced a
+  projection are preserved into `out/snapshots/`, gzipped — about 10x smaller,
+  putting a full season's evidence at roughly 20 MB.
 
 ## Files
 
