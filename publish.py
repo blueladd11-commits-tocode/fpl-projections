@@ -170,6 +170,7 @@ th{text-align:left;font-size:.66rem;letter-spacing:.1em;text-transform:uppercase
 td{padding:.55rem .6rem;border-bottom:1px solid var(--line);
   font-variant-numeric:tabular-nums;color:var(--ink-2)}
 td.k{font-family:var(--mono);color:var(--ink)}
+td.made{white-space:nowrap;font-family:var(--mono);font-size:.8rem}
 tbody tr:last-child td{border-bottom:none}
 .chip{display:inline-block;font-size:.64rem;letter-spacing:.09em;padding:.16rem .5rem;
   border:1px solid currentColor;font-weight:600}
@@ -204,8 +205,11 @@ def fmt_horizon(r):
     extra = sorted(set(r.get("horizons") or []), reverse=True)
     base = "T&minus;{:.0f}h".format(hrs)
     if extra:
-        base += " <span style='opacity:.6'>(+{})</span>".format(
-            ", ".join("{:.0f}h".format(h) for h in extra))
+        # Just the count, with the detail on hover. Listing every horizon made
+        # each row three lines tall and buried the numbers that matter.
+        base += (" <span style='opacity:.55' title='earlier horizons: {}'>"
+                 "+{}</span>").format(
+            ", ".join("T-{:.0f}h".format(h) for h in extra), len(extra))
     return base
 
 
@@ -233,7 +237,7 @@ def build(records, evidence):
             base = "{:.3f}".format(r["base"]) if r["base"] is not None else "—"
             delta = "{:+.3f}".format(d) if d is not None else "—"
         rec_rows.append(
-            "<tr><td class=\"k\">GW{}</td><td>{}</td><td>{}</td>"
+            "<tr><td class=\"k\">GW{}</td><td>{}</td><td class=\"made\">{}</td>"
             "<td class=\"hash\">{}</td>"
             "<td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(
                 r["gw"], fmt_dt(r["deadline"]), fmt_horizon(r),
