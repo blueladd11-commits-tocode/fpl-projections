@@ -10,8 +10,12 @@ Three metrics, chosen because they answer three different questions:
   Spearman    - is the *ordering* right (all that matters for picking a squad)
   Top-N hit   - of the N players we ranked highest, how many were top-N actual
 
-Every metric is also computed for FPL's own published `ep_next`. If you are not
-beating that, you have no product, and the scorecard will say so.
+Every metric is also computed for the naive baselines, and for FPL's own
+`ep_next` — but ONLY the copy we snapshot ourselves before a deadline. The
+`xP` column in the public historical mirror is captured after the gameweek it
+claims to predict and is unusable as a benchmark; see the README. The bar that
+matters is `naive_recent6`, the mean of a player's last six scores, because
+without the fitted minutes model the projection does not reliably beat it.
 
 Usage:
     python3 score.py --projections out/projections_gw1_*.csv --season 2025-26

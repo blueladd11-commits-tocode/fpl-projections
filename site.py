@@ -137,6 +137,15 @@ tbody tr:hover{background:var(--accent-soft)}
 .risk{color:var(--warn)}
 footer{color:var(--ink-3);font-size:.76rem;font-family:var(--mono)}
 .empty{padding:2rem;text-align:center;color:var(--ink-3)}
+nav{display:flex;gap:.1rem;font-family:var(--mono);font-size:.72rem;
+  letter-spacing:.06em;text-transform:uppercase}
+nav a{padding:.4rem .75rem;border:1px solid var(--line);color:var(--ink-2);
+  text-decoration:none}
+nav a[aria-current="page"]{background:var(--accent);color:var(--ground);
+  border-color:var(--accent)}
+nav a:hover:not([aria-current]){color:var(--ink);border-color:var(--ink-3)}
+nav a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
 """
 
 JS = """
@@ -235,6 +244,7 @@ def build(rows, meta, source="record"):
 
     return """<style>{css}</style>
 <div class="wrap">
+<nav aria-label="Sections"><a href="projections.html" aria-current="page">Projections</a><a href="scorecard.html">Accuracy record</a></nav>
 <header>
   <h1>Gameweek {gw} projections</h1>
   <p class="sub">Deadline {dl} UTC &middot; {made} &middot; snapshot
@@ -269,7 +279,7 @@ def build(rows, meta, source="record"):
 </div>
 
 <footer>Generated {now} UTC &middot; every projection is timestamped and
-reproducible from its snapshot &mdash; see the accuracy scorecard</footer>
+reproducible from its snapshot &mdash; <a href="scorecard.html" style="color:var(--accent)">see how accurate these have actually been</a></footer>
 </div>
 <script>const DATA={data};{js}</script>""".format(
         css=CSS, js=JS, data=json.dumps(data, separators=(",", ":")),

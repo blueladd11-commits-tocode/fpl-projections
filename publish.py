@@ -189,6 +189,15 @@ li{margin-bottom:.5rem;max-width:62ch}
 footer{color:var(--ink-3);font-size:.76rem;font-family:var(--mono);
   border-top:1px solid var(--line);padding-top:1rem}
 .hash{font-family:var(--mono);font-size:.76rem;color:var(--ink-3)}
+nav{display:flex;gap:.1rem;font-family:var(--mono);font-size:.72rem;
+  letter-spacing:.06em;text-transform:uppercase}
+nav a{padding:.4rem .75rem;border:1px solid var(--line);color:var(--ink-2);
+  text-decoration:none}
+nav a[aria-current="page"]{background:var(--accent);color:var(--ground);
+  border-color:var(--accent)}
+nav a:hover:not([aria-current]){color:var(--ink);border-color:var(--ink-3)}
+nav a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
 """
 
 
@@ -256,6 +265,7 @@ def build(records, evidence):
 
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M")
     return """<div class="wrap">
+<nav aria-label="Sections"><a href="projections.html">Projections</a><a href="scorecard.html" aria-current="page">Accuracy record</a></nav>
 <header>
   <span class="label">Pre-registered accuracy record</span>
   <h1>Fantasy Premier League points projections &mdash; public scorecard</h1>
@@ -343,7 +353,7 @@ def build(records, evidence):
 </section>
 
 <footer>Generated %s UTC &middot; projections and snapshot hashes are reproducible from
-the recorded snapshot &middot; baseline definitions unchanged since first publication</footer>
+the recorded snapshot &middot; baseline definitions unchanged since first publication &middot; <a href="projections.html" style="color:var(--accent)">this week&rsquo;s projections</a></footer>
 </div>""" % (len(records), len(scored), pending,
              "{}/{}".format(beat, len(scored)) if scored else "—",
              "\n".join(rec_rows) or

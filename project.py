@@ -111,7 +111,10 @@ def load_prior(season, elem2code):
     return agg
 
 
-def preflight(bootstrap, manifest, gw, minutes_model, force):
+HORIZONS_H = [72.0, 24.0, 6.0, 2.0]
+
+
+def preflight(bootstrap, manifest, gw, minutes_model, force, horizon=None):
     """Refuse to write a projection that would corrupt the public record.
 
     A published projection is evidence: it carries a pre-deadline timestamp and
@@ -126,6 +129,20 @@ def preflight(bootstrap, manifest, gw, minutes_model, force):
     deadline = manifest.get("next_deadline_utc")
     if deadline:
         dl = datetime.fromisoformat(deadline.replace("Z", "+00:00"))
+        hrs = (dl - now).total_seconds() / 3600.0
+        # The horizon gate belongs HERE, not only in tick.py. Running
+        # `python3 project.py` by hand used to write straight into the record at
+        # any distance from the deadline — a projection made a week early would
+        # sit in the record as if it were the committed one. tick.py passes
+        # --horizon explicitly; a human has to mean it.
+        if horizon is None and hrs > max(HORIZONS_H):
+            problems.append(
+                "{:.0f}h to deadline, outside every horizon band ({}). The "
+                "record takes projections at T-{} only. Use --dry-run to look, "
+                "site.py to publish current numbers, or pass --horizon if you "
+                "genuinely mean to add a record entry here.".format(
+                    hrs, "/".join("{:.0f}h".format(h) for h in HORIZONS_H),
+                    "/T-".join("{:.0f}h".format(h) for h in HORIZONS_H)))
         if now >= dl:
             problems.append(
                 "DEADLINE PASSED for GW{} ({}). A projection written after the "
@@ -509,7 +526,7 @@ def main():
                              not args.no_minutes_model)
 
     problems = preflight(info["bootstrap"], info["manifest"], meta["gameweek"],
-                         info["minutes_model"], args.force)[0]
+                         info["minutes_model"], args.force, args.horizon)[0]
     problems += sanity_check(rows)
     if problems:
         print("\nPREFLIGHT FAILED ({} problem(s)):".format(len(problems)))
