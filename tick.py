@@ -13,7 +13,7 @@ Each tick, in order:
                 lands in the last few hours, and project.py refuses outright
                 once the deadline passes.
   3. SCORE      any settled gameweek that has a projection but no scorecard.
-  4. PUBLISH    regenerate BOTH pages — the scorecard (the record) and the
+  4. PUBLISH    regenerate ALL pages — the scorecard (the record) and the
                 projections page (the product). The projections page is rebuilt
                 every tick, not only when the record changes, because it shows
                 current numbers and would otherwise sit stale all week.
@@ -205,6 +205,8 @@ def main():
     # which changed at step 1, so "nothing changed" is never true for it — and a
     # product page showing last week's numbers is worse than no product page.
     if not run(["web.py"], "publish projections"):
+        failures += 1
+    if not run(["ticker.py"], "publish fixtures"):
         failures += 1
 
     # 5. the record must still hold

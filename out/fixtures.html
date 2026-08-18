@@ -1,0 +1,202 @@
+<style>
+:root{
+  --ground:#EDEFF1; --panel:#FFFFFF; --line:#D3D8DC;
+  --ink:#12171C; --ink-2:#4C565F; --ink-3:#78838C;
+  --accent:#0F7F6E; --accent-soft:#D9EFEA; --warn:#9A6B12; --loss:#A83A2E;
+  --mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#0D1116; --panel:#151B22; --line:#27313A;
+  --ink:#E6EBEF; --ink-2:#9AA7B2; --ink-3:#6B7883;
+  --accent:#3ED9BC; --accent-soft:#12312C; --warn:#E0A83A; --loss:#E8705F;
+}}
+:root[data-theme="dark"]{
+  --ground:#0D1116; --panel:#151B22; --line:#27313A;
+  --ink:#E6EBEF; --ink-2:#9AA7B2; --ink-3:#6B7883;
+  --accent:#3ED9BC; --accent-soft:#12312C; --warn:#E0A83A; --loss:#E8705F;
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);
+  margin:0;padding:clamp(1rem,3vw,2rem);line-height:1.5;-webkit-font-smoothing:antialiased}
+.wrap{max-width:72rem;margin:0 auto;display:flex;flex-direction:column;gap:1.4rem}
+h1{font-family:var(--mono);font-size:clamp(1.3rem,3.5vw,1.7rem);margin:0;
+  letter-spacing:-.02em;font-weight:650}
+.sub{color:var(--ink-2);font-size:.88rem;margin:.3rem 0 0}
+.sub code{font-family:var(--mono);font-size:.82rem}
+.controls{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;
+  background:var(--panel);border:1px solid var(--line);padding:.8rem}
+.seg{display:flex;border:1px solid var(--line)}
+.seg button{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;
+  background:transparent;color:var(--ink-2);border:0;padding:.42rem .7rem;
+  cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--ground)}
+.seg button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+input[type=search],select{font-family:var(--sans);font-size:.85rem;padding:.4rem .55rem;
+  background:var(--ground);color:var(--ink);border:1px solid var(--line)}
+label.chk{font-size:.8rem;color:var(--ink-2);display:flex;align-items:center;gap:.35rem;
+  cursor:pointer}
+.count{margin-left:auto;font-family:var(--mono);font-size:.76rem;color:var(--ink-3)}
+.scroll{overflow-x:auto;background:var(--panel);border:1px solid var(--line)}
+table{border-collapse:collapse;width:100%;font-size:.86rem;min-width:44rem}
+th{position:sticky;top:0;background:var(--panel);text-align:left;font-family:var(--mono);
+  font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);
+  padding:.55rem .6rem;border-bottom:1px solid var(--line);cursor:pointer;
+  white-space:nowrap;user-select:none}
+th:hover{color:var(--ink)}
+th[aria-sort]{color:var(--accent)}
+th.num,td.num{text-align:right}
+td{padding:.45rem .6rem;border-bottom:1px solid var(--line);color:var(--ink-2);
+  font-variant-numeric:tabular-nums;white-space:nowrap}
+td.name{font-weight:600;color:var(--ink)}
+td.mono{font-family:var(--mono)}
+tbody tr:hover{background:var(--accent-soft)}
+.bar{display:inline-block;height:.45rem;background:var(--accent);vertical-align:middle;
+  margin-right:.4rem;min-width:1px}
+.pill{font-family:var(--mono);font-size:.66rem;padding:.1rem .35rem;
+  border:1px solid var(--line);color:var(--ink-3)}
+.risk{color:var(--warn)}
+footer{color:var(--ink-3);font-size:.76rem;font-family:var(--mono)}
+.empty{padding:2rem;text-align:center;color:var(--ink-3)}
+.layout{display:grid;grid-template-columns:1fr;gap:1.4rem}
+@media(min-width:1080px){.layout{grid-template-columns:1fr 21rem;align-items:start}}
+.squad{background:var(--panel);border:1px solid var(--line);padding:1rem;
+  position:sticky;top:1rem}
+.squad h2{font-family:var(--mono);font-size:.72rem;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ink-3);margin:0 0 .7rem}
+.tot{display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-bottom:.8rem}
+.tot div{background:var(--ground);border:1px solid var(--line);padding:.5rem .6rem}
+.tot .k{font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);
+  font-family:var(--mono)}
+.tot .v{font-family:var(--mono);font-size:1.1rem;color:var(--ink);font-weight:600;
+  font-variant-numeric:tabular-nums}
+.tot .v.bad{color:var(--loss)}
+.line{font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;color:var(--ink-3);
+  text-transform:uppercase;margin:.6rem 0 .25rem}
+.pick{display:flex;align-items:center;gap:.4rem;padding:.22rem .3rem;font-size:.8rem;
+  border-bottom:1px solid var(--line)}
+.pick .nm{flex:1;color:var(--ink);white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis}
+.pick .xp{font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--ink-2)}
+.pick button{background:none;border:0;color:var(--ink-3);cursor:pointer;font-size:1rem;
+  line-height:1;padding:0 .15rem}
+.pick button:hover{color:var(--loss)}
+.pick.benched .nm,.pick.benched .xp{opacity:.45}
+.warn{font-size:.76rem;color:var(--loss);margin:.5rem 0 0}
+.hint{font-size:.76rem;color:var(--ink-3);margin:.5rem 0 0}
+tr.picked{background:var(--accent-soft)}
+tr{cursor:pointer}
+.loss{color:var(--loss)}
+nav{display:flex;gap:.1rem;font-family:var(--mono);font-size:.72rem;
+  letter-spacing:.06em;text-transform:uppercase}
+nav a{padding:.4rem .75rem;border:1px solid var(--line);color:var(--ink-2);
+  text-decoration:none}
+nav a[aria-current="page"]{background:var(--accent);color:var(--ground);
+  border-color:var(--accent)}
+nav a:hover:not([aria-current]){color:var(--ink);border-color:var(--ink-3)}
+nav a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+
+.tick{border-collapse:separate;border-spacing:2px;width:100%;min-width:46rem}
+.tick th{position:static;background:transparent;border:0;padding:.3rem .4rem}
+.tick td{border:0;padding:0}
+.tm{font-family:var(--mono);font-weight:600;color:var(--ink);white-space:nowrap;
+  padding-right:.5rem !important;font-size:.82rem}
+.cell{display:flex;flex-direction:column;gap:2px}
+.fx{font-family:var(--mono);font-size:.7rem;padding:.3rem .2rem;text-align:center;
+  border-radius:2px;color:#0B0F13;font-weight:600;letter-spacing:.02em}
+.fx.blank{background:transparent;border:1px dashed var(--line);color:var(--ink-3)}
+.sum{font-family:var(--mono);font-size:.78rem;text-align:right;color:var(--ink-2);
+  font-variant-numeric:tabular-nums;padding-left:.5rem !important}
+.legend{display:flex;align-items:center;gap:.4rem;font-size:.74rem;color:var(--ink-3);
+  font-family:var(--mono)}
+.legend i{display:inline-block;width:1.6rem;height:.7rem;border-radius:2px}
+.note{font-size:.84rem;color:var(--ink-2);max-width:66ch}
+</style>
+<div class="wrap">
+<nav aria-label="Sections"><a href="projections.html">Projections</a><a href="fixtures.html" aria-current="page">Fixtures</a><a href="scorecard.html">Accuracy record</a></nav>
+<header>
+  <h1>Fixture ticker &mdash; GW1 to GW8</h1>
+  <p class="note"><strong>Pre-season:</strong> FPL has not published granular team strength yet, so these are built from last season&rsquo;s expected goals for and against, shrunk toward the league mean. Promoted sides are rated at last season&rsquo;s bottom third. Every other ticker colours FPL&rsquo;s single 1&ndash;5
+  difficulty rating, which answers two different questions with one number. A
+  promoted side concedes freely <em>and</em> scores little &mdash; great to
+  attack, great to defend against. These are separated, and computed from the
+  same fitted team ratings the projection model uses.</p>
+</header>
+
+<div class="controls">
+  <div class="seg" role="group" aria-label="Difficulty type">
+    <button data-mode="atk" aria-pressed="true">FOR ATTACKERS</button>
+    <button data-mode="dfn" aria-pressed="false">FOR DEFENDERS</button>
+  </div>
+  <span class="legend"><i style="background:hsl(140,62%,58%)"></i>easy
+    <i style="background:hsl(70,62%,54%)"></i><i style="background:hsl(0,62%,50%)"></i>hard</span>
+  <span class="count" id="modenote">Green = the opponent concedes. Rank teams
+    whose ATTACKERS you want.</span>
+</div>
+
+<div class="scroll">
+  <table class="tick">
+    <thead><tr id="hdr"></tr></thead>
+    <tbody id="tb"></tbody>
+  </table>
+</div>
+
+<footer>Teams sorted easiest first over the horizon &middot; (a) = away &middot;
+lowercase mean is the average difficulty across the window &middot;
+<a href="projections.html" style="color:var(--accent)">this week&rsquo;s projections</a></footer>
+</div>
+<script>const GRID={"gws":[1,2,3,4,5,6,7,8],"teams":[{"id":1,"short":"ARS","name":"Arsenal"},{"id":2,"short":"AVL","name":"Aston Villa"},{"id":3,"short":"BOU","name":"Bournemouth"},{"id":4,"short":"BRE","name":"Brentford"},{"id":5,"short":"BHA","name":"Brighton"},{"id":6,"short":"CHE","name":"Chelsea"},{"id":7,"short":"COV","name":"Coventry City"},{"id":8,"short":"CRY","name":"Crystal Palace"},{"id":9,"short":"EVE","name":"Everton"},{"id":10,"short":"FUL","name":"Fulham"},{"id":11,"short":"HUL","name":"Hull City"},{"id":12,"short":"IPS","name":"Ipswich Town"},{"id":13,"short":"LEE","name":"Leeds"},{"id":14,"short":"LIV","name":"Liverpool"},{"id":15,"short":"MCI","name":"Man City"},{"id":16,"short":"MUN","name":"Man Utd"},{"id":17,"short":"NEW","name":"Newcastle"},{"id":18,"short":"NFO","name":"Nott'm Forest"},{"id":19,"short":"TOT","name":"Spurs"},{"id":20,"short":"SUN","name":"Sunderland"}],"fixtures":{"1":[[["COV",true,1.0797,0.7569]],[["AVL",false,1.0404,1.0097]],[["CHE",true,0.9348,1.1]],[["SUN",false,1.0447,0.8392]],[["BHA",false,1.0161,1.1508]],[["LEE",true,0.9959,0.9328]],[["NFO",false,1.0851,0.9542]],[["EVE",true,0.9607,0.8158]]],"2":[[["BHA",false,1.0161,1.1508]],[["ARS",true,0.6699,1.0955]],[["HUL",false,1.2175,0.8885]],[["NFO",true,0.9622,0.8129]],[["TOT",false,1.0378,0.8833]],[["BRE",true,0.971,0.9949]],[["NEW",false,1.0297,1.1275]],[["MCI",true,0.8726,1.1871]]],"3":[[["MCI",false,0.984,1.3935]],[["EVE",true,0.9607,0.8158]],[["NEW",false,1.0297,1.1275]],[["BRE",true,0.971,0.9949]],[["LIV",true,0.8462,0.9945]],[["CHE",false,1.0541,1.2913]],[["SUN",true,0.9264,0.7149]],[["MUN",false,0.9688,1.2329]]],"4":[[["TOT",true,0.9203,0.7525]],[["LEE",false,1.1231,1.0951]],[["SUN",true,0.9264,0.7149]],[["BOU",false,1.1417,1.2344]],[["CHE",true,0.9348,1.1]],[["AVL",false,1.0404,1.0097]],[["LIV",true,0.8462,0.9945]],[["HUL",false,1.2175,0.8885]]],"5":[[["AVL",true,0.9226,0.8601]],[["CHE",false,1.0541,1.2913]],[["LEE",true,0.9959,0.9328]],[["COV",false,1.2175,0.8885]],[["ARS",true,0.6699,1.0955]],[["SUN",false,1.0447,0.8392]],[["CRY",true,0.9844,0.9828]],[["LIV",false,0.9542,1.1675]]],"6":[[["FUL",false,1.024,0.9897]],[["BHA",true,0.901,0.9803]],[["ARS",false,0.7554,1.286]],[["HUL",true,1.0797,0.7569]],[["BRE",false,1.095,1.1679]],[["BOU",true,1.0125,1.0515]],[["EVE",false,1.0833,0.9576]],[["TOT",true,0.9203,0.7525]]],"7":[[["ARS",false,0.7554,1.286]],[["HUL",true,1.0797,0.7569]],[["MCI",false,0.984,1.3935]],[["BHA",true,0.901,0.9803]],[["NFO",false,1.0851,0.9542]],[["NEW",true,0.9132,0.9605]],[["TOT",false,1.0378,0.8833]],[["FUL",true,0.908,0.8431]]],"8":[[["EVE",false,1.0833,0.9576]],[["MCI",true,0.8726,1.1871]],[["FUL",false,1.024,0.9897]],[["IPS",true,1.0797,0.7569]],[["LEE",false,1.1231,1.0951]],[["NFO",true,0.9622,0.8129]],[["BHA",false,1.0161,1.1508]],[["NEW",true,0.9132,0.9605]]],"9":[[["CRY",true,0.9844,0.9828]],[["BOU",false,1.1417,1.2344]],[["MUN",true,0.8591,1.0502]],[["TOT",false,1.0378,0.8833]],[["IPS",true,1.0797,0.7569]],[["HUL",false,1.2175,0.8885]],[["CHE",true,0.9348,1.1]],[["ARS",false,0.7554,1.286]]],"10":[[["CHE",true,0.9348,1.1]],[["SUN",false,1.0447,0.8392]],[["CRY",true,0.9844,0.9828]],[["LIV",false,0.9542,1.1675]],[["MUN",true,0.8591,1.0502]],[["IPS",false,1.2175,0.8885]],[["HUL",true,1.0797,0.7569]],[["COV",false,1.2175,0.8885]]],"11":[[["MUN",true,0.8591,1.0502]],[["COV",false,1.2175,0.8885]],[["AVL",true,0.9226,0.8601]],[["CHE",false,1.0541,1.2913]],[["NEW",false,1.0297,1.1275]],[["EVE",true,0.9607,0.8158]],[["FUL",false,1.024,0.9897]],[["BRE",true,0.971,0.9949]]],"12":[[["SUN",true,0.9264,0.7149]],[["MUN",false,0.9688,1.2329]],[["LIV",true,0.8462,0.9945]],[["CRY",false,1.1101,1.1537]],[["EVE",false,1.0833,0.9576]],[["FUL",true,0.908,0.8431]],[["MCI",false,0.984,1.3935]],[["NFO",true,0.9622,0.8129]]],"13":[[["NFO",false,1.0851,0.9542]],[["BRE",true,0.971,0.9949]],[["BHA",false,1.0161,1.1508]],[["NEW",true,0.9132,0.9605]],[["CRY",true,0.9844,0.9828]],[["ARS",false,0.7554,1.286]],[["MUN",true,0.8591,1.0502]],[["SUN",false,1.0447,0.8392]]],"14":[[["NEW",false,1.0297,1.1275]],[["NFO",true,0.9622,0.8129]],[["IPS",false,1.2175,0.8885]],[["FUL",true,0.908,0.8431]],[["BOU",false,1.1417,1.2344]],[["MCI",true,0.8726,1.1871]],[["BRE",false,1.095,1.1679]],[["BHA",true,0.901,0.9803]]],"15":[[["BOU",true,1.0125,1.0515]],[["CRY",false,1.1101,1.1537]],[["COV",true,1.0797,0.7569]],[["MUN",false,0.9688,1.2329]],[["SUN",true,0.9264,0.7149]],[["LIV",false,0.9542,1.1675]],[["IPS",true,1.0797,0.7569]],[["AVL",false,1.0404,1.0097]]],"16":[[["HUL",false,1.2175,0.8885]],[["IPS",true,1.0797,0.7569]],[["EVE",false,1.0833,0.9576]],[["MCI",true,0.8726,1.1871]],[["FUL",false,1.024,0.9897]],[["TOT",true,0.9203,0.7525]],[["LEE",false,1.1231,1.0951]],[["BOU",true,1.0125,1.0515]]],"17":[[["LIV",true,0.8462,0.9945]],[["TOT",false,1.0378,0.8833]],[["BOU",true,1.0125,1.0515]],[["LEE",false,1.1231,1.0951]],[["HUL",true,1.0797,0.7569]],[["COV",false,1.2175,0.8885]],[["AVL",true,0.9226,0.8601]],[["CRY",false,1.1101,1.1537]]],"18":[[["LEE",true,0.9959,0.9328]],[["LIV",false,0.9542,1.1675]],[["TOT",true,0.9203,0.7525]],[["AVL",false,1.0404,1.0097]],[["COV",true,1.0797,0.7569]],[["CRY",false,1.1101,1.1537]],[["ARS",true,0.6699,1.0955]],[["IPS",false,1.2175,0.8885]]],"19":[[["BRE",false,1.095,1.1679]],[["NEW",true,0.9132,0.9605]],[["NFO",false,1.0851,0.9542]],[["EVE",true,0.9607,0.8158]],[["AVL",true,0.9226,0.8601]],[["MUN",false,0.9688,1.2329]],[["COV",true,1.0797,0.7569]],[["CHE",false,1.0541,1.2913]]],"20":[[["IPS",false,1.2175,0.8885]],[["FUL",true,0.908,0.8431]],[["BRE",false,1.095,1.1679]],[["ARS",true,0.6699,1.0955]],[["MCI",false,0.984,1.3935]],[["BHA",true,0.901,0.9803]],[["BOU",false,1.1417,1.2344]],[["LEE",true,0.9959,0.9328]]]},"sum":{"1":{"atk":1.0197,"dfn":0.9449,"blanks":0,"doubles":0,"n":8},"2":{"atk":0.9721,"dfn":1.0176,"blanks":0,"doubles":0,"n":8},"3":{"atk":0.9676,"dfn":1.0707,"blanks":0,"doubles":0,"n":8},"4":{"atk":1.0188,"dfn":0.9737,"blanks":0,"doubles":0,"n":8},"5":{"atk":0.9804,"dfn":1.0072,"blanks":0,"doubles":0,"n":8},"6":{"atk":0.9839,"dfn":0.9928,"blanks":0,"doubles":0,"n":8},"7":{"atk":0.958,"dfn":1.0072,"blanks":0,"doubles":0,"n":8},"8":{"atk":1.0093,"dfn":0.9888,"blanks":0,"doubles":0,"n":8},"9":{"atk":1.0013,"dfn":1.0228,"blanks":0,"doubles":0,"n":8},"10":{"atk":1.0365,"dfn":0.9592,"blanks":0,"doubles":0,"n":8},"11":{"atk":1.0048,"dfn":1.0022,"blanks":0,"doubles":0,"n":8},"12":{"atk":0.9736,"dfn":1.0129,"blanks":0,"doubles":0,"n":8},"13":{"atk":0.9536,"dfn":1.0273,"blanks":0,"doubles":0,"n":8},"14":{"atk":1.016,"dfn":1.0302,"blanks":0,"doubles":0,"n":8},"15":{"atk":1.0215,"dfn":0.9805,"blanks":0,"doubles":0,"n":8},"16":{"atk":1.0416,"dfn":0.9599,"blanks":0,"doubles":0,"n":8},"17":{"atk":1.0437,"dfn":0.9604,"blanks":0,"doubles":0,"n":8},"18":{"atk":0.9985,"dfn":0.9696,"blanks":0,"doubles":0,"n":8},"19":{"atk":1.0099,"dfn":1.005,"blanks":0,"doubles":0,"n":8},"20":{"atk":0.9891,"dfn":1.067,"blanks":0,"doubles":0,"n":8}}};
+const N=GRID.gws.length;
+let mode="atk", sortKey="atk";
+
+// Green = easy, red = hard. Ratings are normalised so 1.0 is league average;
+// the useful range in practice is about 0.7 to 1.4.
+function colour(v){
+  const t=Math.max(0,Math.min(1,(v-0.70)/0.70));   // 0 easy .. 1 hard
+  const h=(1-t)*140;                                // 140 green -> 0 red
+  return "hsl("+h.toFixed(0)+",62%,"+(58-t*8).toFixed(0)+"%)";
+}
+
+function render(){
+  const rows=[...GRID.teams].sort((a,b)=>{
+    if(sortKey==="name") return a.name.localeCompare(b.name);
+    return GRID.sum[a.id][sortKey]-GRID.sum[b.id][sortKey];   // easiest first
+  });
+  document.getElementById("tb").innerHTML=rows.map(t=>{
+    const s=GRID.sum[t.id];
+    const cells=GRID.fixtures[t.id].map(col=>{
+      if(!col.length) return '<td><div class="cell">'+
+        '<div class="fx blank">&mdash;</div></div></td>';
+      return '<td><div class="cell">'+col.map(f=>{
+        const v = mode==="atk" ? f[2] : f[3];
+        return '<div class="fx" style="background:'+colour(v)+'" '+
+          'title="'+(mode==="atk"?"attacking":"defensive")+' difficulty '+
+          v.toFixed(2)+'">'+f[0]+(f[1]?"":" (a)")+'</div>';
+      }).join("")+'</div></td>';
+    }).join("");
+    const extra=[s.doubles?s.doubles+"\u00D7DGW":"",s.blanks?s.blanks+"\u00D7BGW":""]
+      .filter(Boolean).join(" ");
+    return '<tr><td class="tm">'+t.short+'</td>'+cells+
+      '<td class="sum">'+GRID.sum[t.id][sortKey].toFixed(2)+
+      (extra?' <span style="opacity:.6">'+extra+'</span>':'')+'</td></tr>';
+  }).join("");
+}
+
+document.addEventListener("DOMContentLoaded",()=>{
+  document.getElementById("hdr").innerHTML='<th></th>'+
+    GRID.gws.map(g=>'<th>GW'+g+'</th>').join("")+'<th class="sum">Mean</th>';
+  document.querySelectorAll(".seg button").forEach(b=>
+    b.addEventListener("click",()=>{
+      mode=b.dataset.mode; sortKey=mode;
+      document.querySelectorAll(".seg button").forEach(o=>
+        o.setAttribute("aria-pressed",o===b?"true":"false"));
+      document.getElementById("modenote").textContent=
+        mode==="atk"
+          ? "Green = the opponent concedes. Rank teams whose ATTACKERS you want."
+          : "Green = the opponent rarely scores. Rank teams whose DEFENDERS and keeper you want.";
+      render();
+    }));
+  render();
+});
+</script>

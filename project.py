@@ -328,20 +328,62 @@ def live_team_rank(bootstrap, prior):
     return rank
 
 
-def team_ratings(bootstrap):
+def prior_team_xg(season):
+    """Last season's xG for and against per team, per match.
+
+    The pre-season fallback used to be FPL's 1-5 tier, compressed. That produced
+    almost no spread - every fixture came out within 0.98-1.00 of average, which
+    made the fixture ticker uniformly green and told the projection model
+    essentially nothing about who a player was facing.
+
+    Last season's actual xG has a 2.3x range (0.88 to 1.99 scored, 0.91 to 2.11
+    conceded). It is a far better prior for August than a hand-set tier, and it
+    is already on disk.
+    """
+    try:
+        from walk import load_season, team_xg_by_gw
+        rows, id2name, _ = load_season(season)
+    except SystemExit:
+        return {}
+    xf, xa = team_xg_by_gw(rows, id2name)
+    tot = {}
+    for (_, t), v in xf.items():
+        e = tot.setdefault(t, [0.0, 0.0, 0])
+        e[0] += v
+        e[2] += 1
+    for (_, t), v in xa.items():
+        if t in tot:
+            tot[t][1] += v
+    return {t: (f / n, a / n) for t, (f, a, n) in tot.items() if n}
+
+
+def team_ratings(bootstrap, prior_season=None):
     """Attack/defence multipliers normalised to a league mean of 1.0.
 
-    FPL zeroes the granular strength_attack_* / strength_defence_* fields until
-    the season is under way, leaving only the 1-5 overall tier. Fall back to the
-    tier, compressed, so an untested pre-season prior cannot swing projections.
+    In-season FPL publishes granular strength_attack_* / strength_defence_*.
+    Before that they are all zero, and the fallback matters more than it looks:
+    it is what August projections and the whole first fixture ticker rest on.
     """
     ts = bootstrap["teams"]
     teams = {t["id"]: t for t in ts}
     granular = any(t.get("strength_attack_home") for t in ts)
 
+    prior = prior_team_xg(prior_season) if (prior_season and not granular) else {}
+    league = M.LEAGUE_XG_PER_TEAM_MATCH
+    # Promoted sides have no prior-season row. Rating them as league-average
+    # would be generous; last season's bottom third is the honest guess.
+    PROMOTED = (1.10, 1.75)
+
     def raw(t, kind, is_home):
         if granular:
             return float(t["strength_{}_{}".format(kind, "home" if is_home else "away")])
+        if prior:
+            fa = prior.get(t["name"], PROMOTED)
+            # Shrink toward the league mean: one season is ~38 matches, which is
+            # informative but not decisive, and squads change over a summer.
+            w = 0.75
+            val = fa[0] if kind == "attack" else fa[1]
+            return 1000.0 * (w * val + (1 - w) * league) / league
         tier = float(t.get("strength_overall_home" if is_home
                            else "strength_overall_away") or 3)
         return 1000.0 + 60.0 * tier
@@ -421,7 +463,7 @@ def build(snapdir, prior_season, gw=None, use_minutes_model=True, quiet=False):
         print("current-season state from {} settled gameweek(s): {}".format(
             len(loaded_gws), ", ".join("GW{}".format(g) for g in loaded_gws)))
 
-    teams, idx, granular = team_ratings(bootstrap)
+    teams, idx, granular = team_ratings(bootstrap, prior_season)
     fx = gw_fixtures(fixtures, gw)
     if not granular and not quiet:
         print("note: pre-season - using coarse 1-5 team tiers for fixture strength\n")

@@ -369,7 +369,7 @@ def build(rows, meta, source="record"):
 
     return """<style>{css}</style>
 <div class="wrap">
-<nav aria-label="Sections"><a href="projections.html" aria-current="page">Projections</a><a href="scorecard.html">Accuracy record</a></nav>
+<nav aria-label="Sections"><a href="projections.html" aria-current="page">Projections</a><a href="fixtures.html">Fixtures</a><a href="scorecard.html">Accuracy record</a></nav>
 <header>
   <h1>Gameweek {gw} projections</h1>
   <p class="sub">Deadline {dl} UTC &middot; {made} &middot; snapshot
@@ -428,7 +428,7 @@ reproducible from its snapshot &mdash; <a href="scorecard.html" style="color:var
 
 
 def _payload(html):
-    """The projection data alone, for change detection.
+    """The page minus its volatile fields, for change detection.
 
     Comparing whole pages was wrong: the header shows a generated-at stamp AND
     the snapshot digest, and FPL's bootstrap response changes every hour on
@@ -438,11 +438,16 @@ def _payload(html):
 
     What a reader cares about is whether any projection moved. Compare that.
     """
-    m = re.search(r"const DATA=(\[.*?\]);", html, re.S)
-    return m.group(1) if m else html
+    # Mask only the genuinely volatile bits. Comparing just the data payload
+    # was too narrow: a template or navigation change never altered it, so the
+    # page silently refused to republish and the new nav link never shipped.
+    out = re.sub(r"Generated \d{4}-\d{2}-\d{2} \d{2}:\d{2} UTC", "", html)
+    out = re.sub(r"snapshot <code>[0-9a-f]+</code>", "snapshot", out)
+    out = re.sub(r"snapshot [0-9a-f]{8,}", "snapshot", out)
+    return out
 
 
-def lint_js(html):
+def lint_js(html, required=("#tb", "DOMContentLoaded")):
     """Catch the failure mode that blanks the page without any visible error.
 
     A single unescaped quote inside a generated JS string literal throws a
@@ -484,7 +489,7 @@ def lint_js(html):
             "non-ASCII in JS: {} - use \\uXXXX escapes. The page carries no "
             "charset declaration, so raw UTF-8 renders as mojibake when served "
             "over plain HTTP.".format(" ".join(nonascii)))
-    for needed in ("#tb", "#th", "sq-n", "DOMContentLoaded"):
+    for needed in required:
         if needed not in js and needed.lstrip("#") not in js:
             problems.append("missing expected reference: {}".format(needed))
     return problems
@@ -499,7 +504,7 @@ def main():
 
     rows, meta, source = latest_projection(args.prior)
     html = build(rows, meta, source)
-    problems = lint_js(html)
+    problems = lint_js(html, ("#tb", "#th", "sq-n", "DOMContentLoaded"))
     if problems:
         print("REFUSING TO WRITE - generated JavaScript looks broken:")
         for pr in problems:

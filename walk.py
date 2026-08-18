@@ -135,8 +135,13 @@ def team_xg_by_gw(rows, id2name):
         if opp:
             opp_of.setdefault((gw, t), set()).add(opp)
     xg_against = collections.defaultdict(float)
-    for key in played:
-        for opp in opp_of.get(key, ()):
+    # sorted(), not raw set iteration. Python randomises string hashing per
+    # process, so set order varies between runs, and summing the same floats in
+    # a different order changes the last bits. Everything downstream claims to
+    # be byte-reproducible from a recorded snapshot; that claim cannot rest on
+    # PYTHONHASHSEED.
+    for key in sorted(played):
+        for opp in sorted(opp_of.get(key, ())):
             xg_against[key] += xg_for.get((key[0], opp), M.LEAGUE_XG_PER_TEAM_MATCH)
     return xg_for, xg_against
 

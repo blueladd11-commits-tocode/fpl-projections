@@ -265,7 +265,7 @@ def build(records, evidence):
 
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M")
     return """<div class="wrap">
-<nav aria-label="Sections"><a href="projections.html">Projections</a><a href="scorecard.html" aria-current="page">Accuracy record</a></nav>
+<nav aria-label="Sections"><a href="projections.html">Projections</a><a href="fixtures.html">Fixtures</a><a href="scorecard.html" aria-current="page">Accuracy record</a></nav>
 <header>
   <span class="label">Pre-registered accuracy record</span>
   <h1>Fantasy Premier League points projections &mdash; public scorecard</h1>
