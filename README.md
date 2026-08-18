@@ -66,7 +66,31 @@ projection at **any** horizon.
 
 ---
 
-## The two pages
+## The price series is the asset
+
+FPL never publishes its price-change algorithm. It is net transfers against a
+hidden, ownership-scaled threshold, and the only way to model it is to watch:
+sample every player's price and transfer counters hourly, then regress observed
+`cost_change_event` on the flow that preceded it.
+
+Nobody can sell you a history you did not record. Every hour not collected is
+gone permanently, which makes this the one genuinely unbuyable thing here.
+
+**It was being thrown away.** `snapshot.py` had been capturing everything hourly
+since launch — into `data/`, which is gitignored, so every sample taken by the
+scheduled CI job died with the runner. `prices.py` now writes a compact
+committed extract instead: one row per player per sample under `out/prices/`,
+about 40 KB a day gzipped, ~12 MB for a season.
+
+```bash
+python3 prices.py            # append a sample
+python3 prices.py --report   # what the series can already say
+```
+
+Zero price changes so far, correctly — prices are frozen until the season
+starts. That is precisely why the collection has to be running before it does.
+
+## The pages
 
 `web.py` builds **the product** — what the model thinks right now, for every
 player. `publish.py` builds **the scorecard** — what we committed to before each
@@ -110,6 +134,9 @@ point of having a record.
 | `priors.py` | Fits the per-90 positional priors from history. `--write` rewrites the block in `model.py`. | working |
 | `web.py` | **The product page.** Every player's projection, sortable and filterable, self-contained HTML. Falls back to computing live when the record is empty. | working |
 | `preview.py` | Renders the scorecard with simulated results, so the design can be reviewed before real ones exist. Never touches the record. | working |
+| `ticker.py` | Fixture ticker, split into attacking and defensive difficulty. | working |
+| `setpieces.py` | Ordered penalty / free-kick / corner takers per club, with rotation risk flagged. | working |
+| `prices.py` | **Accumulates the price and ownership time series.** The one asset that cannot be bought or backfilled. | working |
 | `publish.py` | Generates the public scorecard page from the projection metadata, weekly scorecards and backtest evidence. Refuses to display in-sample results. | working |
 | `tick.py` | **The only thing that needs to be scheduled.** Idempotent hourly job: snapshot, project inside the deadline window, score settled gameweeks, publish, verify. | working, installed |
 | `verify.py` | Re-derives every published projection from its recorded snapshot and proves it matches. PASS / REPRODUCIBLE-WITH-DRIFT / FAIL. | working |

@@ -7,7 +7,7 @@ would either miss one or fire against stale team news.
 
 Each tick, in order:
 
-  1. SNAPSHOT   always — the record depends on captures we cannot recreate.
+  1. SNAPSHOT   always, then record the committed price/ownership sample — the record depends on captures we cannot recreate.
   2. PROJECT    if the deadline is within PROJECT_WINDOW_H and this gameweek
                 has no projection yet. Late is better than early: team news
                 lands in the last few hours, and project.py refuses outright
@@ -134,6 +134,12 @@ def main():
 
     # 1. snapshot, always
     if not run(["snapshot.py"], "snapshot"):
+        failures += 1
+
+    # Record the price/ownership sample immediately after snapshotting. This
+    # is the one dataset that cannot be bought or backfilled, and the CI runner
+    # discards data/ when it terminates - out/prices/ is committed.
+    if not run(["prices.py"], "price sample"):
         failures += 1
 
     snap = latest_snapshot()

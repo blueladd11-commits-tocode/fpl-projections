@@ -26,6 +26,9 @@ UA = "fpl-projections/0.1 (research; contact: you@example.com)"
 ENDPOINTS = {
     "bootstrap": "/bootstrap-static/",
     "fixtures": "/fixtures/",
+    # Free, open, and almost nobody surfaces it: per-club editorial notes on
+    # set-piece duty with a source link to the club's own site.
+    "setpiece_notes": "/team/set-piece-notes/",
 }
 
 
