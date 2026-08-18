@@ -415,6 +415,36 @@ def availability(el):
     return 1.0
 
 
+def multi_gw_xp(rates, pos, p_start, p_sub, xmins, fixtures, idx, team_id,
+                start_gw, n_gw, defcon_cal):
+    """Expected points for each of the next n_gw gameweeks.
+
+    Both incumbents lead with this and both research passes ranked it their
+    single most-used feature: Scout sells six-gameweek projections, Hub a slider
+    out to eight. We were projecting one gameweek, which answers "who do I
+    captain" but not "who do I buy" - and buying is the decision people agonise
+    over.
+
+    Rates and expected minutes are held constant across the horizon: we do not
+    know a player's form in four weeks, so the only thing that legitimately
+    varies is who he plays. That is also why the far end of the horizon is
+    softer than the near end, and the page says so rather than implying a
+    precision it does not have.
+    """
+    out = []
+    for g in range(start_gw, start_gw + n_gw):
+        fx = fixtures.get(g, {}).get(team_id, [])
+        if not fx:
+            out.append(0.0)          # blank gameweek
+            continue
+        ratings = [(idx[(opp, "defence", not home)],
+                    idx[(opp, "attack", not home)], home) for opp, home in fx]
+        res = M.project(rates, pos, p_start, p_sub, xmins, ratings,
+                        defcon=True, calibration=defcon_cal)
+        out.append(round(res["xp"], 2) if res else 0.0)
+    return out
+
+
 def gw_fixtures(fixtures, gw):
     """{team_id: [(opponent_id, is_home), ...]} - a list, so DGWs just work."""
     out = {}
@@ -426,7 +456,8 @@ def gw_fixtures(fixtures, gw):
     return out
 
 
-def build(snapdir, prior_season, gw=None, use_minutes_model=True, quiet=False):
+def build(snapdir, prior_season, gw=None, use_minutes_model=True, quiet=False,
+          n_gw=6):
     """Produce projection rows + provenance metadata from ONE snapshot directory.
 
     Pure with respect to the snapshot: given the same directory, the same prior
@@ -469,6 +500,8 @@ def build(snapdir, prior_season, gw=None, use_minutes_model=True, quiet=False):
         print("note: pre-season - using coarse 1-5 team tiers for fixture strength\n")
 
     cal = M.CALIBRATION_MINUTES if minutes_model else M.CALIBRATION_HEURISTIC
+    # Fixture map for the whole horizon, once, rather than per player.
+    horizon = {g: gw_fixtures(fixtures, g) for g in range(gw, gw + n_gw)}
     rows, matched = [], 0
     for el in bootstrap["elements"]:
         pos = el["element_type"]
@@ -511,6 +544,8 @@ def build(snapdir, prior_season, gw=None, use_minutes_model=True, quiet=False):
         if not res:
             continue
 
+        per_gw = multi_gw_xp(M.per90(agg, pos), pos, p_start, p_sub, xmins,
+                             horizon, idx, el["team"], gw, n_gw, cal)
         rows.append(dict(
             element=el["id"], web_name=el["web_name"],
             team=teams[el["team"]]["short_name"], pos=M.POS_TO_STR[pos],
@@ -521,6 +556,10 @@ def build(snapdir, prior_season, gw=None, use_minutes_model=True, quiet=False):
             naive_recent6=round(_recent6(pkey, cur_pts, agg) * len(opp_list), 3),
             eligible=int(bool(agg and agg["matches"] >= 3.0
                               and agg["mins"] / agg["matches"] >= 45.0)),
+            # Horizon projection: one column per gameweek, plus the total that
+            # actually drives a transfer decision.
+            xp_next=";".join("{:.2f}".format(x) for x in per_gw),
+            xp_total=round(sum(per_gw), 2),
         ))
 
     rows.sort(key=lambda r: -r["xp"])
@@ -542,6 +581,7 @@ def build(snapdir, prior_season, gw=None, use_minutes_model=True, quiet=False):
             repr(sorted((k, sorted(v.items())) for k, v in M.PRIORS.items()))
             .encode()).hexdigest(),
         "n_players": len(rows),
+        "horizon_gws": n_gw,
     }
     return rows, meta, dict(bootstrap=bootstrap, manifest=manifest,
                             minutes_model=minutes_model, matched=matched)

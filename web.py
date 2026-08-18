@@ -74,6 +74,8 @@ def prepare(rows):
             f=int(r["n_fix"]),
             e=int(r["eligible"]),
             i=int(r["element"]),
+            tot=float(r.get("xp_total") or 0),
+            g=[float(x) for x in (r.get("xp_next") or "").split(";") if x],
         ))
     out.sort(key=lambda d: -d["xp"])
     return out
@@ -137,6 +139,9 @@ tbody tr:hover{background:var(--accent-soft)}
 .pill{font-family:var(--mono);font-size:.66rem;padding:.1rem .35rem;
   border:1px solid var(--line);color:var(--ink-3)}
 .risk{color:var(--warn)}
+.spark{display:inline-flex;align-items:flex-end;gap:1px;height:12px;
+  margin-left:.45rem;vertical-align:middle}
+.spark i{width:3px;background:var(--accent);opacity:.55;display:block}
 footer{color:var(--ink-3);font-size:.76rem;font-family:var(--mono)}
 .empty{padding:2rem;text-align:center;color:var(--ink-3)}
 .layout{display:grid;grid-template-columns:1fr;gap:1.4rem}
@@ -180,9 +185,11 @@ nav a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 """
 
 JS = r"""
+const NG=(DATA[0]&&DATA[0].g?DATA[0].g.length:1);
 const COLS=[["n","Player",0],["t","Team",0],["p","Pos",0],["c","\u00A3",1],
-  ["xp","xP",1],["sd","\u00B1",1],["ppm","xP/\u00A3m",1],["ps","Start %",1],["m","xMins",1]];
-let sortKey="xp", sortDir=-1, posFilter="ALL", onlyEligible=true;
+  ["xp","xP",1],["tot",NG+"GW",1],["ppm","xP/\u00A3m",1],["ps","Start %",1],
+  ["m","xMins",1]];
+let sortKey="tot", sortDir=-1, posFilter="ALL", onlyEligible=true;
 const maxXp=Math.max(...DATA.map(d=>d.xp));
 
 function view(){
@@ -211,13 +218,19 @@ function render(){
   tb.innerHTML=rows.map(d=>{
     const w=Math.max(1,Math.round(d.xp/maxXp*46));
     const risky=d.ps<70;
+    // Sparkline over the horizon. The shape is the point: a flat 4.0 and a
+    // 2-then-6 both total 8, and they are completely different transfers.
+    const mx=Math.max(...d.g,0.1);
+    const spark=d.g.map(v=>'<i style="height:'+
+      Math.max(1,Math.round(v/mx*11))+'px" title="'+v.toFixed(2)+'"></i>').join("");
     return '<tr data-i="'+d.i+'"'+(squad.includes(d.i)?' class="picked"':'')+'>'+
       '<td class="name">'+esc(d.n)+(d.f>1?' <span class="pill">DGW</span>':'')+'</td>'+
       '<td class="mono">'+d.t+'</td><td class="mono">'+d.p+'</td>'+
       '<td class="num mono">'+d.c.toFixed(1)+'</td>'+
       '<td class="num mono"><span class="bar" style="width:'+w+'px"></span>'+
         d.xp.toFixed(2)+'</td>'+
-      '<td class="num mono">'+d.sd.toFixed(2)+'</td>'+
+      '<td class="num mono">'+d.tot.toFixed(1)+
+        '<span class="spark">'+spark+'</span></td>'+
       '<td class="num mono">'+d.ppm.toFixed(3)+'</td>'+
       '<td class="num mono'+(risky?' risk':'')+'">'+d.ps+'</td>'+
       '<td class="num mono">'+d.m+'</td></tr>';
@@ -373,8 +386,8 @@ def build(rows, meta, source="record"):
 <header>
   <h1>Gameweek {gw} projections</h1>
   <p class="sub">Deadline {dl} UTC &middot; {made} &middot; snapshot
-  <code>{snap}</code>. <strong>xP</strong> is expected points, <strong>&plusmn;</strong>
-  its standard deviation, <strong>Start&nbsp;%</strong> the modelled probability of
+  <code>{snap}</code>. <strong>xP</strong> is expected points, <strong>{ng}GW</strong> the total over the next {ng} gameweeks with a
+  bar per week, <strong>Start&nbsp;%</strong> the modelled probability of
   starting. Sort any column; click again to reverse.</p>
 </header>
 
@@ -420,7 +433,7 @@ reproducible from its snapshot &mdash; <a href="scorecard.html" style="color:var
 </div>
 <script>const DATA={data};{js}</script>""".format(
         css=CSS, js=JS, data=json.dumps(data, separators=(",", ":")),
-        gw=gw, dl=dl, made=made_s,
+        gw=gw, dl=dl, made=made_s, ng=len(data[0]["g"]) if data else 6,
         snap=(meta.get("snapshot_sha256", {}).get("bootstrap.json", "")[:12]),
         teamopts="\n    ".join(
             '<option value="{0}">{0}</option>'.format(t) for t in teams),
