@@ -369,7 +369,7 @@ def build(rows, meta, source="record"):
 
     return """<style>{css}</style>
 <div class="wrap">
-<nav aria-label="Sections"><a href="projections.html" aria-current="page">Projections</a><a href="fixtures.html">Fixtures</a><a href="scorecard.html">Accuracy record</a></nav>
+<nav aria-label="Sections"><a href="projections.html" aria-current="page">Projections</a><a href="fixtures.html">Fixtures</a><a href="setpieces.html">Set pieces</a><a href="scorecard.html">Accuracy record</a></nav>
 <header>
   <h1>Gameweek {gw} projections</h1>
   <p class="sub">Deadline {dl} UTC &middot; {made} &middot; snapshot

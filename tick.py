@@ -208,6 +208,8 @@ def main():
         failures += 1
     if not run(["ticker.py"], "publish fixtures"):
         failures += 1
+    if not run(["setpieces.py"], "publish set pieces"):
+        failures += 1
 
     # 5. the record must still hold
     if not run(["verify.py"], "verify"):

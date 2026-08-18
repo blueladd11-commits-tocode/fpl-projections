@@ -179,7 +179,7 @@ def build(bootstrap, fixtures, start_gw, n_gw, granular, prior_season):
 <div class="wrap">
 <nav aria-label="Sections"><a href="projections.html">Projections</a>\
 <a href="fixtures.html" aria-current="page">Fixtures</a>\
-<a href="scorecard.html">Accuracy record</a></nav>
+<a href="setpieces.html">Set pieces</a><a href="scorecard.html">Accuracy record</a></nav>
 <header>
   <h1>Fixture ticker &mdash; GW{a} to GW{b}</h1>
   <p class="note">{caveat}Every other ticker colours FPL&rsquo;s single 1&ndash;5
