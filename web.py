@@ -427,9 +427,19 @@ reproducible from its snapshot &mdash; <a href="scorecard.html" style="color:var
         now=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M"))
 
 
-def _without_stamp(html):
-    """The page minus its generated-at line, for change detection."""
-    return re.sub(r"Generated \d{4}-\d{2}-\d{2} \d{2}:\d{2} UTC", "", html)
+def _payload(html):
+    """The projection data alone, for change detection.
+
+    Comparing whole pages was wrong: the header shows a generated-at stamp AND
+    the snapshot digest, and FPL's bootstrap response changes every hour on
+    fields the model never reads (transfer counts, ownership percentages). So
+    the digest moved hourly while not a single projected point did, and the
+    scheduled job committed 46 times in three days with zero real change.
+
+    What a reader cares about is whether any projection moved. Compare that.
+    """
+    m = re.search(r"const DATA=(\[.*?\]);", html, re.S)
+    return m.group(1) if m else html
 
 
 def lint_js(html):
@@ -502,8 +512,8 @@ def main():
     # with that line masked out; git history already records when it ran.
     if os.path.exists(args.out):
         prev = open(args.out, encoding="utf-8").read()
-        if _without_stamp(prev) == _without_stamp(html):
-            print("projections page: unchanged, not rewritten")
+        if _payload(prev) == _payload(html):
+            print("projections page: no projection changed, not rewritten")
             if args.open:
                 subprocess.run(["open", args.out])
             return 0
