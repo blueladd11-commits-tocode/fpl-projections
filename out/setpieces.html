@@ -90,6 +90,18 @@ footer{color:var(--ink-3);font-size:.76rem;font-family:var(--mono)}
 tr.picked{background:var(--accent-soft)}
 tr{cursor:pointer}
 .loss{color:var(--loss)}
+.seg.tx{margin:.3rem 0 .5rem;width:100%}
+.seg.tx button{flex:1;font-size:.66rem;padding:.3rem .2rem}
+.tx-row{display:flex;align-items:baseline;gap:.35rem;font-size:.78rem;
+  padding:.22rem 0;border-bottom:1px solid var(--line)}
+.tx-row .out{color:var(--ink-2);text-decoration:line-through;flex:1;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tx-row .arw{color:var(--ink-3);font-family:var(--mono)}
+.tx-row .in{color:var(--ink);font-weight:600;flex:1;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.tx-row .gain{font-family:var(--mono);color:var(--accent);font-weight:600}
+.tx-row .cost{font-family:var(--mono);font-size:.7rem;color:var(--ink-3);width:3.2rem;
+  text-align:right}
 nav{display:flex;gap:.1rem;font-family:var(--mono);font-size:.72rem;
   letter-spacing:.06em;text-transform:uppercase}
 nav a{padding:.4rem .75rem;border:1px solid var(--line);color:var(--ink-2);

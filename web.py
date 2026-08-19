@@ -173,6 +173,18 @@ footer{color:var(--ink-3);font-size:.76rem;font-family:var(--mono)}
 tr.picked{background:var(--accent-soft)}
 tr{cursor:pointer}
 .loss{color:var(--loss)}
+.seg.tx{margin:.3rem 0 .5rem;width:100%}
+.seg.tx button{flex:1;font-size:.66rem;padding:.3rem .2rem}
+.tx-row{display:flex;align-items:baseline;gap:.35rem;font-size:.78rem;
+  padding:.22rem 0;border-bottom:1px solid var(--line)}
+.tx-row .out{color:var(--ink-2);text-decoration:line-through;flex:1;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tx-row .arw{color:var(--ink-3);font-family:var(--mono)}
+.tx-row .in{color:var(--ink);font-weight:600;flex:1;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.tx-row .gain{font-family:var(--mono);color:var(--accent);font-weight:600}
+.tx-row .cost{font-family:var(--mono);font-size:.7rem;color:var(--ink-3);width:3.2rem;
+  text-align:right}
 nav{display:flex;gap:.1rem;font-family:var(--mono);font-size:.72rem;
   letter-spacing:.06em;text-transform:uppercase}
 nav a{padding:.4rem .75rem;border:1px solid var(--line);color:var(--ink-2);
@@ -301,8 +313,10 @@ function renderSquad(){
   const bench=xi?members.filter(d=>!xi.xi.includes(d)):members;
   const body=document.getElementById("sq-list");
   if(!members.length){
+    document.getElementById("sq-tx").innerHTML="";
     body.innerHTML='<p class="hint">Click any row in the table to add a player. '+
       'Real FPL limits apply: 100m budget, 2/5/5/3 by position, max 3 per club.</p>';
+    renderSuggestions(members);
   }else{
     const line=(label,arr,benched)=>arr.length?'<div class="line">'+label+'</div>'+
       arr.map(d=>'<div class="pick'+(benched?" benched":"")+'">'+
@@ -315,6 +329,7 @@ function renderSquad(){
       line(xi?"Bench":"Squad",bench,!!xi)+
       (issues.length?'<p class="warn">'+issues.map(esc).join("<br>")+'</p>':"")+
       (!full?'<p class="hint">'+(15-members.length)+' more to a full squad.</p>':"");
+    renderSuggestions(members);
     body.querySelectorAll("button[data-rm]").forEach(b=>
       b.addEventListener("click",e=>{
         e.stopPropagation();
@@ -322,6 +337,83 @@ function renderSquad(){
         save();renderSquad();render();
       }));
   }
+}
+
+// --- transfer suggestions --------------------------------------------------
+// Both research passes ranked this the feature users name when explaining why
+// they pay. It is a one-transfer search: for every player owned, every
+// affordable replacement in the same position, ranked by the gain over the
+// projection horizon rather than over this week alone - because a transfer you
+// make now you live with for weeks.
+//
+// The risk profile is copied deliberately from Hub's "Optimised Manager
+// Profile". It converts "the model is wrong" into "the model is mis-tuned",
+// which is a conversation you can win.
+const PROFILES={
+  safe:   {label:"Safer",   minStart:85, penalise:1.4},
+  bal:    {label:"Balanced",minStart:65, penalise:0.7},
+  bold:   {label:"Bolder",  minStart:40, penalise:0.0}
+};
+let profile="bal";
+
+function suggestions(members){
+  const owned=new Set(members.map(d=>d.i));
+  const spent=members.reduce((s,d)=>s+d.c,0);
+  const bank=BUDGET-spent;
+  const clubs={}; members.forEach(d=>{clubs[d.t]=(clubs[d.t]||0)+1;});
+  const P=PROFILES[profile];
+  const score=d=>d.tot-(P.penalise*(100-d.ps)/100)*NG;   // risk-adjusted horizon
+
+  const out=[];
+  for(const o of members){
+    for(const c of DATA){
+      if(owned.has(c.i)||c.p!==o.p) continue;
+      if(c.ps<P.minStart) continue;
+      if(c.c>o.c+bank+1e-9) continue;                     // affordable
+      // 3-per-club still has to hold after the swap
+      const after=(clubs[c.t]||0)+(c.t===o.t?0:1)-(c.t===o.t?0:0);
+      if(c.t!==o.t&&(clubs[c.t]||0)>=MAX_PER_CLUB) continue;
+      const gain=score(c)-score(o);
+      if(gain>0) out.push({o,c,gain,cost:c.c-o.c});
+    }
+  }
+  out.sort((a,b)=>b.gain-a.gain);
+  // Distinct on BOTH sides. Deduping only on the player sold produced five
+  // different ways to buy the same striker, which is one decision presented as
+  // five - the sort of thing that makes a tool feel like it is padding.
+  const soldSeen=new Set(), boughtSeen=new Set(), top=[];
+  for(const s of out){
+    if(soldSeen.has(s.o.i)||boughtSeen.has(s.c.i)) continue;
+    soldSeen.add(s.o.i); boughtSeen.add(s.c.i); top.push(s);
+    if(top.length===5) break;
+  }
+  return {top,bank};
+}
+
+function renderSuggestions(members){
+  const el=document.getElementById("sq-tx");
+  if(members.length<11){ el.innerHTML=""; return; }
+  const {top,bank}=suggestions(members);
+  el.innerHTML='<div class="line">Transfers &middot; '+PROFILES[profile].label+
+    ' &middot; bank \u00A3'+bank.toFixed(1)+'m</div>'+
+    '<div class="seg tx" role="group" aria-label="Risk profile">'+
+    Object.entries(PROFILES).map(([k,v])=>
+      '<button data-prof="'+k+'" aria-pressed="'+(k===profile)+'">'+
+      v.label+'</button>').join("")+'</div>'+
+    (top.length?top.map(s=>
+      '<div class="tx-row"><span class="out">'+esc(s.o.n)+'</span>'+
+      '<span class="arw">\u2192</span><span class="in">'+esc(s.c.n)+'</span>'+
+      '<span class="gain">+'+s.gain.toFixed(1)+'</span>'+
+      '<span class="cost">'+(s.cost>=0?"-":"+")+'\u00A3'+
+      Math.abs(s.cost).toFixed(1)+'m</span></div>').join("")
+      : '<p class="hint">No transfer improves this squad under the '+
+        PROFILES[profile].label.toLowerCase()+' profile.</p>')+
+    '<p class="hint">Gain is projected points over '+NG+' gameweeks, risk-adjusted. '+
+    'Assumes selling price equals current price.</p>';
+  el.querySelectorAll("button[data-prof]").forEach(b=>
+    b.addEventListener("click",e=>{
+      e.stopPropagation(); profile=b.dataset.prof; renderSquad();
+    }));
 }
 
 function toggle(id){
@@ -425,6 +517,7 @@ def build(rows, meta, source="record"):
       <div><span class="k">Shape</span><span class="v" id="sq-shape">&mdash;</span></div>
     </div>
     <div id="sq-list"></div>
+    <div id="sq-tx"></div>
   </aside>
 </div>
 
