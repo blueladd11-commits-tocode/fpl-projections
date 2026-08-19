@@ -259,6 +259,101 @@ def project_fixture(rates, pos, p_start, p_sub, xmins, opp_def, opp_atk, is_home
     return pts * (CALIBRATION if calibration is None else calibration), var
 
 
+def _conv(a, b):
+    """Convolve two points distributions (dicts of points -> probability)."""
+    out = {}
+    for k1, p1 in a.items():
+        if p1 < 1e-9:
+            continue
+        for k2, p2 in b.items():
+            if p2 < 1e-9:
+                continue
+            out[k1 + k2] = out.get(k1 + k2, 0.0) + p1 * p2
+    return out
+
+
+def points_pmf(rates, pos, p_start, p_sub, xmins, fixtures, defcon=True,
+               calibration=None, kmax=6):
+    """The full distribution of FPL points, not just its mean.
+
+    Captaincy is not a mean-maximisation problem. Doubling a steady 5.5 is worth
+    less than doubling a volatile 5.0 when you need to make up rank, and worth
+    more when you are protecting a lead. A single expected-points number cannot
+    express that, and every service in this market throws the distribution away.
+
+    Built by convolving the components that are genuinely independent-ish:
+    goals ~ Poisson, assists ~ Poisson, clean sheet ~ Bernoulli, appearance.
+    Bonus and the disciplinary terms are folded in at their expectation, since
+    they are small and modelling their shape adds noise rather than signal.
+
+    Returns {points: probability}. Approximate, and deliberately so - it is far
+    closer to the truth than a normal approximation around the mean, which is
+    what an sd alone implies and which is badly wrong for a quantity that is
+    mostly 1, 2 or 6.
+
+    Its mean tracks project()'s xP to within about 0.45 points on the top
+    players. That gap is real and comes from bucketing to whole points plus
+    folding the small terms in at expectation; the two are not meant to be
+    identical, and xP remains the number to use when summing a squad. Use this
+    only for questions about shape - captaincy, ceilings, rank risk.
+    """
+    cal = CALIBRATION if calibration is None else calibration
+    dist = {0.0: 1.0}
+    for opp_def, opp_atk, is_home in fixtures:
+        atk_mult = (1.0 / max(0.35, opp_def)) * (HOME_ATK if is_home else AWAY_ATK)
+        m90 = xmins / 90.0
+        lam_g = rates["xg"] * m90 * atk_mult
+        lam_a = rates["xa"] * m90 * atk_mult
+        lam_conceded = (LEAGUE_XG_PER_TEAM_MATCH * max(0.35, opp_atk)
+                        * (HOME_DEF if is_home else AWAY_DEF))
+        p_cs = poisson_pmf(0, lam_conceded)
+        p_60 = p_start * 0.88
+
+        goals = {float(k * GOAL_PTS[pos]): poisson_pmf(k, lam_g)
+                 for k in range(kmax)}
+        assists = {float(k * ASSIST_PTS): poisson_pmf(k, lam_a)
+                   for k in range(kmax)}
+        appear = {2.0: p_60, 1.0: max(0.0, p_start - p_60) + p_sub,
+                  0.0: max(0.0, 1.0 - p_start - p_sub)}
+        cs_pts = CS_PTS[pos]
+        clean = ({cs_pts: p_60 * p_cs, 0.0: 1.0 - p_60 * p_cs}
+                 if cs_pts else {0.0: 1.0})
+
+        # Everything else enters at expectation: small, and its shape is noise.
+        flat = 0.0
+        if pos in (GK, DEF):
+            flat -= e_floor_div(lam_conceded * m90, 2)
+        if pos == GK:
+            flat += e_floor_div(rates["sv"] * m90, 3) + rates["psv"] * m90 * 5.0
+        if defcon and pos in (DEF, MID, FWD):
+            lam_dc = rates["dc"] * m90
+            thr = DEFCON_THRESHOLD[pos]
+            flat += (1.0 - sum(poisson_pmf(k, lam_dc)
+                               for k in range(thr))) * DEFCON_PTS
+        flat -= (rates["yc"] + rates["rc"] * 3.0 + rates["og"] * 2.0
+                 + rates["pm"] * 2.0) * m90
+        flat += max(0.0, (rates["bps"] * m90 - 20.0) / 12.0)
+
+        one = _conv(_conv(goals, assists), _conv(appear, clean))
+        one = {k + flat: v for k, v in one.items()}
+        dist = _conv(dist, one)
+
+    # Calibrate and bucket to whole points, which is what FPL actually pays.
+    out = {}
+    for k, v in dist.items():
+        if v < 1e-7:
+            continue
+        b = int(round(k * cal))
+        out[b] = out.get(b, 0.0) + v
+    tot = sum(out.values()) or 1.0
+    return {k: v / tot for k, v in out.items()}
+
+
+def haul_probs(pmf, thresholds=(6, 10, 15)):
+    """P(scoring at least N). The shape of a captaincy decision."""
+    return {t: sum(v for k, v in pmf.items() if k >= t) for t in thresholds}
+
+
 def project(rates, pos, p_start, p_sub, xmins, fixtures, defcon=True,
             calibration=None):
     """Sum over fixtures so double gameweeks need no special casing.

@@ -546,6 +546,13 @@ def build(snapdir, prior_season, gw=None, use_minutes_model=True, quiet=False,
 
         per_gw = multi_gw_xp(M.per90(agg, pos), pos, p_start, p_sub, xmins,
                              horizon, idx, el["team"], gw, n_gw, cal)
+        # Full points distribution for this gameweek. Captaincy is an upside
+        # question, not a mean question: a keeper can out-project a midfielder
+        # on expectation and still be a hopeless captain, because his ceiling
+        # is structurally capped.
+        pmf = M.points_pmf(M.per90(agg, pos), pos, p_start, p_sub, xmins,
+                           fixture_ratings, calibration=cal)
+        hauls = M.haul_probs(pmf)
         rows.append(dict(
             element=el["id"], web_name=el["web_name"],
             team=teams[el["team"]]["short_name"], pos=M.POS_TO_STR[pos],
@@ -560,6 +567,9 @@ def build(snapdir, prior_season, gw=None, use_minutes_model=True, quiet=False,
             # actually drives a transfer decision.
             xp_next=";".join("{:.2f}".format(x) for x in per_gw),
             xp_total=round(sum(per_gw), 2),
+            p6=round(hauls[6] * 100, 1),
+            p10=round(hauls[10] * 100, 1),
+            p15=round(hauls[15] * 100, 1),
         ))
 
     rows.sort(key=lambda r: -r["xp"])

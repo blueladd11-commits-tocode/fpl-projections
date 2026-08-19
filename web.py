@@ -75,6 +75,8 @@ def prepare(rows):
             e=int(r["eligible"]),
             i=int(r["element"]),
             tot=float(r.get("xp_total") or 0),
+            h6=float(r.get("p6") or 0), h10=float(r.get("p10") or 0),
+            h15=float(r.get("p15") or 0),
             g=[float(x) for x in (r.get("xp_next") or "").split(";") if x],
         ))
     out.sort(key=lambda d: -d["xp"])
@@ -199,8 +201,8 @@ nav a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 JS = r"""
 const NG=(DATA[0]&&DATA[0].g?DATA[0].g.length:1);
 const COLS=[["n","Player",0],["t","Team",0],["p","Pos",0],["c","\u00A3",1],
-  ["xp","xP",1],["tot",NG+"GW",1],["ppm","xP/\u00A3m",1],["ps","Start %",1],
-  ["m","xMins",1]];
+  ["xp","xP",1],["tot",NG+"GW",1],["h10","P(10+)",1],["ppm","xP/\u00A3m",1],
+  ["ps","Start %",1],["m","xMins",1]];
 let sortKey="tot", sortDir=-1, posFilter="ALL", onlyEligible=true;
 const maxXp=Math.max(...DATA.map(d=>d.xp));
 
@@ -243,6 +245,8 @@ function render(){
         d.xp.toFixed(2)+'</td>'+
       '<td class="num mono">'+d.tot.toFixed(1)+
         '<span class="spark">'+spark+'</span></td>'+
+      '<td class="num mono" title="P(6+) '+d.h6.toFixed(1)+'%  P(15+) '+
+        d.h15.toFixed(1)+'%">'+d.h10.toFixed(1)+'</td>'+
       '<td class="num mono">'+d.ppm.toFixed(3)+'</td>'+
       '<td class="num mono'+(risky?' risk':'')+'">'+d.ps+'</td>'+
       '<td class="num mono">'+d.m+'</td></tr>';
