@@ -457,7 +457,7 @@ def gw_fixtures(fixtures, gw):
 
 
 def build(snapdir, prior_season, gw=None, use_minutes_model=True, quiet=False,
-          n_gw=6):
+          n_gw=6, calibration=None):
     """Produce projection rows + provenance metadata from ONE snapshot directory.
 
     Pure with respect to the snapshot: given the same directory, the same prior
@@ -499,8 +499,17 @@ def build(snapdir, prior_season, gw=None, use_minutes_model=True, quiet=False,
     if not granular and not quiet:
         print("note: pre-season - using coarse 1-5 team tiers for fixture strength\n")
 
-    cal = M.CALIBRATION_MINUTES if minutes_model else M.CALIBRATION_HEURISTIC
+    # verify.py passes the calibration recorded with a published projection, so
+    # that "does the model still reproduce" is tested separately from "has the
+    # constant since been retuned". Retuning is drift, not a verification
+    # failure: the projection was honest when it was published.
+    cal = calibration if calibration is not None else (
+        M.CALIBRATION_MINUTES if minutes_model else M.CALIBRATION_HEURISTIC)
     # Fixture map for the whole horizon, once, rather than per player.
+    # Clamp to the last scheduled gameweek, or the horizon silently shortens
+    # near the end of the season while the page still says "next 6".
+    last_gw = max((f.get("event") or 0) for f in fixtures) or (gw + n_gw - 1)
+    n_gw = max(1, min(n_gw, last_gw - gw + 1))
     horizon = {g: gw_fixtures(fixtures, g) for g in range(gw, gw + n_gw)}
     rows, matched = [], 0
     for el in bootstrap["elements"]:
@@ -517,7 +526,7 @@ def build(snapdir, prior_season, gw=None, use_minutes_model=True, quiet=False,
         else:
             agg = dict(cur) if cur else (dict(seed) if seed else None)
         if seed:
-            matched += 1
+            matched += 1        # counted before any skip; sanity_check recomputes
 
         avail = availability(el)
         price_m = el.get("now_cost", 45) / 10.0
@@ -541,8 +550,14 @@ def build(snapdir, prior_season, gw=None, use_minutes_model=True, quiet=False,
                            for opp, home in opp_list]
         res = M.project(M.per90(agg, pos), pos, p_start, p_sub, xmins,
                         fixture_ratings, calibration=cal)
-        if not res:
-            continue
+        if res is None and opp_list:
+            continue                      # genuinely unprojectable (no minutes)
+        if res is None:
+            # BLANK GAMEWEEK. M.project returns None with no fixtures, which
+            # used to drop every player of a blanking team from the table, the
+            # squad picker, transfers and set pieces - including their horizon,
+            # the one number that says "he blanks now but has a great run after".
+            res = dict(xp=0.0, sd=0.0, xmins=xmins, p_start=p_start, n_fix=0)
 
         per_gw = multi_gw_xp(M.per90(agg, pos), pos, p_start, p_sub, xmins,
                              horizon, idx, el["team"], gw, n_gw, cal)
@@ -550,9 +565,12 @@ def build(snapdir, prior_season, gw=None, use_minutes_model=True, quiet=False,
         # question, not a mean question: a keeper can out-project a midfielder
         # on expectation and still be a hopeless captain, because his ceiling
         # is structurally capped.
-        pmf = M.points_pmf(M.per90(agg, pos), pos, p_start, p_sub, xmins,
-                           fixture_ratings, calibration=cal)
-        hauls = M.haul_probs(pmf)
+        if fixture_ratings:
+            pmf = M.points_pmf(M.per90(agg, pos), pos, p_start, p_sub, xmins,
+                               fixture_ratings, calibration=cal)
+            hauls = M.haul_probs(pmf)
+        else:
+            hauls = {6: 0.0, 10: 0.0, 15: 0.0}
         rows.append(dict(
             element=el["id"], web_name=el["web_name"],
             team=teams[el["team"]]["short_name"], pos=M.POS_TO_STR[pos],
@@ -643,10 +661,17 @@ def main():
             os.path.relpath(kept, HERE)))
     out = os.path.join(OUTDIR, "projections_gw{}_{}.csv".format(
         meta["gameweek"], meta["snapshot"]))
-    with open(out, "w", newline="") as f:
+    # Write the CSV to a temp file and rename it into place. Killed midway, the
+    # old code left a CSV with no meta; have_projection() checks metas so the
+    # tick re-projected, but score.py globs CSVs and took the newest - the
+    # orphan - and then could not determine its gameweek. That wedged scoring
+    # for that gameweek permanently, once an hour, forever.
+    tmp_csv = out + ".tmp"
+    with open(tmp_csv, "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
         w.writeheader()
         w.writerows(rows)
+    os.replace(tmp_csv, out)
     meta["generated_at_utc"] = datetime.now(timezone.utc).isoformat()
     meta["horizon_h"] = args.horizon
     if meta.get("deadline_utc"):
@@ -664,7 +689,8 @@ def main():
     for r in rows[:args.top]:
         print("{:<18}{:<5}{:<5}{:>7.1f}{:>7.2f}{:>7.2f}{:>8}".format(
             r["web_name"][:17], r["team"], r["pos"], r["price"],
-            r["xp"], r["sd"], r["fpl_ep_next"]))
+            r["xp"], r["sd"],
+            "-" if r["fpl_ep_next"] is None else r["fpl_ep_next"]))
     return 0
 
 

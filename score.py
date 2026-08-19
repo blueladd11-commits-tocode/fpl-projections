@@ -252,9 +252,16 @@ def main():
     if not args.projections:
         ap.error("--projections is required (or use --selftest)")
 
-    matches = sorted(glob.glob(args.projections))
+    # Only consider projections that have their provenance metadata. A CSV
+    # without one is an orphan from an interrupted write, not a record entry.
+    matches = [m for m in sorted(glob.glob(args.projections))
+               if os.path.exists(m.replace(".csv", ".meta.json"))]
     if not matches:
-        raise SystemExit("no projections file matched: " + args.projections)
+        raise SystemExit("no projections file with metadata matched: "
+                         + args.projections)
+    # Newest by generated_at, not by filename: gw10 sorts before gw9 as a string.
+    matches.sort(key=lambda m: json.load(
+        open(m.replace(".csv", ".meta.json"))).get("generated_at_utc", ""))
     path = matches[-1]
 
     meta_path = path.replace(".csv", ".meta.json")

@@ -56,10 +56,14 @@ HOME_DEF, AWAY_DEF = 0.92, 1.08
 # it was not fitted for. The live product runs the minutes model, so it was the
 # one being served the wrong constant.
 #
-# Refit after priors.py replaced the hand-set PRIORS. Residual bias, all
-# out-of-sample, on the seasons each was fitted across:
-#   heuristic path : 1.034 / 0.987 / 0.992  (2023-24 / 2024-25 / 2025-26)
-#   minutes model  : 1.049 / 0.974          (2024-25 / 2025-26)
+# Refit after clamping p_start + p_sub <= 1, which raised the level of every
+# projection whose sub-rate had been double-counting appearance points.
+#   heuristic path : mean of the suggestions across 2023-24 / 2024-25 / 2025-26
+#   minutes model  : mean across 2024-25 (1.142) and 2025-26 (1.223)
+#
+# backtest.py --calibrate now suggests the constant for the path it actually
+# ran. It used to divide M.CALIBRATION (the heuristic value) even when the
+# minutes model was loaded, which ratcheted the live path down ~4% per refit.
 #
 # Refit both whenever a scoring term changes: a calibration constant silently
 # absorbs any systematic error left beneath it, so a correct rule fix applied
@@ -70,8 +74,8 @@ HOME_DEF, AWAY_DEF = 0.92, 1.08
 # FPL points are right-skewed and MAE is minimised near the conditional median.
 # Unbiased means win anyway: the optimiser sums xP over 11-15 players, where a
 # systematic shortfall compounds linearly.
-CALIBRATION_HEURISTIC = 1.120
-CALIBRATION_MINUTES = 1.165
+CALIBRATION_HEURISTIC = 1.128
+CALIBRATION_MINUTES = 1.182
 
 # Default for callers that do not say which path they are on.
 CALIBRATION = CALIBRATION_HEURISTIC
@@ -184,6 +188,13 @@ def minutes_from_pstart(p_start, agg, availability=1.0):
         sub_rate = 0.2
     p_start = max(0.0, min(1.0, p_start)) * availability
     p_sub = max(0.0, min(1.0, sub_rate)) * availability
+    # A player cannot both start and come off the bench. p_start comes from the
+    # fitted model and p_sub from history, so nothing made them a partition:
+    # for a promoted squad player they summed to 1.57, which credited more
+    # appearance points than FPL can pay and made points_pmf and project()
+    # describe two different players by 1.24 points.
+    if p_start + p_sub > 1.0:
+        p_sub = max(0.0, 1.0 - p_start)
     return p_start, p_sub, p_start * 84.0 + p_sub * 20.0
 
 

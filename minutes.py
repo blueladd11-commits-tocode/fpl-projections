@@ -261,13 +261,20 @@ def main():
         report("  fitted", ptr, ytr)
         report("  v0 heuristic", htr, ytr)
 
+    overlap = [t for t in test_seasons if t in mdl.get("train_seasons", [])]
+    if overlap:
+        print("\nWARNING: {} is in the training set. The figures below are "
+              "IN-SAMPLE and optimistic - pass --test with a held-out season "
+              "for the number that counts.".format(", ".join(overlap)))
     print("\ncollecting test data: {}".format(", ".join(test_seasons)))
     Xte, yte, hte = collect(test_seasons)
     print("  {:,} player-gameweeks, {:.1%} started".format(
         len(yte), sum(yte) / len(yte)))
     pte = [predict(mdl, x) for x in Xte]
 
-    print("\nOUT-OF-SAMPLE ({})  <- the number that counts".format(
+    print("\n{} ({})".format(
+        "IN-SAMPLE (optimistic)" if overlap
+        else "OUT-OF-SAMPLE  <- the number that counts",
         ", ".join(test_seasons)))
     print("{:<26}{:>9}{:>10}{:>8}".format("model", "Brier", "logloss", "AUC"))
     report("fitted minutes model", pte, yte)

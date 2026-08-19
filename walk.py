@@ -335,12 +335,29 @@ class Walker(object):
 
     def _fold(self, gw_rows):
         """Fold a completed gameweek into state. Only called after yielding."""
+        # merged_gw.csv carries ONE ROW PER FIXTURE, so a double gameweek folds
+        # twice: matches=2 while the live path, which reads gameweek totals from
+        # event/<gw>/live/, folds once. That made season_rate=2.0 and a negative
+        # sub_rate reach a logistic standardised on [0,1] - precisely the
+        # live/backtest drift this module exists to prevent. Merge a player's
+        # rows for the gameweek first, so both paths fold exactly one match.
+        merged = {}
         for r in gw_rows:
             key = player_key(r, self.elem2code)
+            merged.setdefault(key, []).append(r)
+
+        for key, rs in merged.items():
             a = self.agg.setdefault(key, M.blank_agg())
-            mins = fold_stats(a, self.recent[key], self.recent_pts[key], r)
+            if len(rs) == 1:
+                mins = fold_stats(a, self.recent[key], self.recent_pts[key], rs[0])
+            else:
+                total = {}
+                for r in rs:
+                    for _, field in STAT_KEYS:
+                        total[field] = total.get(field, 0.0) + fnum(r, field)
+                mins = fold_stats(a, self.recent[key], self.recent_pts[key], total)
             self.last_mins[key] = mins
-            k = parse_kickoff(r.get("kickoff_time"))
+            k = parse_kickoff(rs[-1].get("kickoff_time"))
             if k:
                 self.last_kick[key] = k
         for t in set(r["team"] for r in gw_rows):

@@ -24,6 +24,7 @@ Usage: python3 prices.py            # append a sample from the latest snapshot
 
 import argparse
 import csv
+import fcntl
 import glob
 import gzip
 import io
@@ -66,44 +67,78 @@ def path_for(ts):
     return os.path.join(PRICEDIR, "prices_{}.csv.gz".format(ts[:7]))
 
 
-def already_have(path, ts):
-    """Idempotent: the hourly job may run twice, and must not double-count."""
+def read_existing(path):
+    """Current contents, or "" if absent. Never raises on a damaged file.
+
+    A gzip truncated mid-write - CI cancellation, runner eviction - raises
+    EOFError on every subsequent read, which killed collection permanently and
+    only showed up as `price sample: exit 1` in the tick log. Quarantine the
+    damaged file and carry on: losing one month beats losing every month after.
+    """
     if not os.path.exists(path):
-        return False
-    with gzip.open(path, "rt") as f:
-        for line in f:
-            if line.startswith(ts[:19] + ","):
-                return True
-    return False
+        return ""
+    try:
+        with gzip.open(path, "rt") as f:
+            return f.read()
+    except (EOFError, OSError, UnicodeDecodeError) as e:
+        bad = path + ".corrupt-{}".format(
+            datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ"))
+        os.rename(path, bad)
+        print("WARNING: {} was unreadable ({}); moved to {} and starting a "
+              "fresh file".format(os.path.basename(path), type(e).__name__,
+                                  os.path.basename(bad)))
+        return ""
+
+
+def already_have(text, ts):
+    """Idempotent: the hourly job may run twice, and must not double-count."""
+    needle = "\n" + ts[:19] + ","
+    return text.startswith(ts[:19] + ",") or needle in text
 
 
 def append(ts, rows):
     os.makedirs(PRICEDIR, exist_ok=True)
     path = path_for(ts)
-    if already_have(path, ts):
-        return path, 0
-    new = not os.path.exists(path)
-    # Read-modify-write: gzip append produces a multi-member file that most
-    # readers handle, but not all, and this stays small enough not to care.
-    prev = ""
-    if not new:
-        with gzip.open(path, "rt") as f:
-            prev = f.read()
-    buf = io.StringIO()
-    w = csv.DictWriter(buf, fieldnames=FIELDS)
-    if new:
-        w.writeheader()
-    w.writerows(rows)
-    with gzip.open(path, "wt") as f:
-        f.write(prev + buf.getvalue())
+
+    # Exclusive lock for the whole read-modify-write. A local run and the
+    # scheduled CI job can overlap, and without this one sample is silently
+    # dropped while BOTH processes report success - measured at 5/5 runs.
+    lock = path + ".lock"
+    with open(lock, "w") as lf:
+        try:
+            fcntl.flock(lf, fcntl.LOCK_EX)
+        except OSError:
+            pass  # lockless filesystem: proceed rather than lose the sample
+
+        prev = read_existing(path)
+        if already_have(prev, ts):
+            return path, 0
+
+        buf = io.StringIO()
+        w = csv.DictWriter(buf, fieldnames=FIELDS)
+        # Header keyed on CONTENT, not on file existence: a 0-byte file left by
+        # a crash is "existing" but has no header, which silently ate the first
+        # data row as column names on every later read.
+        if not prev.strip():
+            w.writeheader()
+        w.writerows(rows)
+
+        # Write to a temp file and rename. os.replace is atomic on POSIX, so a
+        # reader either sees the old complete file or the new one, never a
+        # half-written gzip.
+        tmp = path + ".tmp"
+        with gzip.open(tmp, "wt") as f:
+            f.write(prev + buf.getvalue())
+        os.replace(tmp, path)
     return path, len(rows)
 
 
 def load_all():
     rows = []
     for p in sorted(glob.glob(os.path.join(PRICEDIR, "prices_*.csv.gz"))):
-        with gzip.open(p, "rt") as f:
-            rows.extend(list(csv.DictReader(f)))
+        text = read_existing(p)
+        if text.strip():
+            rows.extend(list(csv.DictReader(io.StringIO(text))))
     return rows
 
 

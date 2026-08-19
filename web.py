@@ -25,8 +25,16 @@ import subprocess
 import sys
 from datetime import datetime, timezone
 
+import links
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "out")
+
+
+def _meta_order(path):
+    """(gameweek, filename) so ordering is numeric on the gameweek."""
+    m = re.search(r"projections_gw(\d+)_", os.path.basename(path))
+    return (int(m.group(1)) if m else -1, os.path.basename(path))
 
 
 def latest_projection(prior_season):
@@ -42,11 +50,27 @@ def latest_projection(prior_season):
     work, so fall through to building from the latest snapshot. Nothing is
     written to the record by this path.
     """
-    metas = sorted(glob.glob(os.path.join(OUT, "projections_gw*.meta.json")))
+    # Required by the page. A record entry written before a column existed is
+    # still a valid record entry - it must never be regenerated, because it is a
+    # committed pre-deadline artifact - but the PRODUCT cannot render from it.
+    # Falling back to 0.0 silently shipped a captaincy column of all zeros.
+    NEEDED = ("xp", "price", "sd", "xmins", "p_start", "n_fix", "eligible",
+              "element", "xp_total", "xp_next", "p6", "p10", "p15")
+
+    # Sort by (gameweek, timestamp), NOT lexicographically. Plain string sort
+    # puts projections_gw9_... after projections_gw10_..., so from GW10 to the
+    # end of the season the product page would have frozen on GW9 - showing a
+    # deadline weeks in the past and calling it this week's projection.
+    metas = sorted(glob.glob(os.path.join(OUT, "projections_gw*.meta.json")),
+                   key=_meta_order)
     if metas:
         meta = json.load(open(metas[-1]))
         rows = list(csv.DictReader(open(metas[-1].replace(".meta.json", ".csv"))))
-        return rows, meta, "record"
+        missing = [c for c in NEEDED if rows and c not in rows[0]]
+        if not missing:
+            return rows, meta, "record"
+        print("record entry lacks {}; computing live instead".format(
+            ", ".join(missing)))
 
     import project as P
     snap = P.latest_snapshot()
@@ -83,7 +107,7 @@ def prepare(rows):
     return out
 
 
-CSS = """
+CSS = links.CSS + """
 :root{
   --ground:#EDEFF1; --panel:#FFFFFF; --line:#D3D8DC;
   --ink:#12171C; --ink-2:#4C565F; --ink-3:#78838C;
@@ -187,14 +211,6 @@ tr{cursor:pointer}
 .tx-row .gain{font-family:var(--mono);color:var(--accent);font-weight:600}
 .tx-row .cost{font-family:var(--mono);font-size:.7rem;color:var(--ink-3);width:3.2rem;
   text-align:right}
-nav{display:flex;gap:.1rem;font-family:var(--mono);font-size:.72rem;
-  letter-spacing:.06em;text-transform:uppercase}
-nav a{padding:.4rem .75rem;border:1px solid var(--line);color:var(--ink-2);
-  text-decoration:none}
-nav a[aria-current="page"]{background:var(--accent);color:var(--ground);
-  border-color:var(--accent)}
-nav a:hover:not([aria-current]){color:var(--ink);border-color:var(--ink-3)}
-nav a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 """
 
@@ -228,7 +244,7 @@ function render(){
     rows.length+" of "+DATA.length+" players";
   const tb=document.getElementById("tb");
   if(!rows.length){tb.innerHTML=
-    '<tr><td colspan="9" class="empty">No players match those filters.</td></tr>';return;}
+    '<tr><td colspan="10" class="empty">No players match those filters.</td></tr>';return;}
   tb.innerHTML=rows.map(d=>{
     const w=Math.max(1,Math.round(d.xp/maxXp*46));
     const risky=d.ps<70;
@@ -375,7 +391,6 @@ function suggestions(members){
       if(c.ps<P.minStart) continue;
       if(c.c>o.c+bank+1e-9) continue;                     // affordable
       // 3-per-club still has to hold after the swap
-      const after=(clubs[c.t]||0)+(c.t===o.t?0:1)-(c.t===o.t?0:0);
       if(c.t!==o.t&&(clubs[c.t]||0)>=MAX_PER_CLUB) continue;
       const gain=score(c)-score(o);
       if(gain>0) out.push({o,c,gain,cost:c.c-o.c});
@@ -478,7 +493,7 @@ def build(rows, meta, source="record"):
 
     return """<style>{css}</style>
 <div class="wrap">
-<nav aria-label="Sections"><a href="projections.html" aria-current="page">Projections</a><a href="fixtures.html">Fixtures</a><a href="setpieces.html">Set pieces</a><a href="scorecard.html">Accuracy record</a></nav>
+{nav}
 <header>
   <h1>Gameweek {gw} projections</h1>
   <p class="sub">Deadline {dl} UTC &middot; {made} &middot; snapshot
@@ -526,11 +541,11 @@ def build(rows, meta, source="record"):
 </div>
 
 <footer>Generated {now} UTC &middot; every projection is timestamped and
-reproducible from its snapshot &mdash; <a href="scorecard.html" style="color:var(--accent)">see how accurate these have actually been</a></footer>
+reproducible from its snapshot &mdash; <a href="{scorecard}" style="color:var(--accent)">see how accurate these have actually been</a></footer>
 </div>
 <script>const DATA={data};{js}</script>""".format(
         css=CSS, js=JS, data=json.dumps(data, separators=(",", ":")),
-        gw=gw, dl=dl, made=made_s, ng=len(data[0]["g"]) if data else 6,
+        scorecard=links.href("scorecard"), nav=links.nav("projections"), gw=gw, dl=dl, made=made_s, ng=len(data[0]["g"]) if data else 6,
         snap=(meta.get("snapshot_sha256", {}).get("bootstrap.json", "")[:12]),
         teamopts="\n    ".join(
             '<option value="{0}">{0}</option>'.format(t) for t in teams),
@@ -555,6 +570,17 @@ def _payload(html):
     out = re.sub(r"snapshot <code>[0-9a-f]+</code>", "snapshot", out)
     out = re.sub(r"snapshot [0-9a-f]{8,}", "snapshot", out)
     return out
+
+
+def lint_page(html):
+    """Whole-page checks that apply to every builder, JS or not.
+
+    A raw UTF-8 character in HTML text renders as mojibake over plain HTTP just
+    as surely as one in a script, and the scorecard has no script for lint_js
+    to inspect. Pages must be ASCII; use entities.
+    """
+    bad = sorted(set(c for c in html if ord(c) > 127))
+    return ["non-ASCII in page: {} - use HTML entities".format(" ".join(bad))] if bad else []
 
 
 def lint_js(html, required=("#tb", "DOMContentLoaded")):

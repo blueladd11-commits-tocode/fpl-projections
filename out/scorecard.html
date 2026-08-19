@@ -1,4 +1,13 @@
 <style>
+nav{display:flex;gap:.1rem;font-family:var(--mono);font-size:.72rem;
+  letter-spacing:.06em;text-transform:uppercase;flex-wrap:wrap}
+nav a{padding:.4rem .75rem;border:1px solid var(--line);color:var(--ink-2);
+  text-decoration:none}
+nav a[aria-current="page"]{background:var(--accent);color:var(--ground);
+  border-color:var(--accent)}
+nav a:hover:not([aria-current]){color:var(--ink);border-color:var(--ink-3)}
+nav a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
 :root{
   --ground:#EDEFF1; --panel:#FFFFFF; --line:#D3D8DC;
   --ink:#12171C; --ink-2:#4C565F; --ink-3:#78838C;
@@ -81,14 +90,6 @@ li{margin-bottom:.5rem;max-width:62ch}
 footer{color:var(--ink-3);font-size:.76rem;font-family:var(--mono);
   border-top:1px solid var(--line);padding-top:1rem}
 .hash{font-family:var(--mono);font-size:.76rem;color:var(--ink-3)}
-nav{display:flex;gap:.1rem;font-family:var(--mono);font-size:.72rem;
-  letter-spacing:.06em;text-transform:uppercase}
-nav a{padding:.4rem .75rem;border:1px solid var(--line);color:var(--ink-2);
-  text-decoration:none}
-nav a[aria-current="page"]{background:var(--accent);color:var(--ground);
-  border-color:var(--accent)}
-nav a:hover:not([aria-current]){color:var(--ink);border-color:var(--ink-3)}
-nav a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 </style>
 <div class="wrap">
@@ -120,13 +121,13 @@ nav a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     <div class="stat"><span class="stat-k">Scored so far</span>
       <span class="stat-v">0</span><span class="stat-n">1 awaiting results</span></div>
     <div class="stat"><span class="stat-k">Beat last-six baseline</span>
-      <span class="stat-v">—</span><span class="stat-n">of scored gameweeks</span></div>
+      <span class="stat-v">&mdash;</span><span class="stat-n">of scored gameweeks</span></div>
   </div>
   <div class="scroll" style="margin-top:1.2rem">
   <table>
     <thead><tr><th>GW</th><th>Deadline (UTC)</th><th>Made</th><th>Snapshot</th>
       <th>Status</th><th>Our &rho;</th><th>Baseline &rho;</th><th>&Delta;</th></tr></thead>
-    <tbody><tr><td class="k">GW1</td><td>2026-08-21 17:30Z</td><td class="made">T&minus;72h</td><td class="hash">bf1fc52614ec</td><td><span class="chip c-pend">PENDING</span></td><td>—</td><td>—</td><td>—</td></tr></tbody>
+    <tbody><tr><td class="k">GW1</td><td>2026-08-21 17:30Z</td><td class="made">T&minus;72h</td><td class="hash">bf1fc52614ec</td><td><span class="chip c-pend">PENDING</span></td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td></tr></tbody>
   </table>
   </div>
   <p style="margin-top:1rem;font-size:.84rem">&rho; is Spearman rank correlation between
@@ -155,11 +156,11 @@ nav a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   <table>
     <thead><tr><th>Configuration</th><th>&rho;</th><th>&Delta; vs last-six</th>
       <th>t</th><th>GWs won</th><th>Verdict</th></tr></thead>
-    <tbody><tr><td class="k">2024-25 + minutes model</td><td>0.441</td><td>+0.053</td><td>5.17</td><td>31/38</td><td><span class="chip c-ok">significant</span></td></tr>
-<tr><td class="k">2025-26 + minutes model</td><td>0.462</td><td>+0.111</td><td>7.57</td><td>35/38</td><td><span class="chip c-ok">significant</span></td></tr>
+    <tbody><tr><td class="k">2024-25 + minutes model</td><td>0.443</td><td>+0.052</td><td>4.90</td><td>29/38</td><td><span class="chip c-ok">significant</span></td></tr>
+<tr><td class="k">2025-26 + minutes model</td><td>0.466</td><td>+0.115</td><td>7.96</td><td>36/38</td><td><span class="chip c-ok">significant</span></td></tr>
 <tr><td class="k">2023-24</td><td>0.403</td><td>+0.009</td><td>0.88</td><td>19/38</td><td><span class="chip c-bad">not significant</span></td></tr>
 <tr><td class="k">2024-25</td><td>0.392</td><td>+0.004</td><td>0.44</td><td>21/38</td><td><span class="chip c-bad">not significant</span></td></tr>
-<tr><td class="k">2025-26</td><td>0.364</td><td>+0.013</td><td>1.21</td><td>23/38</td><td><span class="chip c-bad">not significant</span></td></tr></tbody>
+<tr><td class="k">2025-26</td><td>0.365</td><td>+0.014</td><td>1.29</td><td>24/38</td><td><span class="chip c-bad">not significant</span></td></tr></tbody>
   </table>
   </div>
   <p style="margin-top:1rem"><strong>Stated plainly: without the fitted expected-minutes
@@ -183,6 +184,6 @@ nav a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   </ul>
 </section>
 
-<footer>Generated 2026-08-19 01:04 UTC &middot; projections and snapshot hashes are reproducible from
+<footer>Generated 2026-08-20 00:50 UTC &middot; projections and snapshot hashes are reproducible from
 the recorded snapshot &middot; baseline definitions unchanged since first publication &middot; <a href="projections.html" style="color:var(--accent)">this week&rsquo;s projections</a></footer>
 </div>

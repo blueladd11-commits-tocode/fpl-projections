@@ -102,7 +102,16 @@ def verify_one(meta_path):
                                         "the local cache".format(
                                             meta.get("snapshot"))]
     for fname, recorded in (meta.get("snapshot_sha256") or {}).items():
-        actual = sha256_file(os.path.join(snap, fname))
+        fpath = os.path.join(snap, fname)
+        if not os.path.exists(fpath):
+            # The exact outcome of a preserve_snapshot interrupted mid-copy,
+            # which never self-repairs because it skips a dest dir that exists.
+            # Raising here meant the tampered projection was never reported as
+            # failing AND every later projection went unverified.
+            notes.append("{} is MISSING from the preserved snapshot".format(fname))
+            fatal = True
+            continue
+        actual = sha256_file(fpath)
         if actual != recorded:
             notes.append("{} hash MISMATCH (recorded {}..., actual {}...)".format(
                 fname, recorded[:12], actual[:12]))
@@ -115,13 +124,21 @@ def verify_one(meta_path):
     cur_mm = current_minutes_sha()
     if meta.get("minutes_model_sha256") and meta["minutes_model_sha256"] != cur_mm:
         drift.append("minutes model has been refitted since publication")
+    rec_cal = meta.get("calibration")
+    cur_cal = (M.CALIBRATION_MINUTES if meta.get("minutes_model")
+               else M.CALIBRATION_HEURISTIC)
+    if rec_cal is not None and abs(rec_cal - cur_cal) > 1e-9:
+        drift.append("calibration changed since publication ({} -> {})".format(
+            rec_cal, cur_cal))
 
     # 3. does re-running reproduce the file?
     try:
         rows, _, _ = P.build(snap, meta.get("prior_season"), gw,
                              use_minutes_model=bool(meta.get("minutes_model")),
-                             quiet=True)
+                             quiet=True, calibration=meta.get("calibration"))
     except Exception as e:
+        if tmp:
+            shutil.rmtree(tmp, ignore_errors=True)
         return gw, "REBUILD-FAILED", notes + ["{}: {}".format(type(e).__name__, e)]
 
     published = list(csv.DictReader(open(csv_path)))
@@ -156,6 +173,14 @@ def verify_one(meta_path):
     return gw, "PASS", notes
 
 
+def verify_safe(meta_path):
+    """Never let one bad projection stop the rest being checked."""
+    try:
+        return verify_one(meta_path)
+    except Exception as e:
+        return (None, "ERROR", ["{}: {}".format(type(e).__name__, e)])
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--gw", type=int, default=None)
@@ -175,7 +200,7 @@ def main():
     print("verifying {} published projection(s)\n".format(len(metas)))
     worst = 0
     for m in metas:
-        gw, status, notes = verify_one(m)
+        gw, status, notes = verify_safe(m)
         print("GW{:<4} {:<26} {}".format(gw, status, os.path.basename(m)))
         for n in notes:
             print("         - {}".format(n))

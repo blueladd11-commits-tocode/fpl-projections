@@ -23,6 +23,8 @@ import json
 import os
 from datetime import datetime, timezone
 
+import links
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "out")
 
@@ -68,7 +70,7 @@ def load_records():
         res = {r["model"]: r for r in c.get("results", [])}
         ours = res.get("v0-baseline")
         # No silent fallback. If the committed baseline is missing, the row
-        # stays unscored rather than quietly comparing against something else —
+        # stays unscored rather than quietly comparing against something else &mdash;
         # the page states in prose which baseline it uses.
         base = res.get("naive_recent6")
         if ours:
@@ -106,7 +108,7 @@ def load_evidence():
     return ev
 
 
-CSS = """
+CSS = links.CSS + """
 :root{
   --ground:#EDEFF1; --panel:#FFFFFF; --line:#D3D8DC;
   --ink:#12171C; --ink-2:#4C565F; --ink-3:#78838C;
@@ -189,14 +191,6 @@ li{margin-bottom:.5rem;max-width:62ch}
 footer{color:var(--ink-3);font-size:.76rem;font-family:var(--mono);
   border-top:1px solid var(--line);padding-top:1rem}
 .hash{font-family:var(--mono);font-size:.76rem;color:var(--ink-3)}
-nav{display:flex;gap:.1rem;font-family:var(--mono);font-size:.72rem;
-  letter-spacing:.06em;text-transform:uppercase}
-nav a{padding:.4rem .75rem;border:1px solid var(--line);color:var(--ink-2);
-  text-decoration:none}
-nav a[aria-current="page"]{background:var(--accent);color:var(--ground);
-  border-color:var(--accent)}
-nav a:hover:not([aria-current]){color:var(--ink);border-color:var(--ink-3)}
-nav a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 """
 
@@ -224,7 +218,7 @@ def fmt_horizon(r):
 
 def fmt_dt(s):
     if not s:
-        return "—"
+        return "&mdash;"
     return esc(s[:16].replace("T", " ")) + "Z"
 
 
@@ -237,20 +231,22 @@ def build(records, evidence):
     for r in records:
         if r["status"] == "PENDING":
             chip = '<span class="chip c-pend">PENDING</span>'
-            ours = base = delta = "—"
+            ours = base = delta = "&mdash;"
         else:
             d = r.get("delta")
-            cls = "c-ok" if (d or 0) > 0 else "c-bad"
+            # A missing baseline is not a loss. Painting it red said we lost a
+            # comparison we never made.
+            cls = "c-pend" if d is None else ("c-ok" if d > 0 else "c-bad")
             chip = '<span class="chip {}">SCORED</span>'.format(cls)
-            ours = "{:.3f}".format(r["ours"]) if r["ours"] is not None else "—"
-            base = "{:.3f}".format(r["base"]) if r["base"] is not None else "—"
-            delta = "{:+.3f}".format(d) if d is not None else "—"
+            ours = "{:.3f}".format(r["ours"]) if r["ours"] is not None else "&mdash;"
+            base = "{:.3f}".format(r["base"]) if r["base"] is not None else "&mdash;"
+            delta = "{:+.3f}".format(d) if d is not None else "&mdash;"
         rec_rows.append(
             "<tr><td class=\"k\">GW{}</td><td>{}</td><td class=\"made\">{}</td>"
             "<td class=\"hash\">{}</td>"
             "<td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(
                 r["gw"], fmt_dt(r["deadline"]), fmt_horizon(r),
-                esc(r["digest"]) or "—", chip, ours, base, delta))
+                esc(r["digest"]) or "&mdash;", chip, ours, base, delta))
 
     ev_rows = []
     for e in evidence:
@@ -265,7 +261,7 @@ def build(records, evidence):
 
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M")
     return """<div class="wrap">
-<nav aria-label="Sections"><a href="projections.html">Projections</a><a href="fixtures.html">Fixtures</a><a href="setpieces.html">Set pieces</a><a href="scorecard.html" aria-current="page">Accuracy record</a></nav>
+%s
 <header>
   <span class="label">Pre-registered accuracy record</span>
   <h1>Fantasy Premier League points projections &mdash; public scorecard</h1>
@@ -353,14 +349,14 @@ def build(records, evidence):
 </section>
 
 <footer>Generated %s UTC &middot; projections and snapshot hashes are reproducible from
-the recorded snapshot &middot; baseline definitions unchanged since first publication &middot; <a href="projections.html" style="color:var(--accent)">this week&rsquo;s projections</a></footer>
-</div>""" % (len(records), len(scored), pending,
-             "{}/{}".format(beat, len(scored)) if scored else "—",
+the recorded snapshot &middot; baseline definitions unchanged since first publication &middot; <a href="%s" style="color:var(--accent)">this week&rsquo;s projections</a></footer>
+</div>""" % (links.nav("scorecard"), len(records), len(scored), pending,
+             "{}/{}".format(beat, len(scored)) if scored else "&mdash;",
              "\n".join(rec_rows) or
              '<tr><td colspan="8">No projections published yet.</td></tr>',
              "\n".join(ev_rows) or
              '<tr><td colspan="6">No backtest evidence found.</td></tr>',
-             now)
+             now, links.href("projections"))
 
 
 def main():

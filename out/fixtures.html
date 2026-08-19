@@ -1,4 +1,13 @@
 <style>
+nav{display:flex;gap:.1rem;font-family:var(--mono);font-size:.72rem;
+  letter-spacing:.06em;text-transform:uppercase;flex-wrap:wrap}
+nav a{padding:.4rem .75rem;border:1px solid var(--line);color:var(--ink-2);
+  text-decoration:none}
+nav a[aria-current="page"]{background:var(--accent);color:var(--ground);
+  border-color:var(--accent)}
+nav a:hover:not([aria-current]){color:var(--ink);border-color:var(--ink-3)}
+nav a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
 :root{
   --ground:#EDEFF1; --panel:#FFFFFF; --line:#D3D8DC;
   --ink:#12171C; --ink-2:#4C565F; --ink-3:#78838C;
@@ -102,14 +111,6 @@ tr{cursor:pointer}
 .tx-row .gain{font-family:var(--mono);color:var(--accent);font-weight:600}
 .tx-row .cost{font-family:var(--mono);font-size:.7rem;color:var(--ink-3);width:3.2rem;
   text-align:right}
-nav{display:flex;gap:.1rem;font-family:var(--mono);font-size:.72rem;
-  letter-spacing:.06em;text-transform:uppercase}
-nav a{padding:.4rem .75rem;border:1px solid var(--line);color:var(--ink-2);
-  text-decoration:none}
-nav a[aria-current="page"]{background:var(--accent);color:var(--ground);
-  border-color:var(--accent)}
-nav a:hover:not([aria-current]){color:var(--ink);border-color:var(--ink-3)}
-nav a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 
 .tick{border-collapse:separate;border-spacing:2px;width:100%;min-width:46rem}

@@ -198,8 +198,14 @@ def main():
     print("written: {}".format(out))
 
     if args.calibrate:
-        print("\nsuggested CALIBRATION for model.py: {}".format(
-            round(M.CALIBRATION / bias, 4)))
+        # Must divide the constant ACTUALLY used, not the module default.
+        # run() uses CALIBRATION_MINUTES whenever --minutes-model is passed;
+        # suggesting M.CALIBRATION (the heuristic constant) ratcheted the
+        # minutes path down ~4% on every refit, compounding silently.
+        used = M.CALIBRATION_MINUTES if mm else M.CALIBRATION_HEURISTIC
+        name = "CALIBRATION_MINUTES" if mm else "CALIBRATION_HEURISTIC"
+        print("\nsuggested {} for model.py: {}".format(
+            name, round(used / bias, 4)))
     return 0
 
 

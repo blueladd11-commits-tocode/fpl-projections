@@ -27,6 +27,7 @@ import subprocess
 import sys
 from datetime import datetime, timezone
 
+import links
 import model as M
 import project as P
 import web
@@ -177,9 +178,7 @@ def build(bootstrap, fixtures, start_gw, n_gw, granular, prior_season):
 
     return """<style>{css}</style>
 <div class="wrap">
-<nav aria-label="Sections"><a href="projections.html">Projections</a>\
-<a href="fixtures.html" aria-current="page">Fixtures</a>\
-<a href="setpieces.html">Set pieces</a><a href="scorecard.html">Accuracy record</a></nav>
+{nav}
 <header>
   <h1>Fixture ticker &mdash; GW{a} to GW{b}</h1>
   <p class="note">{caveat}Every other ticker colours FPL&rsquo;s single 1&ndash;5
@@ -209,11 +208,11 @@ def build(bootstrap, fixtures, start_gw, n_gw, granular, prior_season):
 
 <footer>Teams sorted easiest first over the horizon &middot; (a) = away &middot;
 lowercase mean is the average difficulty across the window &middot;
-<a href="projections.html" style="color:var(--accent)">this week&rsquo;s projections</a></footer>
+<a href="{projections}" style="color:var(--accent)">this week&rsquo;s projections</a></footer>
 </div>
 <script>const GRID={data};{js}</script>""".format(
         css=CSS, js=JS, data=json.dumps(payload, separators=(",", ":")),
-        a=start_gw, b=start_gw + n_gw - 1, caveat=caveat)
+        projections=links.href("projections"), nav=links.nav("fixtures"), a=start_gw, b=start_gw + n_gw - 1, caveat=caveat)
 
 
 def main():

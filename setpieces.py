@@ -21,6 +21,7 @@ import os
 import subprocess
 import sys
 
+import links
 import model as M
 import project as P
 import web
@@ -48,16 +49,24 @@ def collect(bootstrap, proj_by_element):
             order = el.get(field)
             if not order:
                 continue
+            # An unavailable player is projected at zero minutes, so project()
+            # drops him entirely and he arrives here with no entry at all. The
+            # flag keyed on `ps < 70` therefore never fired for the players it
+            # was written for: two first-choice penalty takers, flagged injured
+            # by FPL, rendered in ordinary type. Absence IS the strongest signal.
+            status = el.get("status", "a")
+            unavailable = status in ("i", "s", "u", "n")
+            ps = pr.get("ps")
             out[el["team"]][key].append(dict(
                 o=int(order),
                 n=el["web_name"],
                 p=M.POS_TO_STR[el["element_type"]],
                 c=el["now_cost"] / 10.0,
                 xp=pr.get("xp"),
-                ps=pr.get("ps"),
-                # A first-choice taker who is not expected to start is the
-                # single most misleading row on a page like this.
-                risk=bool(pr.get("ps") is not None and pr["ps"] < 70),
+                ps=0 if (ps is None and unavailable) else ps,
+                note=(el.get("news") or "").split(" - ")[0][:28] or None,
+                risk=bool(unavailable or (ps is not None and ps < 70)
+                          or (ps is None and not pr)),
             ))
     for tid in out:
         for key in out[tid]:
@@ -102,7 +111,9 @@ function render(){
         '<span class="nm">'+d.n+'</span>'+
         '<span class="meta">'+d.c.toFixed(1)+
         (d.xp!=null?"  "+d.xp.toFixed(2)+" xP":"")+
-        (d.ps!=null?"  "+d.ps+"%":"")+'</span></div>').join("");
+        (d.ps!=null?"  "+d.ps+"%":"")+
+        (d.note?' <span style="opacity:.7">'+d.note+'</span>':"")+
+        '</span></div>').join("");
     }).join("");
     if(q && !groups.replace(/<div class="grp">[^<]*<\/div>/g,"").trim()) return "";
     return '<div class="club"><h2>'+t.name+'</h2>'+groups+'</div>';
@@ -132,10 +143,7 @@ def build(bootstrap, takers, short, counts):
     )
     return """<style>{css}</style>
 <div class="wrap">
-<nav aria-label="Sections"><a href="projections.html">Projections</a>\
-<a href="fixtures.html">Fixtures</a>\
-<a href="setpieces.html" aria-current="page">Set pieces</a>\
-<a href="scorecard.html">Accuracy record</a></nav>
+{nav}
 <header>
   <h1>Set-piece takers</h1>
   <p class="note">Ranked first, second and third choice per club, straight from
@@ -161,11 +169,11 @@ def build(bootstrap, takers, short, counts):
 
 <footer>Source: FPL bootstrap-static, refreshed hourly &middot; xP and start
 probability from our own model &middot;
-<a href="projections.html" style="color:var(--accent)">full projections</a></footer>
+<a href="{projections}" style="color:var(--accent)">full projections</a></footer>
 </div>
 <script>const DATA={data};{js}</script>""".format(
         css=CSS, js=JS, data=json.dumps(payload, separators=(",", ":")),
-        pen=counts["pen"], fk=counts["fk"], ck=counts["ck"])
+        projections=links.href("projections"), nav=links.nav("setpieces"), pen=counts["pen"], fk=counts["fk"], ck=counts["ck"])
 
 
 def main():
