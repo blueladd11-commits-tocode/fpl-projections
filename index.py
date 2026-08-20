@@ -40,7 +40,7 @@ CARDS = (
      "hourly, with listed takers we do not expect to start flagged."),
     ("scorecard", "Accuracy record",
      "Every projection timestamped before its deadline and scored against a "
-     "hard baseline. Including the weeks we lose."),
+     "simple benchmark. Including the weeks we lose."),
 )
 
 CSS = web.CSS + """
@@ -66,23 +66,33 @@ def main():
         '<a class="card" href="{}"><h2>{}</h2><p>{}</p></a>'.format(
             links.href(key), title, blurb) for key, title, blurb in CARDS)
 
+    def tally(made, scored):
+        weeks = "1 gameweek" if made == 1 else "{} gameweeks".format(made)
+        if not made:
+            return "The first projection goes on record before this week's deadline."
+        if not scored:
+            return ("{} on record, none scored yet &mdash; the first "
+                    "results land after this weekend.".format(weeks))
+        return "{} on record, {} scored. Updated hourly.".format(weeks, scored)
+
     lockup = logo.wordmark(44, descriptor=True)
     body = """<div class="wrap">
 <header>
   {lockup}
-  <p class="lede">A points model whose <strong>accuracy record is published and
-  checkable</strong>. Every projection is written before its gameweek deadline,
-  alongside the SHA-256 of the exact API snapshot it came from, and scored
-  afterwards against a baseline anyone could build in an afternoon. Weeks we
-  lose appear in the same table as weeks we win.</p>
-  <p class="lede">{n_records} gameweek projection(s) on record, {n_scored}
-  scored so far. Updated hourly.</p>
+  <p class="lede">We tell you how many points we think every player will
+  score &mdash; and then we <strong>publish how right we were</strong>.</p>
+  <p class="lede" style="font-size:.95rem;color:var(--ink-2)">Every projection
+  is written down and timestamped before the deadline, so it cannot be quietly
+  edited afterwards. Then we score it against a deliberately dull benchmark:
+  just assume every player repeats his last six weeks. The weeks we lose go in
+  the same table as the weeks we win. Nobody else in fantasy football does
+  this.</p>
+  <p class="lede" style="font-size:.92rem;color:var(--ink-3)">{tally}</p>
 </header>
 <div class="cards">{cards}</div>
 <footer>Built from the free Fantasy Premier League API &middot; no affiliation
 with the Premier League &middot; generated {now} UTC</footer>
-</div>""".format(lockup=lockup, cards=cards, n_records=n_records,
-                 n_scored=n_scored,
+</div>""".format(lockup=lockup, cards=cards, tally=tally(n_records, n_scored),
                  now=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M"))
 
     html = links.document("Proper Score - FPL projections", body, CSS)

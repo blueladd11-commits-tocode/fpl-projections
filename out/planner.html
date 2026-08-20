@@ -33,6 +33,27 @@ nav a[aria-current="page"]{background:var(--accent);color:var(--ground);
 nav a:hover:not([aria-current]){color:var(--ink);border-color:var(--ink-3)}
 nav a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
+.gloss{border:1px solid var(--line);background:var(--panel);margin:0 0 1rem;
+  border-radius:3px}
+.gloss summary{cursor:pointer;padding:.6rem .85rem;font-size:.86rem;
+  color:var(--ink);list-style:none;display:flex;align-items:center;gap:.45rem}
+.gloss summary::-webkit-details-marker{display:none}
+.gloss summary:before{content:"?";display:inline-flex;align-items:center;
+  justify-content:center;width:1.15rem;height:1.15rem;border-radius:50%;
+  background:var(--accent-soft);color:var(--accent);font-size:.72rem;
+  font-weight:700;flex:none}
+.gloss summary:hover{color:var(--accent)}
+.gloss[open] summary{border-bottom:1px solid var(--line)}
+.gloss dl{margin:0;padding:.7rem .85rem .85rem;display:grid;gap:.6rem}
+.gloss dt{font-weight:650;color:var(--ink);font-size:.86rem;margin-bottom:.12rem}
+.gloss dd{margin:0;color:var(--ink-2);font-size:.84rem;line-height:1.5;
+  max-width:62ch}
+/* The small line under a column heading. Without it a friendly heading is just
+   a vaguer version of the jargon it replaced. */
+th .arw{font-weight:400;color:var(--accent)}
+th .sub{display:block;font-weight:400;font-size:.62rem;color:var(--ink-3);
+  letter-spacing:0;text-transform:none;margin-top:.1rem;white-space:nowrap}
+
 :root{
   --ground:#EDEFF1; --panel:#FFFFFF; --line:#D3D8DC;
   --ink:#12171C; --ink-2:#454F58; --ink-3:#5E6873;
@@ -239,14 +260,24 @@ tr{cursor:pointer}
 <div class="wrap">
 <nav aria-label="Sections"><a class="home" href="index.html" aria-label="Proper Score home"><svg class="ps-mark" viewBox="0 0 16 16" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M0 7h16v2H0zM2 1h4v6H2zM10 9h4v6h-4z"/></svg></a><a href="projections.html">Projections</a><a href="myteam.html">My team</a><a href="planner.html" aria-current="page">Planner</a><a href="fixtures.html">Fixtures</a><a href="setpieces.html">Set pieces</a><a href="scorecard.html">Accuracy record</a></nav>
 <header>
-  <h1>Transfer planner &mdash; GW1 to GW6</h1>
-  <p class="note">A row is a squad <em>slot</em>, not a player, so a transfer
-  shows up as a change of occupant partway along a row. The six rows at the
-  bottom are the ledger: free transfers, hits, bank and cumulative points. Tap
-  any cell to move someone in from that gameweek onward; tap a chip slot in the
-  header to plan a chip. Wildcard and Free Hit do not exist in GW1 &mdash; both open at GW2, which contradicts every summary that says you start with four chips. Difficulty colour is
-  position-appropriate &mdash; attacking difficulty for midfielders and
-  forwards, defensive for keepers and defenders.</p>
+  <h1>Transfer planner &mdash; gameweeks 1 to 6</h1>
+  <p class="note">Plan the next six weeks before you commit to anything.</p>
+  <ul class="note" style="padding-left:1.1rem;margin:.5rem 0 0">
+    <li><strong>Tap any square</strong> to swap that player from that week
+      onward. Each row is one place in your squad, so you can see exactly when
+      a new signing takes over.</li>
+    <li><strong>Tap &ldquo;chip&rdquo;</strong> at the top of a week to plan a
+      Wildcard, Free Hit, Bench Boost or Triple Captain. Anything you cannot
+      legally play that week is greyed out with the reason.</li>
+    <li><strong>Green fixtures are the kind ones.</strong> Attackers and
+      defenders are coloured differently on purpose: an opponent who leaks
+      goals is good news for your forwards and bad news for your defence.</li>
+    <li><strong>The rows underneath keep score</strong> &mdash; free
+      transfers, what any extra moves cost you, money left, and your running
+      points total.</li>
+  </ul>
+  <p class="note" style="margin-top:.6rem;font-size:.8rem;color:var(--ink-3)">
+  Worth knowing: you cannot play a Wildcard or Free Hit in gameweek 1. Both unlock in gameweek 2, whatever the season previews told you.</p>
 </header>
 
 <div class="act">
@@ -284,6 +315,12 @@ const byId=Object.fromEntries(PLAYERS.map(d=>[d.i,d]));
 const SLOTS=[["GKP",2],["DEF",5],["MID",5],["FWD",3]];
 const SLOT_KEYS=[];
 SLOTS.forEach(([p,n])=>{for(let k=1;k<=n;k++) SLOT_KEYS.push(p+k);});
+// The key stays MID3 because it is persisted state; only the label changes.
+const SLOT_WORD={GKP:"Keeper",DEF:"Defender",MID:"Midfielder",FWD:"Forward"};
+function slotName(key){
+  const p=key.replace(/[0-9]/g,""), n=key.replace(/[^0-9]/g,"");
+  return (SLOT_WORD[p]||p)+" "+n;
+}
 
 // plan.moves: {gw, slot, out, in}. plan.chips: {gw: chipName}.
 let plan={v:1, base:GWS[0].n, squad:{}, moves:[], chips:{}};
@@ -530,7 +567,7 @@ function render(){
     }).join("");
     const first=weeks[0].occ[slot];
     const d=first!==undefined?byId[first]:null;
-    return '<tr><th class="slot">'+slot+
+    return '<tr><th class="slot">'+slotName(slot)+
       (d?'<div class="nmcell">'+KIT(d.t)+'<b>'+esc(d.n)+'</b></div>':"")+
       '</th>'+cells+'</tr>';
   }).join("");
@@ -541,14 +578,14 @@ function render(){
   led.innerHTML=
     row("Free transfers",w=>'<td'+(w.ftBefore>=FT_CAP&&!w.moves.length?
         ' class="warn"':'')+'>'+w.ftBefore+"\u2192"+w.ftAfter+"</td>")+
-    row("Transfers",w=>'<td>'+(w.chip==="wildcard"?"WILDCARD":
+    row("Moves made",w=>'<td>'+(w.chip==="wildcard"?"WILDCARD":
         w.chip==="freehit"?"FREE HIT":(w.moves.length||"\u2014"))+"</td>")+
-    row("Hits",w=>'<td'+(w.hits?' class="loss"':'')+'>'+
+    row("Points cost",w=>'<td'+(w.hits?' class="loss"':'')+'>'+
         (w.hits?"-"+w.hits:"0")+"</td>")+
-    row("Bank",w=>'<td'+(w.bank<0?' class="loss"':'')+'>\u00A3'+
+    row("Money left",w=>'<td'+(w.bank<0?' class="loss"':'')+'>\u00A3'+
         w.bank.toFixed(1)+"m</td>")+
-    row("Expected",w=>'<td>'+w.xp.toFixed(1)+"</td>")+
-    row("Cumulative",w=>'<td>'+w.cum.toFixed(1)+"</td>",' class="big"');
+    row("Points that week",w=>'<td>'+w.xp.toFixed(1)+"</td>")+
+    row("Running total",w=>'<td>'+w.cum.toFixed(1)+"</td>",' class="big"');
 
   const problems=[];
   weeks.forEach(w=>w.issues.forEach(p=>problems.push("GW"+w.g+": "+p)));
@@ -583,7 +620,7 @@ function cellSheet(slot,gw){
     '<button class="go" id="sh-tx">Transfer from GW'+gw+'</button>'+
     (mine?'<button id="sh-undo">Undo the GW'+gw+' move</button>':"")+
     '<button id="sh-close2">Cancel</button></div>';
-  openSheet(acts, slot+" \u00B7 GW"+gw,
+  openSheet(acts, slotName(slot)+" \u00B7 gameweek "+gw,
     cur?("currently "+cur.n+" ("+cur.t+", \u00A3"+cur.c.toFixed(1)+"m)"):"empty slot");
 }
 
@@ -634,7 +671,7 @@ function txSheet(){
     '<p class="note" style="margin:.1rem 0 .5rem;font-size:.72rem">Budget at GW'+
     gw+': \u00A3'+budget.toFixed(1)+'m. The number is expected points gained over '+
     'GW'+gw+'\u2013'+GWS[GWS.length-1].n+', against the player leaving.</p>'+rows,
-    "Transfer in \u00B7 "+slot,
+    "Bring in a "+slotName(slot).replace(/ \d+$/,"").toLowerCase(),
     out?("out: "+out.n+" \u00A3"+sellPrice(out).toFixed(1)+"m"):"empty slot");
   const box=document.getElementById("sh-q");
   box.focus();

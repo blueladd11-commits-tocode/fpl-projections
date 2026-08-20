@@ -33,6 +33,27 @@ nav a[aria-current="page"]{background:var(--accent);color:var(--ground);
 nav a:hover:not([aria-current]){color:var(--ink);border-color:var(--ink-3)}
 nav a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
+.gloss{border:1px solid var(--line);background:var(--panel);margin:0 0 1rem;
+  border-radius:3px}
+.gloss summary{cursor:pointer;padding:.6rem .85rem;font-size:.86rem;
+  color:var(--ink);list-style:none;display:flex;align-items:center;gap:.45rem}
+.gloss summary::-webkit-details-marker{display:none}
+.gloss summary:before{content:"?";display:inline-flex;align-items:center;
+  justify-content:center;width:1.15rem;height:1.15rem;border-radius:50%;
+  background:var(--accent-soft);color:var(--accent);font-size:.72rem;
+  font-weight:700;flex:none}
+.gloss summary:hover{color:var(--accent)}
+.gloss[open] summary{border-bottom:1px solid var(--line)}
+.gloss dl{margin:0;padding:.7rem .85rem .85rem;display:grid;gap:.6rem}
+.gloss dt{font-weight:650;color:var(--ink);font-size:.86rem;margin-bottom:.12rem}
+.gloss dd{margin:0;color:var(--ink-2);font-size:.84rem;line-height:1.5;
+  max-width:62ch}
+/* The small line under a column heading. Without it a friendly heading is just
+   a vaguer version of the jargon it replaced. */
+th .arw{font-weight:400;color:var(--accent)}
+th .sub{display:block;font-weight:400;font-size:.62rem;color:var(--ink-3);
+  letter-spacing:0;text-transform:none;margin-top:.1rem;white-space:nowrap}
+
 :root{
   --ground:#EDEFF1; --panel:#FFFFFF; --line:#D3D8DC;
   --ink:#12171C; --ink-2:#454F58; --ink-3:#5E6873;
@@ -153,17 +174,19 @@ tr{cursor:pointer}
 <div class="wrap">
 <header>
   <span class="ps-logo" style="--ps:44px"><svg class="ps-mark" viewBox="0 0 16 16" width="44" height="44" fill="currentColor" aria-hidden="true"><path d="M0 7h16v2H0zM2 1h4v6H2zM10 9h4v6h-4z"/></svg><span class="ps-text"><span class="ps-name">Proper Score</span><span class="ps-desc">FPL projections, on the record</span></span></span>
-  <p class="lede">A points model whose <strong>accuracy record is published and
-  checkable</strong>. Every projection is written before its gameweek deadline,
-  alongside the SHA-256 of the exact API snapshot it came from, and scored
-  afterwards against a baseline anyone could build in an afternoon. Weeks we
-  lose appear in the same table as weeks we win.</p>
-  <p class="lede">2 gameweek projection(s) on record, 0
-  scored so far. Updated hourly.</p>
+  <p class="lede">We tell you how many points we think every player will
+  score &mdash; and then we <strong>publish how right we were</strong>.</p>
+  <p class="lede" style="font-size:.95rem;color:var(--ink-2)">Every projection
+  is written down and timestamped before the deadline, so it cannot be quietly
+  edited afterwards. Then we score it against a deliberately dull benchmark:
+  just assume every player repeats his last six weeks. The weeks we lose go in
+  the same table as the weeks we win. Nobody else in fantasy football does
+  this.</p>
+  <p class="lede" style="font-size:.92rem;color:var(--ink-3)">2 gameweeks on record, none scored yet &mdash; the first results land after this weekend.</p>
 </header>
-<div class="cards"><a class="card" href="projections.html"><h2>Projections</h2><p>Expected points for every player over the next six gameweeks, with the chance of a double-digit haul, a squad builder and transfer suggestions.</p></a><a class="card" href="myteam.html"><h2>My team</h2><p>Your fifteen on a pitch: a legal eleven, a bench in the order it actually comes on, and one armband that doubles a score. Or let the model build the squad for you.</p></a><a class="card" href="planner.html"><h2>Transfer planner</h2><p>A calendar, not six stacked squads &mdash; a row is a squad slot, so a transfer is a change of occupant partway along it. Free transfers, hits, bank and chip legality all computed as you go.</p></a><a class="card" href="fixtures.html"><h2>Fixture ticker</h2><p>Difficulty split into attacking and defensive views &mdash; because a promoted side concedes freely <em>and</em> scores little, and one number cannot say both.</p></a><a class="card" href="setpieces.html"><h2>Set-piece takers</h2><p>Ranked penalty, free-kick and corner duty for all 20 clubs, refreshed hourly, with listed takers we do not expect to start flagged.</p></a><a class="card" href="scorecard.html"><h2>Accuracy record</h2><p>Every projection timestamped before its deadline and scored against a hard baseline. Including the weeks we lose.</p></a></div>
+<div class="cards"><a class="card" href="projections.html"><h2>Projections</h2><p>Expected points for every player over the next six gameweeks, with the chance of a double-digit haul, a squad builder and transfer suggestions.</p></a><a class="card" href="myteam.html"><h2>My team</h2><p>Your fifteen on a pitch: a legal eleven, a bench in the order it actually comes on, and one armband that doubles a score. Or let the model build the squad for you.</p></a><a class="card" href="planner.html"><h2>Transfer planner</h2><p>A calendar, not six stacked squads &mdash; a row is a squad slot, so a transfer is a change of occupant partway along it. Free transfers, hits, bank and chip legality all computed as you go.</p></a><a class="card" href="fixtures.html"><h2>Fixture ticker</h2><p>Difficulty split into attacking and defensive views &mdash; because a promoted side concedes freely <em>and</em> scores little, and one number cannot say both.</p></a><a class="card" href="setpieces.html"><h2>Set-piece takers</h2><p>Ranked penalty, free-kick and corner duty for all 20 clubs, refreshed hourly, with listed takers we do not expect to start flagged.</p></a><a class="card" href="scorecard.html"><h2>Accuracy record</h2><p>Every projection timestamped before its deadline and scored against a simple benchmark. Including the weeks we lose.</p></a></div>
 <footer>Built from the free Fantasy Premier League API &middot; no affiliation
-with the Premier League &middot; generated 2026-08-20 17:51 UTC</footer>
+with the Premier League &middot; generated 2026-08-20 18:41 UTC</footer>
 </div>
 </body>
 </html>

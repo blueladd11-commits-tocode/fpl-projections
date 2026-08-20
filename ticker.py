@@ -190,12 +190,19 @@ def build(bootstrap, fixtures, start_gw, n_gw, granular, prior_season):
     body = """<div class="wrap">
 {nav}
 <header>
-  <h1>Fixture ticker &mdash; GW{a} to GW{b}</h1>
-  <p class="note">{caveat}Every other ticker colours FPL&rsquo;s single 1&ndash;5
-  difficulty rating, which answers two different questions with one number. A
-  promoted side concedes freely <em>and</em> scores little &mdash; great to
-  attack, great to defend against. These are separated, and computed from the
-  same fitted team ratings the projection model uses.</p>
+  <h1>Fixture ticker &mdash; gameweeks {a} to {b}</h1>
+  <p class="note">Green means an easy run. But &ldquo;easy&rdquo; depends on
+  who you are asking about, so there are two views.</p>
+  <ul class="note" style="padding-left:1.1rem;margin:.5rem 0 0">
+    <li><strong>For attackers</strong> &mdash; green means the opponent lets
+      goals in.</li>
+    <li><strong>For defenders</strong> &mdash; green means the opponent rarely
+      scores.</li>
+  </ul>
+  <p class="note" style="margin-top:.6rem">A newly promoted side is usually
+  <em>both</em>: a lovely fixture for your forwards and a lovely one for your
+  defence. Every other ticker gives you one number and makes you guess which
+  question it answered. {caveat}</p>
 </header>
 
 <div class="controls">

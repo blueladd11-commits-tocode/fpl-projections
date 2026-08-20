@@ -176,6 +176,12 @@ const byId=Object.fromEntries(PLAYERS.map(d=>[d.i,d]));
 const SLOTS=[["GKP",2],["DEF",5],["MID",5],["FWD",3]];
 const SLOT_KEYS=[];
 SLOTS.forEach(([p,n])=>{for(let k=1;k<=n;k++) SLOT_KEYS.push(p+k);});
+// The key stays MID3 because it is persisted state; only the label changes.
+const SLOT_WORD={GKP:"Keeper",DEF:"Defender",MID:"Midfielder",FWD:"Forward"};
+function slotName(key){
+  const p=key.replace(/[0-9]/g,""), n=key.replace(/[^0-9]/g,"");
+  return (SLOT_WORD[p]||p)+" "+n;
+}
 
 // plan.moves: {gw, slot, out, in}. plan.chips: {gw: chipName}.
 let plan={v:1, base:GWS[0].n, squad:{}, moves:[], chips:{}};
@@ -422,7 +428,7 @@ function render(){
     }).join("");
     const first=weeks[0].occ[slot];
     const d=first!==undefined?byId[first]:null;
-    return '<tr><th class="slot">'+slot+
+    return '<tr><th class="slot">'+slotName(slot)+
       (d?'<div class="nmcell">'+KIT(d.t)+'<b>'+esc(d.n)+'</b></div>':"")+
       '</th>'+cells+'</tr>';
   }).join("");
@@ -433,14 +439,14 @@ function render(){
   led.innerHTML=
     row("Free transfers",w=>'<td'+(w.ftBefore>=FT_CAP&&!w.moves.length?
         ' class="warn"':'')+'>'+w.ftBefore+"\u2192"+w.ftAfter+"</td>")+
-    row("Transfers",w=>'<td>'+(w.chip==="wildcard"?"WILDCARD":
+    row("Moves made",w=>'<td>'+(w.chip==="wildcard"?"WILDCARD":
         w.chip==="freehit"?"FREE HIT":(w.moves.length||"\u2014"))+"</td>")+
-    row("Hits",w=>'<td'+(w.hits?' class="loss"':'')+'>'+
+    row("Points cost",w=>'<td'+(w.hits?' class="loss"':'')+'>'+
         (w.hits?"-"+w.hits:"0")+"</td>")+
-    row("Bank",w=>'<td'+(w.bank<0?' class="loss"':'')+'>\u00A3'+
+    row("Money left",w=>'<td'+(w.bank<0?' class="loss"':'')+'>\u00A3'+
         w.bank.toFixed(1)+"m</td>")+
-    row("Expected",w=>'<td>'+w.xp.toFixed(1)+"</td>")+
-    row("Cumulative",w=>'<td>'+w.cum.toFixed(1)+"</td>",' class="big"');
+    row("Points that week",w=>'<td>'+w.xp.toFixed(1)+"</td>")+
+    row("Running total",w=>'<td>'+w.cum.toFixed(1)+"</td>",' class="big"');
 
   const problems=[];
   weeks.forEach(w=>w.issues.forEach(p=>problems.push("GW"+w.g+": "+p)));
@@ -475,7 +481,7 @@ function cellSheet(slot,gw){
     '<button class="go" id="sh-tx">Transfer from GW'+gw+'</button>'+
     (mine?'<button id="sh-undo">Undo the GW'+gw+' move</button>':"")+
     '<button id="sh-close2">Cancel</button></div>';
-  openSheet(acts, slot+" \u00B7 GW"+gw,
+  openSheet(acts, slotName(slot)+" \u00B7 gameweek "+gw,
     cur?("currently "+cur.n+" ("+cur.t+", \u00A3"+cur.c.toFixed(1)+"m)"):"empty slot");
 }
 
@@ -526,7 +532,7 @@ function txSheet(){
     '<p class="note" style="margin:.1rem 0 .5rem;font-size:.72rem">Budget at GW'+
     gw+': \u00A3'+budget.toFixed(1)+'m. The number is expected points gained over '+
     'GW'+gw+'\u2013'+GWS[GWS.length-1].n+', against the player leaving.</p>'+rows,
-    "Transfer in \u00B7 "+slot,
+    "Bring in a "+slotName(slot).replace(/ \d+$/,"").toLowerCase(),
     out?("out: "+out.n+" \u00A3"+sellPrice(out).toFixed(1)+"m"):"empty slot");
   const box=document.getElementById("sh-q");
   box.focus();
@@ -639,21 +645,31 @@ def build(rows, bootstrap, fixtures, start_gw, n_gw, prior):
 
     first = next((c for c in chips if c["name"] == "wildcard"), None)
     caveat = ("" if not first else
-              "Wildcard and Free Hit do not exist in GW1 &mdash; both open at "
-              "GW{}, which contradicts every summary that says you start with "
-              "four chips. ".format(first["start"]))
+              "Worth knowing: you cannot play a Wildcard or Free Hit in "
+              "gameweek 1. Both unlock in gameweek {}, whatever the season "
+              "previews told you.".format(first["start"]))
 
     body = """<div class="wrap">
 {nav}
 <header>
-  <h1>Transfer planner &mdash; GW{a} to GW{b}</h1>
-  <p class="note">A row is a squad <em>slot</em>, not a player, so a transfer
-  shows up as a change of occupant partway along a row. The six rows at the
-  bottom are the ledger: free transfers, hits, bank and cumulative points. Tap
-  any cell to move someone in from that gameweek onward; tap a chip slot in the
-  header to plan a chip. {caveat}Difficulty colour is
-  position-appropriate &mdash; attacking difficulty for midfielders and
-  forwards, defensive for keepers and defenders.</p>
+  <h1>Transfer planner &mdash; gameweeks {a} to {b}</h1>
+  <p class="note">Plan the next six weeks before you commit to anything.</p>
+  <ul class="note" style="padding-left:1.1rem;margin:.5rem 0 0">
+    <li><strong>Tap any square</strong> to swap that player from that week
+      onward. Each row is one place in your squad, so you can see exactly when
+      a new signing takes over.</li>
+    <li><strong>Tap &ldquo;chip&rdquo;</strong> at the top of a week to plan a
+      Wildcard, Free Hit, Bench Boost or Triple Captain. Anything you cannot
+      legally play that week is greyed out with the reason.</li>
+    <li><strong>Green fixtures are the kind ones.</strong> Attackers and
+      defenders are coloured differently on purpose: an opponent who leaks
+      goals is good news for your forwards and bad news for your defence.</li>
+    <li><strong>The rows underneath keep score</strong> &mdash; free
+      transfers, what any extra moves cost you, money left, and your running
+      points total.</li>
+  </ul>
+  <p class="note" style="margin-top:.6rem;font-size:.8rem;color:var(--ink-3)">
+  {caveat}</p>
 </header>
 
 <div class="act">

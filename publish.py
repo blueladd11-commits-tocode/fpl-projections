@@ -24,6 +24,7 @@ import os
 from datetime import datetime, timezone
 
 import links
+import words
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "out")
@@ -108,7 +109,7 @@ def load_evidence():
     return ev
 
 
-CSS = links.CSS + """
+CSS = links.CSS + words.CSS + """
 :root{
   --ground:#EDEFF1; --panel:#FFFFFF; --line:#D3D8DC;
   --ink:#12171C; --ink-2:#4C565F; --ink-3:#78838C;
@@ -206,13 +207,13 @@ def fmt_horizon(r):
     if hrs is None:
         return "&mdash;"
     extra = sorted(set(r.get("horizons") or []), reverse=True)
-    base = "T&minus;{:.0f}h".format(hrs)
+    base = words.horizon_short(hrs)
     if extra:
         # Just the count, with the detail on hover. Listing every horizon made
         # each row three lines tall and buried the numbers that matter.
         base += (" <span style='opacity:.55' title='earlier horizons: {}'>"
                  "+{}</span>").format(
-            ", ".join("T-{:.0f}h".format(h) for h in extra), len(extra))
+            ", ".join(words.horizon_short(h) for h in extra), len(extra))
     return base
 
 
@@ -263,46 +264,61 @@ def build(records, evidence):
     return """<div class="wrap">
 %s
 <header>
-  <span class="label">Pre-registered accuracy record</span>
-  <h1>Fantasy Premier League points projections &mdash; public scorecard</h1>
-  <p class="lede">Every projection below was written to disk <strong>before</strong> its
-  gameweek deadline, alongside the SHA-256 of the exact API snapshot it was built from.
-  This page shows how those projections actually performed &mdash; including the weeks
-  they were beaten by a three-line baseline.</p>
+  <span class="label">Our results, in public</span>
+  <h1>How accurate have we actually been?</h1>
+  <p class="lede">Every projection here was written down <strong>before</strong> the
+  deadline it applies to, and locked so it cannot be quietly edited later. This page
+  shows how each one actually did &mdash; <strong>including the weeks we lost</strong>.</p>
+  <p class="lede" style="font-size:.9rem;color:var(--ink-2)">Anyone in fantasy football
+  can tell you their tips are good. This is the page that proves it either way, and it
+  is the reason the whole thing exists.</p>
 </header>
 
 <section class="seal">
   <h2>What we are committing to, in advance</h2>
-  <p>We publish a projection for every player before every deadline, and we score it
-  against the same two baselines every week: a player&rsquo;s <strong>mean score over
-  his last six gameweeks</strong>, and his points-per-game to date. The headline
-  comparison is against the last-six baseline, because it is the harder one and
-  beating only the easier one would not be a real claim. Weeks we lose are published
-  in this table in the same style as weeks we win.</p>
+  <p>Before every deadline we publish a projection for every player. Then we mark it
+  against the same dull benchmark every single week: <strong>just assume each player
+  repeats his average from the last six weeks</strong>. It sounds too simple to be
+  hard, and it is not &mdash; most tipsters would lose to it.</p>
+  <p>We check ourselves against an even easier benchmark too (a player&rsquo;s
+  season-long average), but we lead with the harder one, because beating only the easy
+  one would not be worth claiming. Weeks we lose appear in this table looking exactly
+  like the weeks we win.</p>
+  <p style="font-size:.85rem;color:var(--ink-3)">Each row also carries a fingerprint
+  (a SHA-256) of the exact data file the projection was built from, so anyone can rerun
+  it and confirm we did not change our answer after the results came in.</p>
 </section>
 
 <section>
   <h2>Season record &mdash; 2026/27</h2>
   <div class="stats">
-    <div class="stat"><span class="stat-k">Gameweeks published</span>
-      <span class="stat-v">%d</span><span class="stat-n">projections timestamped pre-deadline</span></div>
+    <div class="stat"><span class="stat-k">Weeks on record</span>
+      <span class="stat-v">%d</span><span class="stat-n">written before the deadline</span></div>
     <div class="stat"><span class="stat-k">Scored so far</span>
       <span class="stat-v">%d</span><span class="stat-n">%d awaiting results</span></div>
-    <div class="stat"><span class="stat-k">Beat last-six baseline</span>
+    <div class="stat"><span class="stat-k">Weeks we beat the benchmark</span>
       <span class="stat-v">%s</span><span class="stat-n">of scored gameweeks</span></div>
   </div>
   <div class="scroll" style="margin-top:1.2rem">
   <table>
-    <thead><tr><th>GW</th><th>Deadline (UTC)</th><th>Made</th><th>Snapshot</th>
-      <th>Status</th><th>Our &rho;</th><th>Baseline &rho;</th><th>&Delta;</th></tr></thead>
+    <thead><tr><th>Week</th><th>Deadline (UTC)</th><th>Locked in</th>
+      <th>Data fingerprint</th>
+      <th>Status</th><th>Our score</th><th>Simple guess</th>
+      <th>We won by</th></tr></thead>
     <tbody>%s</tbody>
   </table>
   </div>
-  <p style="margin-top:1rem;font-size:.84rem">&rho; is Spearman rank correlation between
-  projected and actual points across the eligible player pool. A gameweek stays
-  <em>pending</em> until its results are final. <strong>Made</strong> is how long
-  before the deadline the scored projection was written; any earlier horizons also
-  on record are listed after it. We publish from three days out and re-project as
+  <p style="margin-top:1rem;font-size:.84rem"><strong>Our score</strong> measures
+  how well we put the players in the right ORDER, not whether we hit any single
+  number. 1.00 would be a perfect ranking, 0.00 no better than shuffling them.
+  The <strong>simple guess</strong> is what you get by assuming every player
+  repeats his average of the last six weeks &mdash; a deliberately dull
+  benchmark that is surprisingly hard to beat, which is exactly why we use it.
+  <span style="color:var(--ink-3)">(For the statistically minded: it is
+  Spearman rank correlation across the eligible player pool.)</span>
+  A week stays <em>pending</em> until its results are final.
+  <strong>Locked in</strong> is how long before the deadline the scored
+  projection was written; any earlier ones on record are noted beside it. We publish from three days out and re-project as
   team news lands &mdash; the scored entry is always the last one before the
   deadline, and the earlier ones stay on the record so you can see how much the
   projection improves as news arrives.</p>
@@ -322,8 +338,9 @@ def build(records, evidence):
   passes on 38/38 gameweeks across two seasons.</p>
   <div class="scroll">
   <table>
-    <thead><tr><th>Configuration</th><th>&rho;</th><th>&Delta; vs last-six</th>
-      <th>t</th><th>GWs won</th><th>Verdict</th></tr></thead>
+    <thead><tr><th>Setup</th><th>Score</th><th>Better by</th>
+      <th>Confidence<span class="sub">t-statistic</span></th>
+      <th>Weeks won</th><th>Verdict</th></tr></thead>
     <tbody>%s</tbody>
   </table>
   </div>

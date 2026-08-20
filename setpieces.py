@@ -136,7 +136,7 @@ function render(){
         '<span class="o">'+d.o+'</span>'+
         '<span class="nm">'+esc(d.n)+'</span>'+
         '<span class="meta">'+d.c.toFixed(1)+
-        (d.xp!=null?"  "+d.xp.toFixed(2)+" xP":"")+
+        (d.xp!=null?"  "+d.xp.toFixed(2)+" pts":"")+
         (d.ps!=null?"  "+d.ps+"%":"")+
         (d.note?' <span style="opacity:.7">'+esc(d.note)+'</span>':"")+
         '</span></div>').join("");
@@ -192,8 +192,8 @@ def build(bootstrap, takers, short, counts):
 
 <div class="grid" id="grid"></div>
 
-<footer>Source: FPL bootstrap-static, refreshed hourly &middot; xP and start
-probability from our own model &middot;
+<footer>Source: FPL bootstrap-static, refreshed hourly &middot; expected points and
+starting chance from our own model &middot;
 <a href="{projections}" style="color:var(--accent)">full projections</a></footer>
 </div>
 <script>const DATA={data};{js}</script>""".format(

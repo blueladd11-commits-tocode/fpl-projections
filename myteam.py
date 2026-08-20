@@ -167,6 +167,9 @@ CSS = web.CSS + (kits.CSS if kits else "") + """
 JS = r"""
 const LIMITS={GKP:2,DEF:5,MID:5,FWD:3}, BUDGET=100.0, MAX_PER_CLUB=3;
 const ORDER=["GKP","DEF","MID","FWD"];
+// The position codes are storage keys. These are what a person reads.
+const POS_WORD={GKP:"Keepers",DEF:"Defenders",MID:"Midfielders",FWD:"Forwards"};
+const POS_ONE={GKP:"Keeper",DEF:"Def",MID:"Mid",FWD:"Fwd"};
 // FPL allows any shape with 1 GK, at least 3 DEF and at least 1 FWD.
 // The eight legal shapes. [3,3,4] is not among them: it needs four forwards
 // and the squad may only hold three.
@@ -401,12 +404,12 @@ function card(id,onBench,pos){
   if(d.ps<25) cls.push("out");
   const arm=(id===cap?"C":(id===vice?"V":""));
   return '<div class="'+cls.join(" ")+'" data-id="'+id+'" tabindex="0" role="button" '+
-    'aria-label="'+esc(d.n)+', '+d.p+', '+d.t+'">'+
+    'aria-label="'+esc(d.n)+', '+POS_ONE[d.p]+', '+d.t+'">'+
     (arm?'<span class="arm">'+arm+'</span>':"")+
     (onBench&&pos?'<span class="bo">'+pos+'</span>':"")+
     KIT(d.t)+
     '<div class="nm">'+esc(d.n)+'</div>'+
-    '<div class="mt">'+d.xp.toFixed(2)+" xP</div>"+
+    '<div class="mt">'+d.xp.toFixed(2)+" pts</div>"+
     '<div class="fx">'+esc(d.t)+" \u00B7 \u00A3"+d.c.toFixed(1)+"</div>"+
     '</div>';
 }
@@ -463,7 +466,7 @@ function render(){
 
   document.getElementById("need").innerHTML=ORDER.map(pos=>{
     const n=members.filter(d=>d.p===pos).length;
-    return '<span class="'+(n>=LIMITS[pos]?"done":"")+'">'+pos+" "+n+"/"+
+    return '<span class="'+(n>=LIMITS[pos]?"done":"")+'">'+POS_WORD[pos]+" "+n+"/"+
       LIMITS[pos]+"</span>";
   }).join("");
 
@@ -624,12 +627,20 @@ def build(rows, gw, deadline, shorts):
 {nav}
 <header>
   <h1>My team &mdash; gameweek {gw}</h1>
-  <p class="note">Fifteen players, an eleven in a legal shape, a bench in the
-  order it actually comes on, and one armband that doubles a score. Tap a
-  starter then a substitute to swap them; right-click or press <kbd>C</kbd> on a
-  card to captain. Everything is stored in this browser only &mdash; the same
-  squad appears on the <a href="{projections}" style="color:var(--accent)">projections</a>
-  page and nothing is sent anywhere.</p>
+  <p class="note">Your fifteen, the way you would actually line them up.</p>
+  <ul class="note" style="padding-left:1.1rem;margin:.5rem 0 0">
+    <li><strong>Tap a starter, then a substitute</strong> to swap them. We will
+      stop you if the swap would leave a formation the game does not allow.</li>
+    <li><strong>Right-click a player</strong> (or press <kbd>C</kbd>) to give
+      him the armband and double his score. <kbd>V</kbd> makes him
+      vice-captain.</li>
+    <li><strong>Not sure where to start?</strong> Hit
+      <em>Build me a squad</em> and we will pick fifteen inside the budget.</li>
+  </ul>
+  <p class="note" style="margin-top:.6rem;font-size:.8rem;color:var(--ink-3)">
+  Your squad is saved in this browser and nowhere else &mdash; nothing is
+  uploaded. It shows up on the
+  <a href="{projections}" style="color:var(--accent)">projections</a> page too.</p>
 </header>
 
 <section class="imp" id="imp" hidden aria-label="Import an FPL team">
@@ -659,11 +670,11 @@ def build(rows, gw, deadline, shorts):
 </div>
 
 <div class="tot">
-  <div><div class="k">Squad</div><div class="v" id="t-n">0<small>/15</small></div></div>
+  <div><div class="k">Players picked</div><div class="v" id="t-n">0<small>/15</small></div></div>
   <div><div class="k">Cost</div><div class="v" id="t-cost">&pound;0.0m</div></div>
   <div><div class="k">In the bank</div><div class="v" id="t-bank">&pound;100.0m</div></div>
-  <div><div class="k">Projected</div><div class="v" id="t-xp">&mdash;</div></div>
-  <div><div class="k">Shape</div><div class="v" id="t-shape">&mdash;</div></div>
+  <div><div class="k">Points this week</div><div class="v" id="t-xp">&mdash;</div></div>
+  <div><div class="k">Formation</div><div class="v" id="t-shape">&mdash;</div></div>
 </div>
 
 <div class="cols">
@@ -677,11 +688,11 @@ def build(rows, gw, deadline, shorts):
     <div class="need" id="need"></div>
     <div class="controls" style="padding:0;border:0;background:none;margin:0">
       <div class="seg" role="group" aria-label="Position">
-        <button data-pos="ALL" aria-pressed="true">ALL</button>
-        <button data-pos="GKP" aria-pressed="false">GKP</button>
-        <button data-pos="DEF" aria-pressed="false">DEF</button>
-        <button data-pos="MID" aria-pressed="false">MID</button>
-        <button data-pos="FWD" aria-pressed="false">FWD</button>
+        <button data-pos="ALL" aria-pressed="true">Everyone</button>
+        <button data-pos="GKP" aria-pressed="false">Keepers</button>
+        <button data-pos="DEF" aria-pressed="false">Defenders</button>
+        <button data-pos="MID" aria-pressed="false">Midfielders</button>
+        <button data-pos="FWD" aria-pressed="false">Forwards</button>
       </div>
     </div>
     <input type="search" id="q" placeholder="Search player or club"

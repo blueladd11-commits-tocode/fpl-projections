@@ -33,6 +33,27 @@ nav a[aria-current="page"]{background:var(--accent);color:var(--ground);
 nav a:hover:not([aria-current]){color:var(--ink);border-color:var(--ink-3)}
 nav a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
+.gloss{border:1px solid var(--line);background:var(--panel);margin:0 0 1rem;
+  border-radius:3px}
+.gloss summary{cursor:pointer;padding:.6rem .85rem;font-size:.86rem;
+  color:var(--ink);list-style:none;display:flex;align-items:center;gap:.45rem}
+.gloss summary::-webkit-details-marker{display:none}
+.gloss summary:before{content:"?";display:inline-flex;align-items:center;
+  justify-content:center;width:1.15rem;height:1.15rem;border-radius:50%;
+  background:var(--accent-soft);color:var(--accent);font-size:.72rem;
+  font-weight:700;flex:none}
+.gloss summary:hover{color:var(--accent)}
+.gloss[open] summary{border-bottom:1px solid var(--line)}
+.gloss dl{margin:0;padding:.7rem .85rem .85rem;display:grid;gap:.6rem}
+.gloss dt{font-weight:650;color:var(--ink);font-size:.86rem;margin-bottom:.12rem}
+.gloss dd{margin:0;color:var(--ink-2);font-size:.84rem;line-height:1.5;
+  max-width:62ch}
+/* The small line under a column heading. Without it a friendly heading is just
+   a vaguer version of the jargon it replaced. */
+th .arw{font-weight:400;color:var(--accent)}
+th .sub{display:block;font-weight:400;font-size:.62rem;color:var(--ink-3);
+  letter-spacing:0;text-transform:none;margin-top:.1rem;white-space:nowrap}
+
 :root{
   --ground:#EDEFF1; --panel:#FFFFFF; --line:#D3D8DC;
   --ink:#12171C; --ink-2:#4C565F; --ink-3:#78838C;
@@ -122,46 +143,61 @@ footer{color:var(--ink-3);font-size:.76rem;font-family:var(--mono);
 <div class="wrap">
 <nav aria-label="Sections"><a class="home" href="index.html" aria-label="Proper Score home"><svg class="ps-mark" viewBox="0 0 16 16" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M0 7h16v2H0zM2 1h4v6H2zM10 9h4v6h-4z"/></svg></a><a href="projections.html">Projections</a><a href="myteam.html">My team</a><a href="planner.html">Planner</a><a href="fixtures.html">Fixtures</a><a href="setpieces.html">Set pieces</a><a href="scorecard.html" aria-current="page">Accuracy record</a></nav>
 <header>
-  <span class="label">Pre-registered accuracy record</span>
-  <h1>Fantasy Premier League points projections &mdash; public scorecard</h1>
-  <p class="lede">Every projection below was written to disk <strong>before</strong> its
-  gameweek deadline, alongside the SHA-256 of the exact API snapshot it was built from.
-  This page shows how those projections actually performed &mdash; including the weeks
-  they were beaten by a three-line baseline.</p>
+  <span class="label">Our results, in public</span>
+  <h1>How accurate have we actually been?</h1>
+  <p class="lede">Every projection here was written down <strong>before</strong> the
+  deadline it applies to, and locked so it cannot be quietly edited later. This page
+  shows how each one actually did &mdash; <strong>including the weeks we lost</strong>.</p>
+  <p class="lede" style="font-size:.9rem;color:var(--ink-2)">Anyone in fantasy football
+  can tell you their tips are good. This is the page that proves it either way, and it
+  is the reason the whole thing exists.</p>
 </header>
 
 <section class="seal">
   <h2>What we are committing to, in advance</h2>
-  <p>We publish a projection for every player before every deadline, and we score it
-  against the same two baselines every week: a player&rsquo;s <strong>mean score over
-  his last six gameweeks</strong>, and his points-per-game to date. The headline
-  comparison is against the last-six baseline, because it is the harder one and
-  beating only the easier one would not be a real claim. Weeks we lose are published
-  in this table in the same style as weeks we win.</p>
+  <p>Before every deadline we publish a projection for every player. Then we mark it
+  against the same dull benchmark every single week: <strong>just assume each player
+  repeats his average from the last six weeks</strong>. It sounds too simple to be
+  hard, and it is not &mdash; most tipsters would lose to it.</p>
+  <p>We check ourselves against an even easier benchmark too (a player&rsquo;s
+  season-long average), but we lead with the harder one, because beating only the easy
+  one would not be worth claiming. Weeks we lose appear in this table looking exactly
+  like the weeks we win.</p>
+  <p style="font-size:.85rem;color:var(--ink-3)">Each row also carries a fingerprint
+  (a SHA-256) of the exact data file the projection was built from, so anyone can rerun
+  it and confirm we did not change our answer after the results came in.</p>
 </section>
 
 <section>
   <h2>Season record &mdash; 2026/27</h2>
   <div class="stats">
-    <div class="stat"><span class="stat-k">Gameweeks published</span>
-      <span class="stat-v">1</span><span class="stat-n">projections timestamped pre-deadline</span></div>
+    <div class="stat"><span class="stat-k">Weeks on record</span>
+      <span class="stat-v">1</span><span class="stat-n">written before the deadline</span></div>
     <div class="stat"><span class="stat-k">Scored so far</span>
       <span class="stat-v">0</span><span class="stat-n">1 awaiting results</span></div>
-    <div class="stat"><span class="stat-k">Beat last-six baseline</span>
+    <div class="stat"><span class="stat-k">Weeks we beat the benchmark</span>
       <span class="stat-v">&mdash;</span><span class="stat-n">of scored gameweeks</span></div>
   </div>
   <div class="scroll" style="margin-top:1.2rem">
   <table>
-    <thead><tr><th>GW</th><th>Deadline (UTC)</th><th>Made</th><th>Snapshot</th>
-      <th>Status</th><th>Our &rho;</th><th>Baseline &rho;</th><th>&Delta;</th></tr></thead>
-    <tbody><tr><td class="k">GW1</td><td>2026-08-21 17:30Z</td><td class="made">T&minus;24h <span style='opacity:.55' title='earlier horizons: T-72h'>+1</span></td><td class="hash">ae8265f6bf35</td><td><span class="chip c-pend">PENDING</span></td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td></tr></tbody>
+    <thead><tr><th>Week</th><th>Deadline (UTC)</th><th>Locked in</th>
+      <th>Data fingerprint</th>
+      <th>Status</th><th>Our score</th><th>Simple guess</th>
+      <th>We won by</th></tr></thead>
+    <tbody><tr><td class="k">GW1</td><td>2026-08-21 17:30Z</td><td class="made">1 day early <span style='opacity:.55' title='earlier horizons: 3 days early'>+1</span></td><td class="hash">4bc784def009</td><td><span class="chip c-pend">PENDING</span></td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td></tr></tbody>
   </table>
   </div>
-  <p style="margin-top:1rem;font-size:.84rem">&rho; is Spearman rank correlation between
-  projected and actual points across the eligible player pool. A gameweek stays
-  <em>pending</em> until its results are final. <strong>Made</strong> is how long
-  before the deadline the scored projection was written; any earlier horizons also
-  on record are listed after it. We publish from three days out and re-project as
+  <p style="margin-top:1rem;font-size:.84rem"><strong>Our score</strong> measures
+  how well we put the players in the right ORDER, not whether we hit any single
+  number. 1.00 would be a perfect ranking, 0.00 no better than shuffling them.
+  The <strong>simple guess</strong> is what you get by assuming every player
+  repeats his average of the last six weeks &mdash; a deliberately dull
+  benchmark that is surprisingly hard to beat, which is exactly why we use it.
+  <span style="color:var(--ink-3)">(For the statistically minded: it is
+  Spearman rank correlation across the eligible player pool.)</span>
+  A week stays <em>pending</em> until its results are final.
+  <strong>Locked in</strong> is how long before the deadline the scored
+  projection was written; any earlier ones on record are noted beside it. We publish from three days out and re-project as
   team news lands &mdash; the scored entry is always the last one before the
   deadline, and the earlier ones stay on the record so you can see how much the
   projection improves as news arrives.</p>
@@ -181,8 +217,9 @@ footer{color:var(--ink-3);font-size:.76rem;font-family:var(--mono);
   passes on 38/38 gameweeks across two seasons.</p>
   <div class="scroll">
   <table>
-    <thead><tr><th>Configuration</th><th>&rho;</th><th>&Delta; vs last-six</th>
-      <th>t</th><th>GWs won</th><th>Verdict</th></tr></thead>
+    <thead><tr><th>Setup</th><th>Score</th><th>Better by</th>
+      <th>Confidence<span class="sub">t-statistic</span></th>
+      <th>Weeks won</th><th>Verdict</th></tr></thead>
     <tbody><tr><td class="k">2024-25 + minutes model</td><td>0.443</td><td>+0.052</td><td>4.90</td><td>29/38</td><td><span class="chip c-ok">significant</span></td></tr>
 <tr><td class="k">2025-26 + minutes model</td><td>0.466</td><td>+0.115</td><td>7.96</td><td>36/38</td><td><span class="chip c-ok">significant</span></td></tr>
 <tr><td class="k">2023-24</td><td>0.403</td><td>+0.009</td><td>0.88</td><td>19/38</td><td><span class="chip c-bad">not significant</span></td></tr>
@@ -211,7 +248,7 @@ footer{color:var(--ink-3);font-size:.76rem;font-family:var(--mono);
   </ul>
 </section>
 
-<footer>Generated 2026-08-20 17:51 UTC &middot; projections and snapshot hashes are reproducible from
+<footer>Generated 2026-08-20 18:41 UTC &middot; projections and snapshot hashes are reproducible from
 the recorded snapshot &middot; baseline definitions unchanged since first publication &middot; <a href="projections.html" style="color:var(--accent)">this week&rsquo;s projections</a></footer>
 </div>
 </body>

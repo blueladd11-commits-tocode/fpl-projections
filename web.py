@@ -26,6 +26,7 @@ import sys
 from datetime import datetime, timezone
 
 import links
+import words
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "out")
@@ -107,7 +108,7 @@ def prepare(rows):
     return out
 
 
-CSS = links.CSS + """
+CSS = links.CSS + words.CSS + """
 :root{
   --ground:#EDEFF1; --panel:#FFFFFF; --line:#D3D8DC;
   --ink:#12171C; --ink-2:#454F58; --ink-3:#5E6873;
@@ -216,9 +217,20 @@ tr{cursor:pointer}
 
 JS = r"""
 const NG=(DATA[0]&&DATA[0].g?DATA[0].g.length:1);
-const COLS=[["n","Player",0],["t","Team",0],["p","Pos",0],["c","\u00A3",1],
-  ["xp","xP",1],["tot",NG+"GW",1],["h10","P(10+)",1],["ppm","xP/\u00A3m",1],
-  ["ps","Start %",1],["m","xMins",1]];
+// label, then the line under it saying what the number means. The sub is not
+// decoration: a heading reading "Points" with nothing under it is friendlier
+// than "xP" but no more informative, and being vague is not the same as being
+// welcoming.
+const COLS=[["n","Player","",0],["t","Club","",0],["p","Position","",0],
+  ["c","Price","",1],
+  ["xp","Points","this week",1],
+  ["tot","Next "+NG,"weeks total",1],
+  ["h10","Big week","chance of 10+",1],
+  ["ppm","Value","per \u00A31m",1],
+  ["ps","Starting","likelihood",1],
+  ["m","Minutes","expected",1]];
+// Short enough for a table cell, still a word rather than a code.
+const POS={GKP:"Keeper",DEF:"Def",MID:"Mid",FWD:"Fwd"};
 let sortKey="tot", sortDir=-1, posFilter="ALL", onlyEligible=true;
 const maxXp=Math.max(...DATA.map(d=>d.xp));
 
@@ -255,7 +267,7 @@ function render(){
       Math.max(1,Math.round(v/mx*11))+'px" title="'+v.toFixed(2)+'"></i>').join("");
     return '<tr data-i="'+d.i+'"'+(squad.includes(d.i)?' class="picked"':'')+'>'+
       '<td class="name">'+esc(d.n)+(d.f>1?' <span class="pill">DGW</span>':'')+'</td>'+
-      '<td class="mono">'+d.t+'</td><td class="mono">'+d.p+'</td>'+
+      '<td class="mono">'+d.t+'</td><td class="mono">'+POS[d.p]+'</td>'+
       '<td class="num mono">'+d.c.toFixed(1)+'</td>'+
       '<td class="num mono"><span class="bar" style="width:'+w+'px"></span>'+
         d.xp.toFixed(2)+'</td>'+
@@ -343,7 +355,8 @@ function renderSquad(){
   if(!members.length){
     document.getElementById("sq-tx").innerHTML="";
     body.innerHTML='<p class="hint">Click any row in the table to add a player. '+
-      'Real FPL limits apply: 100m budget, 2/5/5/3 by position, max 3 per club.</p>';
+      'Real FPL rules apply: \u00A3100m to spend, 2 keepers, 5 defenders, '+
+      '5 midfielders and 3 forwards, and no more than 3 from any one club.</p>';
     renderSuggestions(members);
   }else{
     const line=(label,arr,benched)=>arr.length?'<div class="line">'+label+'</div>'+
@@ -476,14 +489,21 @@ function load(){
 document.addEventListener("DOMContentLoaded",()=>{
   load();
   const thead=document.getElementById("th");
-  thead.innerHTML=COLS.map(([k,label,num])=>
-    '<th data-k="'+k+'" class="'+(num?"num":"")+'" tabindex="0">'+label+'</th>').join("");
+  thead.innerHTML=COLS.map(([k,label,sub,num])=>
+    '<th data-k="'+k+'" class="'+(num?"num":"")+'" tabindex="0">'+label+
+    (sub?'<span class="sub">'+sub+'</span>':"")+'</th>').join("");
+  // The sort arrow goes in its own element. Setting textContent here used to
+  // flatten the heading and the small line under it into one text node, so the
+  // first sort turned "Points / expected this week" into "Pointsexpected this
+  // week" - and it happened on load, before anyone clicked anything.
   const mark=k=>{
     thead.querySelectorAll("th").forEach(o=>{
       o.removeAttribute("aria-sort");
-      const base=o.textContent.replace(/[\u25b2\u25bc]\s*$/,"");
-      o.textContent = o.dataset.k===k
-        ? base+(sortDir===1?" \u25b2":" \u25bc") : base;
+      let a=o.querySelector(".arw");
+      if(!a){a=document.createElement("span");a.className="arw";
+             o.insertBefore(a,o.firstChild.nextSibling||null);}
+      a.textContent = o.dataset.k===k
+        ? (sortDir===1?" \u25b2":" \u25bc") : "";
     });
     const cur=thead.querySelector('th[data-k="'+k+'"]');
     if(cur) cur.setAttribute("aria-sort",sortDir===1?"ascending":"descending");
@@ -528,7 +548,7 @@ def build(rows, meta, source="record"):
         made_s = ("computed just now &mdash; not yet the committed "
                   "pre-deadline projection")
     elif made is not None:
-        made_s = "built {:.0f}h before the deadline".format(made)
+        made_s = "locked in {}".format(words.horizon(made))
     else:
         made_s = "built pre-deadline"
 
@@ -536,19 +556,21 @@ def build(rows, meta, source="record"):
 {nav}
 <header>
   <h1>Gameweek {gw} projections</h1>
-  <p class="sub">Deadline {dl} UTC &middot; {made} &middot; snapshot
-  <code>{snap}</code>. <strong>xP</strong> is expected points, <strong>{ng}GW</strong> the total over the next {ng} gameweeks with a
-  bar per week, <strong>Start&nbsp;%</strong> the modelled probability of
-  starting. Sort any column; click again to reverse.</p>
+  <p class="sub">How many points we think every player will score this week,
+  and over the next {ng}. Tap any column heading to sort by it.</p>
+  <p class="sub" style="font-size:.78rem;color:var(--ink-3)">Deadline {dl} UTC
+  &middot; {made} &middot; data fingerprint <code>{snap}</code> &middot;
+  <a href="{scorecard}" style="color:var(--accent)">how accurate we have
+  been</a></p>
 </header>
 
 <div class="controls">
   <div class="seg" role="group" aria-label="Filter by position">
-    <button data-pos="ALL" aria-pressed="true">ALL</button>
-    <button data-pos="GKP" aria-pressed="false">GKP</button>
-    <button data-pos="DEF" aria-pressed="false">DEF</button>
-    <button data-pos="MID" aria-pressed="false">MID</button>
-    <button data-pos="FWD" aria-pressed="false">FWD</button>
+    <button data-pos="ALL" aria-pressed="true">Everyone</button>
+    <button data-pos="GKP" aria-pressed="false">Keepers</button>
+    <button data-pos="DEF" aria-pressed="false">Defenders</button>
+    <button data-pos="MID" aria-pressed="false">Midfielders</button>
+    <button data-pos="FWD" aria-pressed="false">Forwards</button>
   </div>
   <input type="search" id="q" placeholder="Search player" aria-label="Search player">
   <select id="team" aria-label="Filter by team">
@@ -556,9 +578,11 @@ def build(rows, meta, source="record"):
     {teamopts}
   </select>
   <label class="chk"><input type="checkbox" id="elig" checked>
-    Established players only</label>
+    Hide fringe players</label>
   <span class="count" id="count"></span>
 </div>
+
+{glossary}
 
 <div class="layout">
   <div class="scroll">
@@ -572,8 +596,8 @@ def build(rows, meta, source="record"):
     <div class="tot">
       <div><span class="k">Players</span><span class="v" id="sq-n">0/15</span></div>
       <div><span class="k">Cost</span><span class="v" id="sq-cost">&pound;0.0m</span></div>
-      <div><span class="k">Best XI xP</span><span class="v" id="sq-xp">&mdash;</span></div>
-      <div><span class="k">Shape</span><span class="v" id="sq-shape">&mdash;</span></div>
+      <div><span class="k">Best eleven scores</span><span class="v" id="sq-xp">&mdash;</span></div>
+      <div><span class="k">Formation</span><span class="v" id="sq-shape">&mdash;</span></div>
     </div>
     <div id="sq-list"></div>
     <div id="sq-tx"></div>
@@ -585,7 +609,9 @@ reproducible from its snapshot &mdash; <a href="{scorecard}" style="color:var(--
 </div>
 <script>const DATA={data};{js}</script>""".format(
         js=JS, data=json.dumps(data, separators=(",", ":")),
-        scorecard=links.href("scorecard"), nav=links.nav("projections"), gw=gw, dl=dl, made=made_s, ng=len(data[0]["g"]) if data else 6,
+        scorecard=links.href("scorecard"), nav=links.nav("projections"),
+        gw=gw, dl=dl, made=made_s, ng=len(data[0]["g"]) if data else 6,
+        glossary=words.glossary_html(),
         snap=(meta.get("snapshot_sha256", {}).get("bootstrap.json", "")[:12]),
         teamopts="\n    ".join(
             '<option value="{0}">{0}</option>'.format(t) for t in teams),

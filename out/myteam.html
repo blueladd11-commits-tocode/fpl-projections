@@ -33,6 +33,27 @@ nav a[aria-current="page"]{background:var(--accent);color:var(--ground);
 nav a:hover:not([aria-current]){color:var(--ink);border-color:var(--ink-3)}
 nav a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
+.gloss{border:1px solid var(--line);background:var(--panel);margin:0 0 1rem;
+  border-radius:3px}
+.gloss summary{cursor:pointer;padding:.6rem .85rem;font-size:.86rem;
+  color:var(--ink);list-style:none;display:flex;align-items:center;gap:.45rem}
+.gloss summary::-webkit-details-marker{display:none}
+.gloss summary:before{content:"?";display:inline-flex;align-items:center;
+  justify-content:center;width:1.15rem;height:1.15rem;border-radius:50%;
+  background:var(--accent-soft);color:var(--accent);font-size:.72rem;
+  font-weight:700;flex:none}
+.gloss summary:hover{color:var(--accent)}
+.gloss[open] summary{border-bottom:1px solid var(--line)}
+.gloss dl{margin:0;padding:.7rem .85rem .85rem;display:grid;gap:.6rem}
+.gloss dt{font-weight:650;color:var(--ink);font-size:.86rem;margin-bottom:.12rem}
+.gloss dd{margin:0;color:var(--ink-2);font-size:.84rem;line-height:1.5;
+  max-width:62ch}
+/* The small line under a column heading. Without it a friendly heading is just
+   a vaguer version of the jargon it replaced. */
+th .arw{font-weight:400;color:var(--accent)}
+th .sub{display:block;font-weight:400;font-size:.62rem;color:var(--ink-3);
+  letter-spacing:0;text-transform:none;margin-top:.1rem;white-space:nowrap}
+
 :root{
   --ground:#EDEFF1; --panel:#FFFFFF; --line:#D3D8DC;
   --ink:#12171C; --ink-2:#454F58; --ink-3:#5E6873;
@@ -275,12 +296,20 @@ tr{cursor:pointer}
 <nav aria-label="Sections"><a class="home" href="index.html" aria-label="Proper Score home"><svg class="ps-mark" viewBox="0 0 16 16" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M0 7h16v2H0zM2 1h4v6H2zM10 9h4v6h-4z"/></svg></a><a href="projections.html">Projections</a><a href="myteam.html" aria-current="page">My team</a><a href="planner.html">Planner</a><a href="fixtures.html">Fixtures</a><a href="setpieces.html">Set pieces</a><a href="scorecard.html">Accuracy record</a></nav>
 <header>
   <h1>My team &mdash; gameweek 1</h1>
-  <p class="note">Fifteen players, an eleven in a legal shape, a bench in the
-  order it actually comes on, and one armband that doubles a score. Tap a
-  starter then a substitute to swap them; right-click or press <kbd>C</kbd> on a
-  card to captain. Everything is stored in this browser only &mdash; the same
-  squad appears on the <a href="projections.html" style="color:var(--accent)">projections</a>
-  page and nothing is sent anywhere.</p>
+  <p class="note">Your fifteen, the way you would actually line them up.</p>
+  <ul class="note" style="padding-left:1.1rem;margin:.5rem 0 0">
+    <li><strong>Tap a starter, then a substitute</strong> to swap them. We will
+      stop you if the swap would leave a formation the game does not allow.</li>
+    <li><strong>Right-click a player</strong> (or press <kbd>C</kbd>) to give
+      him the armband and double his score. <kbd>V</kbd> makes him
+      vice-captain.</li>
+    <li><strong>Not sure where to start?</strong> Hit
+      <em>Build me a squad</em> and we will pick fifteen inside the budget.</li>
+  </ul>
+  <p class="note" style="margin-top:.6rem;font-size:.8rem;color:var(--ink-3)">
+  Your squad is saved in this browser and nowhere else &mdash; nothing is
+  uploaded. It shows up on the
+  <a href="projections.html" style="color:var(--accent)">projections</a> page too.</p>
 </header>
 
 <section class="imp" id="imp" hidden aria-label="Import an FPL team">
@@ -310,11 +339,11 @@ tr{cursor:pointer}
 </div>
 
 <div class="tot">
-  <div><div class="k">Squad</div><div class="v" id="t-n">0<small>/15</small></div></div>
+  <div><div class="k">Players picked</div><div class="v" id="t-n">0<small>/15</small></div></div>
   <div><div class="k">Cost</div><div class="v" id="t-cost">&pound;0.0m</div></div>
   <div><div class="k">In the bank</div><div class="v" id="t-bank">&pound;100.0m</div></div>
-  <div><div class="k">Projected</div><div class="v" id="t-xp">&mdash;</div></div>
-  <div><div class="k">Shape</div><div class="v" id="t-shape">&mdash;</div></div>
+  <div><div class="k">Points this week</div><div class="v" id="t-xp">&mdash;</div></div>
+  <div><div class="k">Formation</div><div class="v" id="t-shape">&mdash;</div></div>
 </div>
 
 <div class="cols">
@@ -328,11 +357,11 @@ tr{cursor:pointer}
     <div class="need" id="need"></div>
     <div class="controls" style="padding:0;border:0;background:none;margin:0">
       <div class="seg" role="group" aria-label="Position">
-        <button data-pos="ALL" aria-pressed="true">ALL</button>
-        <button data-pos="GKP" aria-pressed="false">GKP</button>
-        <button data-pos="DEF" aria-pressed="false">DEF</button>
-        <button data-pos="MID" aria-pressed="false">MID</button>
-        <button data-pos="FWD" aria-pressed="false">FWD</button>
+        <button data-pos="ALL" aria-pressed="true">Everyone</button>
+        <button data-pos="GKP" aria-pressed="false">Keepers</button>
+        <button data-pos="DEF" aria-pressed="false">Defenders</button>
+        <button data-pos="MID" aria-pressed="false">Midfielders</button>
+        <button data-pos="FWD" aria-pressed="false">Forwards</button>
       </div>
     </div>
     <input type="search" id="q" placeholder="Search player or club"
@@ -350,6 +379,9 @@ squad and captain stored locally in this browser &middot;
 function KIT(t){return KITS[t]||"";}
 const LIMITS={GKP:2,DEF:5,MID:5,FWD:3}, BUDGET=100.0, MAX_PER_CLUB=3;
 const ORDER=["GKP","DEF","MID","FWD"];
+// The position codes are storage keys. These are what a person reads.
+const POS_WORD={GKP:"Keepers",DEF:"Defenders",MID:"Midfielders",FWD:"Forwards"};
+const POS_ONE={GKP:"Keeper",DEF:"Def",MID:"Mid",FWD:"Fwd"};
 // FPL allows any shape with 1 GK, at least 3 DEF and at least 1 FWD.
 // The eight legal shapes. [3,3,4] is not among them: it needs four forwards
 // and the squad may only hold three.
@@ -584,12 +616,12 @@ function card(id,onBench,pos){
   if(d.ps<25) cls.push("out");
   const arm=(id===cap?"C":(id===vice?"V":""));
   return '<div class="'+cls.join(" ")+'" data-id="'+id+'" tabindex="0" role="button" '+
-    'aria-label="'+esc(d.n)+', '+d.p+', '+d.t+'">'+
+    'aria-label="'+esc(d.n)+', '+POS_ONE[d.p]+', '+d.t+'">'+
     (arm?'<span class="arm">'+arm+'</span>':"")+
     (onBench&&pos?'<span class="bo">'+pos+'</span>':"")+
     KIT(d.t)+
     '<div class="nm">'+esc(d.n)+'</div>'+
-    '<div class="mt">'+d.xp.toFixed(2)+" xP</div>"+
+    '<div class="mt">'+d.xp.toFixed(2)+" pts</div>"+
     '<div class="fx">'+esc(d.t)+" \u00B7 \u00A3"+d.c.toFixed(1)+"</div>"+
     '</div>';
 }
@@ -646,7 +678,7 @@ function render(){
 
   document.getElementById("need").innerHTML=ORDER.map(pos=>{
     const n=members.filter(d=>d.p===pos).length;
-    return '<span class="'+(n>=LIMITS[pos]?"done":"")+'">'+pos+" "+n+"/"+
+    return '<span class="'+(n>=LIMITS[pos]?"done":"")+'">'+POS_WORD[pos]+" "+n+"/"+
       LIMITS[pos]+"</span>";
   }).join("");
 

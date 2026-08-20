@@ -33,6 +33,27 @@ nav a[aria-current="page"]{background:var(--accent);color:var(--ground);
 nav a:hover:not([aria-current]){color:var(--ink);border-color:var(--ink-3)}
 nav a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
+.gloss{border:1px solid var(--line);background:var(--panel);margin:0 0 1rem;
+  border-radius:3px}
+.gloss summary{cursor:pointer;padding:.6rem .85rem;font-size:.86rem;
+  color:var(--ink);list-style:none;display:flex;align-items:center;gap:.45rem}
+.gloss summary::-webkit-details-marker{display:none}
+.gloss summary:before{content:"?";display:inline-flex;align-items:center;
+  justify-content:center;width:1.15rem;height:1.15rem;border-radius:50%;
+  background:var(--accent-soft);color:var(--accent);font-size:.72rem;
+  font-weight:700;flex:none}
+.gloss summary:hover{color:var(--accent)}
+.gloss[open] summary{border-bottom:1px solid var(--line)}
+.gloss dl{margin:0;padding:.7rem .85rem .85rem;display:grid;gap:.6rem}
+.gloss dt{font-weight:650;color:var(--ink);font-size:.86rem;margin-bottom:.12rem}
+.gloss dd{margin:0;color:var(--ink-2);font-size:.84rem;line-height:1.5;
+  max-width:62ch}
+/* The small line under a column heading. Without it a friendly heading is just
+   a vaguer version of the jargon it replaced. */
+th .arw{font-weight:400;color:var(--accent)}
+th .sub{display:block;font-weight:400;font-size:.62rem;color:var(--ink-3);
+  letter-spacing:0;text-transform:none;margin-top:.1rem;white-space:nowrap}
+
 :root{
   --ground:#EDEFF1; --panel:#FFFFFF; --line:#D3D8DC;
   --ink:#12171C; --ink-2:#454F58; --ink-3:#5E6873;
@@ -159,12 +180,19 @@ tr{cursor:pointer}
 <div class="wrap">
 <nav aria-label="Sections"><a class="home" href="index.html" aria-label="Proper Score home"><svg class="ps-mark" viewBox="0 0 16 16" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M0 7h16v2H0zM2 1h4v6H2zM10 9h4v6h-4z"/></svg></a><a href="projections.html">Projections</a><a href="myteam.html">My team</a><a href="planner.html">Planner</a><a href="fixtures.html" aria-current="page">Fixtures</a><a href="setpieces.html">Set pieces</a><a href="scorecard.html">Accuracy record</a></nav>
 <header>
-  <h1>Fixture ticker &mdash; GW1 to GW8</h1>
-  <p class="note"><strong>Pre-season:</strong> FPL has not published granular team strength yet, so these are built from last season&rsquo;s expected goals for and against, shrunk toward the league mean. Promoted sides are rated at last season&rsquo;s bottom third. Every other ticker colours FPL&rsquo;s single 1&ndash;5
-  difficulty rating, which answers two different questions with one number. A
-  promoted side concedes freely <em>and</em> scores little &mdash; great to
-  attack, great to defend against. These are separated, and computed from the
-  same fitted team ratings the projection model uses.</p>
+  <h1>Fixture ticker &mdash; gameweeks 1 to 8</h1>
+  <p class="note">Green means an easy run. But &ldquo;easy&rdquo; depends on
+  who you are asking about, so there are two views.</p>
+  <ul class="note" style="padding-left:1.1rem;margin:.5rem 0 0">
+    <li><strong>For attackers</strong> &mdash; green means the opponent lets
+      goals in.</li>
+    <li><strong>For defenders</strong> &mdash; green means the opponent rarely
+      scores.</li>
+  </ul>
+  <p class="note" style="margin-top:.6rem">A newly promoted side is usually
+  <em>both</em>: a lovely fixture for your forwards and a lovely one for your
+  defence. Every other ticker gives you one number and makes you guess which
+  question it answered. <strong>Pre-season:</strong> FPL has not published granular team strength yet, so these are built from last season&rsquo;s expected goals for and against, shrunk toward the league mean. Promoted sides are rated at last season&rsquo;s bottom third. </p>
 </header>
 
 <div class="controls">
