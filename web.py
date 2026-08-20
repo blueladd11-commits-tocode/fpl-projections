@@ -624,6 +624,59 @@ def lint_page(html):
     return ["non-ASCII in page: {} - use HTML entities".format(" ".join(bad))] if bad else []
 
 
+# Browser and language builtins the generated pages use. Anything called that
+# is neither defined in the page nor listed here is almost certainly a typo or
+# a half-applied edit.
+JS_GLOBALS = frozenset("""
+if for while switch catch return typeof function Math JSON Object Array String
+Number Boolean Set Map Date RegExp parseInt parseFloat isNaN setTimeout
+setInterval clearTimeout encodeURIComponent decodeURIComponent localStorage
+document window console fetch alert confirm requestAnimationFrame
+""".split())
+
+
+def _strip_strings(js):
+    """Blank out string literals and comments, preserving length.
+
+    Comments have to be handled here, not skipped later: an apostrophe in an
+    ordinary English comment - "FPL's own data" - otherwise opens a string that
+    never closes, and every line after it is treated as quoted. That silently
+    blinded the whole check while still reporting confident-looking failures.
+    """
+    out, i, n = [], 0, len(js)
+    quote = None
+    while i < n:
+        ch = js[i]
+        nxt = js[i + 1] if i + 1 < n else ""
+        if quote:
+            if ch == "\\":
+                out.append("  ")
+                i += 2
+                continue
+            out.append(ch if ch == quote else " ")
+            if ch == quote:
+                quote = None
+            i += 1
+        elif ch == "/" and nxt == "/":
+            j = js.find("\n", i)
+            j = n if j < 0 else j
+            out.append(" " * (j - i))
+            i = j
+        elif ch == "/" and nxt == "*":
+            j = js.find("*/", i + 2)
+            j = n if j < 0 else j + 2
+            out.append(" " * (j - i))
+            i = j
+        elif ch in "'\"`":
+            quote = ch
+            out.append(ch)
+            i += 1
+        else:
+            out.append(ch)
+            i += 1
+    return "".join(out)
+
+
 def lint_js(html, required=("#tb", "DOMContentLoaded")):
     """Catch the failure mode that blanks the page without any visible error.
 
@@ -669,6 +722,31 @@ def lint_js(html, required=("#tb", "DOMContentLoaded")):
     for needed in required:
         if needed not in js and needed.lstrip("#") not in js:
             problems.append("missing expected reference: {}".format(needed))
+
+    # Two runtime failures that a syntax check cannot see, both of which have
+    # shipped: a function called but never defined (an edit that inserted the
+    # call sites and silently missed the definitions), and getElementById on an
+    # id the markup does not contain. Either throws inside DOMContentLoaded, and
+    # everything registered after the throw never runs - so the page draws its
+    # shell and nothing else, which is indistinguishable from "no data yet".
+    # String literals are blanked first. Without that, `hsl(` inside a CSS
+    # colour string reads as a call to an undefined function, and every such
+    # false positive trains you to ignore the linter.
+    bare = _strip_strings(js)
+    defined = set(re.findall(r"function\s+([A-Za-z_$][\w$]*)", bare))
+    defined |= set(re.findall(r"(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=", bare))
+    defined |= set(re.findall(r"([A-Za-z_$][\w$]*)\s*=\s*(?:function|\()", bare))
+    for name in sorted(set(re.findall(r"(?<![.\w$])([A-Za-z_$][\w$]*)\s*\(", bare))):
+        if name in defined or name in JS_GLOBALS:
+            continue
+        problems.append("calls {}() which is never defined in this page".format(name))
+
+    # Ids are matched against the whole document, not just the static markup:
+    # a page may legitimately create an element and then look it up.
+    for el in sorted(set(re.findall(r"getElementById\(\"([^\"]+)\"\)", js))):
+        if 'id="{}"'.format(el) not in html:
+            problems.append("getElementById({!r}) but nothing in the page ever "
+                            "carries that id".format(el))
     return problems
 
 

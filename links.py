@@ -26,6 +26,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 PATH = os.path.join(HERE, "links.json")
 
 PAGES = (("projections", "Projections"),
+         ("myteam", "My team"),
          ("fixtures", "Fixtures"),
          ("setpieces", "Set pieces"),
          ("scorecard", "Accuracy record"))

@@ -15,3 +15,4 @@ preview_scorecard.html
 out/prices/*.lock
 out/prices/*.tmp
 out/prices/*.corrupt-*
+serve.py
