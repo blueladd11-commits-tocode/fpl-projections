@@ -110,19 +110,19 @@ def prepare(rows):
 CSS = links.CSS + """
 :root{
   --ground:#EDEFF1; --panel:#FFFFFF; --line:#D3D8DC;
-  --ink:#12171C; --ink-2:#4C565F; --ink-3:#78838C;
+  --ink:#12171C; --ink-2:#454F58; --ink-3:#5E6873;
   --accent:#0F7F6E; --accent-soft:#D9EFEA; --warn:#9A6B12; --loss:#A83A2E;
   --mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
   --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --ground:#0D1116; --panel:#151B22; --line:#27313A;
-  --ink:#E6EBEF; --ink-2:#9AA7B2; --ink-3:#6B7883;
+  --ink:#E6EBEF; --ink-2:#A9B5BF; --ink-3:#8A97A2;
   --accent:#3ED9BC; --accent-soft:#12312C; --warn:#E0A83A; --loss:#E8705F;
 }}
 :root[data-theme="dark"]{
   --ground:#0D1116; --panel:#151B22; --line:#27313A;
-  --ink:#E6EBEF; --ink-2:#9AA7B2; --ink-3:#6B7883;
+  --ink:#E6EBEF; --ink-2:#A9B5BF; --ink-3:#8A97A2;
   --accent:#3ED9BC; --accent-soft:#12312C; --warn:#E0A83A; --loss:#E8705F;
 }
 *{box-sizing:border-box}
@@ -223,13 +223,13 @@ let sortKey="tot", sortDir=-1, posFilter="ALL", onlyEligible=true;
 const maxXp=Math.max(...DATA.map(d=>d.xp));
 
 function view(){
-  const q=document.getElementById("q").value.trim().toLowerCase();
+  const q=norm(document.getElementById("q").value.trim());
   const team=document.getElementById("team").value;
   let rows=DATA.filter(d=>
     (posFilter==="ALL"||d.p===posFilter) &&
     (team==="ALL"||d.t===team) &&
     (!onlyEligible||d.e===1) &&
-    (!q||d.n.toLowerCase().includes(q)));
+    (!q||norm(d.n).includes(q)));
   rows.sort((a,b)=>{
     const x=a[sortKey],y=b[sortKey];
     if(typeof x==="string")return sortDir*x.localeCompare(y);
@@ -244,7 +244,7 @@ function render(){
     rows.length+" of "+DATA.length+" players";
   const tb=document.getElementById("tb");
   if(!rows.length){tb.innerHTML=
-    '<tr><td colspan="10" class="empty">No players match those filters.</td></tr>';return;}
+    '<tr><td colspan="'+COLS.length+'" class="empty">No players match those filters.</td></tr>';return;}
   tb.innerHTML=rows.map(d=>{
     const w=Math.max(1,Math.round(d.xp/maxXp*46));
     const risky=d.ps<70;
@@ -269,6 +269,14 @@ function render(){
   }).join("");
   tb.querySelectorAll("tr[data-i]").forEach(tr=>
     tr.addEventListener("click",()=>toggle(+tr.dataset.i)));
+}
+// Fold diacritics so a normal keyboard can reach every player: 36 of 468 were
+// unreachable - odegaard, nunez, gyokeres, guehi, gross, joao, kadioglu.
+const FOLD={"\u00f8":"o","\u0142":"l","\u0111":"d","\u0131":"i","\u00df":"ss",
+  "\u00e6":"ae","\u0153":"oe","\u00f0":"d","\u00fe":"th"};
+function norm(s){
+  return s.toLowerCase().replace(/[\u00e0-\u017f]/g,c=>FOLD[c]||c)
+          .normalize("NFD").replace(/[\u0300-\u036f]/g,"");
 }
 function esc(s){return s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));}
 
@@ -382,7 +390,12 @@ function suggestions(members){
   const bank=BUDGET-spent;
   const clubs={}; members.forEach(d=>{clubs[d.t]=(clubs[d.t]||0)+1;});
   const P=PROFILES[profile];
-  const score=d=>d.tot-(P.penalise*(100-d.ps)/100)*NG;   // risk-adjusted horizon
+  // Penalise only the player coming IN. Applying it to the player going out
+  // too meant a risk-averse profile INFLATED the advertised gain - bench fodder
+  // always has the lower start%, so Safer showed +15.9 where the true
+  // six-gameweek gain was +12.9. Risk aversion must discount, never flatter.
+  const score=d=>d.tot;
+  const risk=d=>(P.penalise*(100-d.ps)/100)*NG;
 
   const out=[];
   for(const o of members){
@@ -392,7 +405,7 @@ function suggestions(members){
       if(c.c>o.c+bank+1e-9) continue;                     // affordable
       // 3-per-club still has to hold after the swap
       if(c.t!==o.t&&(clubs[c.t]||0)>=MAX_PER_CLUB) continue;
-      const gain=score(c)-score(o);
+      const gain=(score(c)-risk(c))-score(o);
       if(gain>0) out.push({o,c,gain,cost:c.c-o.c});
     }
   }
@@ -423,8 +436,8 @@ function renderSuggestions(members){
       '<div class="tx-row"><span class="out">'+esc(s.o.n)+'</span>'+
       '<span class="arw">\u2192</span><span class="in">'+esc(s.c.n)+'</span>'+
       '<span class="gain">+'+s.gain.toFixed(1)+'</span>'+
-      '<span class="cost">'+(s.cost>=0?"-":"+")+'\u00A3'+
-      Math.abs(s.cost).toFixed(1)+'m</span></div>').join("")
+      '<span class="cost">'+(Math.abs(s.cost)<0.05?"":(s.cost>0?"\u2212":"+"))+
+      '\u00A3'+Math.abs(s.cost).toFixed(1)+'m</span></div>').join("")
       : '<p class="hint">No transfer improves this squad under the '+
         PROFILES[profile].label.toLowerCase()+' profile.</p>')+
     '<p class="hint">Gain is projected points over '+NG+' gameweeks, risk-adjusted. '+
@@ -435,26 +448,53 @@ function renderSuggestions(members){
     }));
 }
 
+const MAX_SQUAD=15;
 function toggle(id){
+  if(!squad.includes(id) && squad.length>=MAX_SQUAD){
+    // Refuse rather than accept and then report "-1 more to a full squad."
+    const el=document.getElementById("sq-tx");
+    if(el) el.insertAdjacentHTML("afterbegin",
+      '<p class="warn" id="sq-full">Squad is full at 15. Remove a player first.</p>');
+    setTimeout(()=>{const w=document.getElementById("sq-full"); if(w) w.remove();},2600);
+    return;
+  }
   squad = squad.includes(id) ? squad.filter(i=>i!==id) : squad.concat([id]);
   save();renderSquad();render();
 }
 function save(){try{localStorage.setItem("fpl.squad",JSON.stringify(squad));}catch(e){}}
-function load(){try{squad=JSON.parse(localStorage.getItem("fpl.squad")||"[]");}catch(e){squad=[];}}
+function load(){
+  // Shape, not just parseability. A stored object rather than an array threw
+  // "squad.includes is not a function" on every load thereafter, leaving a page
+  // that drew its nav, filters and header with zero rows and a counter still
+  // reading "162 of 468 players" - and no in-app way to recover.
+  try{
+    const raw=JSON.parse(localStorage.getItem("fpl.squad")||"[]");
+    squad=Array.isArray(raw)?raw.filter(x=>typeof x==="number"&&byId[x]):[];
+  }catch(e){squad=[];}
+}
 
 document.addEventListener("DOMContentLoaded",()=>{
   load();
   const thead=document.getElementById("th");
   thead.innerHTML=COLS.map(([k,label,num])=>
     '<th data-k="'+k+'" class="'+(num?"num":"")+'" tabindex="0">'+label+'</th>').join("");
+  const mark=k=>{
+    thead.querySelectorAll("th").forEach(o=>{
+      o.removeAttribute("aria-sort");
+      const base=o.textContent.replace(/[\u25b2\u25bc]\s*$/,"");
+      o.textContent = o.dataset.k===k
+        ? base+(sortDir===1?" \u25b2":" \u25bc") : base;
+    });
+    const cur=thead.querySelector('th[data-k="'+k+'"]');
+    if(cur) cur.setAttribute("aria-sort",sortDir===1?"ascending":"descending");
+  };
   thead.querySelectorAll("th").forEach(th=>{
     const go=()=>{
       const k=th.dataset.k;
       // Numbers are more useful high-to-low on first click; names are not.
       sortDir = (sortKey===k) ? -sortDir : (k==="n"||k==="t"||k==="p" ? 1 : -1);
       sortKey=k;
-      thead.querySelectorAll("th").forEach(o=>o.removeAttribute("aria-sort"));
-      th.setAttribute("aria-sort",sortDir===1?"ascending":"descending");
+      mark(sortKey);
       render();
     };
     th.addEventListener("click",go);
@@ -472,6 +512,7 @@ document.addEventListener("DOMContentLoaded",()=>{
   document.getElementById("team").addEventListener("change",render);
   document.getElementById("elig").addEventListener("change",e=>{
     onlyEligible=e.target.checked;render();});
+  mark(sortKey);          // the table IS sorted on load; say so
   render();renderSquad();
 });
 """
@@ -491,8 +532,7 @@ def build(rows, meta, source="record"):
     else:
         made_s = "built pre-deadline"
 
-    return """<style>{css}</style>
-<div class="wrap">
+    body = """<div class="wrap">
 {nav}
 <header>
   <h1>Gameweek {gw} projections</h1>
@@ -544,12 +584,13 @@ def build(rows, meta, source="record"):
 reproducible from its snapshot &mdash; <a href="{scorecard}" style="color:var(--accent)">see how accurate these have actually been</a></footer>
 </div>
 <script>const DATA={data};{js}</script>""".format(
-        css=CSS, js=JS, data=json.dumps(data, separators=(",", ":")),
+        js=JS, data=json.dumps(data, separators=(",", ":")),
         scorecard=links.href("scorecard"), nav=links.nav("projections"), gw=gw, dl=dl, made=made_s, ng=len(data[0]["g"]) if data else 6,
         snap=(meta.get("snapshot_sha256", {}).get("bootstrap.json", "")[:12]),
         teamopts="\n    ".join(
             '<option value="{0}">{0}</option>'.format(t) for t in teams),
         now=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M"))
+    return links.document("FPL projections", body, CSS)
 
 
 def _payload(html):

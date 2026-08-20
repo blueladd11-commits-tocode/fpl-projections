@@ -166,7 +166,7 @@ section{background:var(--panel);border:1px solid var(--line);
 .seal p{color:var(--ink);margin-bottom:0}
 .scroll{overflow-x:auto;margin:0 -.3rem}
 table{border-collapse:collapse;width:100%;font-size:.85rem;min-width:34rem}
-th{text-align:left;font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;
+th{text-align:left;font-size:.66rem;letter-spacing:.1em;
   color:var(--ink-3);font-weight:600;padding:.5rem .6rem;
   border-bottom:1px solid var(--line);white-space:nowrap}
 td{padding:.55rem .6rem;border-bottom:1px solid var(--line);
@@ -365,7 +365,7 @@ def main():
     args = ap.parse_args()
 
     records, evidence = load_records(), load_evidence()
-    html = "<style>{}</style>\n{}".format(CSS, build(records, evidence))
+    html = links.document("FPL accuracy record", build(records, evidence), CSS)
     with open(args.out, "w") as f:
         f.write(html)
 

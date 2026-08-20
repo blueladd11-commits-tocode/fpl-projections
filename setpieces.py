@@ -34,6 +34,22 @@ ORDERS = (("pen", "penalties_order", "Penalties"),
           ("ck", "corners_and_indirect_freekicks_order", "Corners &amp; indirect"))
 
 
+def _short_note(news, limit=34):
+    """First clause of FPL's news, trimmed on a word boundary.
+
+    Hard-slicing at 28 chars produced "Has joined West Ham United o" - the most
+    consequential note on the page, that a player has left the club, reading as
+    a typo.
+    """
+    text = (news or "").split(" - ")[0].strip()
+    if not text:
+        return None
+    if len(text) <= limit:
+        return text
+    cut = text[:limit].rsplit(" ", 1)[0]
+    return (cut or text[:limit]) + "\u2026"
+
+
 def collect(bootstrap, proj_by_element):
     """Per team: the ordered taker list for each set-piece type."""
     teams = {t["id"]: t for t in bootstrap["teams"]}
@@ -64,7 +80,7 @@ def collect(bootstrap, proj_by_element):
                 c=el["now_cost"] / 10.0,
                 xp=pr.get("xp"),
                 ps=0 if (ps is None and unavailable) else ps,
-                note=(el.get("news") or "").split(" - ")[0][:28] or None,
+                note=_short_note(el.get("news")),
                 risk=bool(unavailable or (ps is not None and ps < 70)
                           or (ps is None and not pr)),
             ))
@@ -95,28 +111,38 @@ CSS = web.CSS + """
 JS = r"""
 const ORDERS=[["pen","Penalties"],["fk","Direct free kicks"],["ck","Corners &amp; indirect"]];
 let only="all";
+// Mirrors web.py: names and FPL news are relayed free text, and the search box
+// must reach players a normal keyboard can type.
+const FOLD={"\u00f8":"o","\u0142":"l","\u0111":"d","\u0131":"i","\u00df":"ss",
+  "\u00e6":"ae","\u0153":"oe","\u00f0":"d","\u00fe":"th"};
+function norm(s){return s.toLowerCase().replace(/[\u00e0-\u017f]/g,c=>FOLD[c]||c)
+  .normalize("NFD").replace(/[\u0300-\u036f]/g,"");}
+// \x22 rather than a literal quote: the JS linter tracks string state and
+// cannot see inside a regex literal, so a bare " here reads as unterminated.
+function esc(s){return String(s).replace(/[&<>\x22]/g,
+  c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\x22":"&quot;"}[c]));}
 
 function render(){
-  const q=document.getElementById("q").value.trim().toLowerCase();
+  const q=norm(document.getElementById("q").value.trim());
   document.getElementById("grid").innerHTML=DATA.teams.map(t=>{
     const club=DATA.takers[t.id];
     const groups=ORDERS.filter(([k])=>only==="all"||only===k).map(([k,label])=>{
       let list=club[k];
-      if(q) list=list.filter(d=>d.n.toLowerCase().includes(q));
+      if(q) list=list.filter(d=>norm(d.n).includes(q));
       if(!list.length) return q?"":'<div class="grp">'+label+
         '</div><div class="none">none listed</div>';
       return '<div class="grp">'+label+'</div>'+list.map(d=>
         '<div class="tk'+(d.risk?" risk":"")+'">'+
         '<span class="o">'+d.o+'</span>'+
-        '<span class="nm">'+d.n+'</span>'+
+        '<span class="nm">'+esc(d.n)+'</span>'+
         '<span class="meta">'+d.c.toFixed(1)+
         (d.xp!=null?"  "+d.xp.toFixed(2)+" xP":"")+
         (d.ps!=null?"  "+d.ps+"%":"")+
-        (d.note?' <span style="opacity:.7">'+d.note+'</span>':"")+
+        (d.note?' <span style="opacity:.7">'+esc(d.note)+'</span>':"")+
         '</span></div>').join("");
     }).join("");
     if(q && !groups.replace(/<div class="grp">[^<]*<\/div>/g,"").trim()) return "";
-    return '<div class="club"><h2>'+t.name+'</h2>'+groups+'</div>';
+    return '<div class="club"><h2>'+esc(t.name)+'</h2>'+groups+'</div>';
   }).join("")||'<p class="none">No takers match that search.</p>';
 }
 
@@ -141,8 +167,7 @@ def build(bootstrap, takers, short, counts):
                for t in teams],
         takers={str(k): v for k, v in takers.items()},
     )
-    return """<style>{css}</style>
-<div class="wrap">
+    body = """<div class="wrap">
 {nav}
 <header>
   <h1>Set-piece takers</h1>
@@ -172,8 +197,9 @@ probability from our own model &middot;
 <a href="{projections}" style="color:var(--accent)">full projections</a></footer>
 </div>
 <script>const DATA={data};{js}</script>""".format(
-        css=CSS, js=JS, data=json.dumps(payload, separators=(",", ":")),
+        js=JS, data=json.dumps(payload, separators=(",", ":")),
         projections=links.href("projections"), nav=links.nav("setpieces"), pen=counts["pen"], fk=counts["fk"], ck=counts["ck"])
+    return links.document("FPL set-piece takers", body, CSS)
 
 
 def main():

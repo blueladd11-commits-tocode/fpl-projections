@@ -103,10 +103,21 @@ JS = r"""
 const N=GRID.gws.length;
 let mode="atk", sortKey="atk";
 
-// Green = easy, red = hard. Ratings are normalised so 1.0 is league average;
-// the useful range in practice is about 0.7 to 1.4.
+// Green = easy, red = hard, scaled to the ACTIVE distribution.
+// A fixed 0.70-1.40 ramp meant the attacking range (0.67-1.22 here) never
+// reached red at all, so the legend advertised a colour the grid could not
+// produce and two thirds of the ramp carried the whole attacking spread.
+const RANGE={};
+for(const k of ["atk","dfn"]){
+  const vals=[];
+  for(const t of GRID.teams)
+    for(const col of GRID.fixtures[t.id])
+      for(const f of col) vals.push(k==="atk"?f[2]:f[3]);
+  RANGE[k]=[Math.min(...vals), Math.max(...vals)];
+}
 function colour(v){
-  const t=Math.max(0,Math.min(1,(v-0.70)/0.70));   // 0 easy .. 1 hard
+  const [lo,hi]=RANGE[mode];
+  const t=hi>lo ? Math.max(0,Math.min(1,(v-lo)/(hi-lo))) : 0.5;
   const h=(1-t)*140;                                // 140 green -> 0 red
   return "hsl("+h.toFixed(0)+",62%,"+(58-t*8).toFixed(0)+"%)";
 }
@@ -176,8 +187,7 @@ def build(bootstrap, fixtures, start_gw, n_gw, granular, prior_season):
               "goals for and against, shrunk toward the league mean. Promoted "
               "sides are rated at last season&rsquo;s bottom third. ")
 
-    return """<style>{css}</style>
-<div class="wrap">
+    body = """<div class="wrap">
 {nav}
 <header>
   <h1>Fixture ticker &mdash; GW{a} to GW{b}</h1>
@@ -211,8 +221,9 @@ lowercase mean is the average difficulty across the window &middot;
 <a href="{projections}" style="color:var(--accent)">this week&rsquo;s projections</a></footer>
 </div>
 <script>const GRID={data};{js}</script>""".format(
-        css=CSS, js=JS, data=json.dumps(payload, separators=(",", ":")),
+        js=JS, data=json.dumps(payload, separators=(",", ":")),
         projections=links.href("projections"), nav=links.nav("fixtures"), a=start_gw, b=start_gw + n_gw - 1, caveat=caveat)
+    return links.document("FPL fixture ticker", body, CSS)
 
 
 def main():

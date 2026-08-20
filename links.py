@@ -64,6 +64,28 @@ def nav(current):
     return "".join(out)
 
 
+def document(title, body, css):
+    """Wrap page content in a real HTML document.
+
+    The builders emit body content because that is what the Artifact publisher
+    wants - it supplies its own head. Served standalone, that left every page in
+    quirks mode with no title, no charset, and crucially **no viewport meta**:
+    a phone used the legacy 980px layout viewport and scaled the whole page to
+    38%, rendering 11px table text at about 4px. All the responsive work was
+    already there and simply never engaged.
+
+    Set FPL_FRAGMENT=1 to emit body-only content for artifact publishing.
+    """
+    if os.environ.get("FPL_FRAGMENT") == "1":
+        return "<style>{}</style>\n{}".format(css, body)
+    return ("<!doctype html>\n<html lang=\"en\">\n<head>\n"
+            "<meta charset=\"utf-8\">\n"
+            "<meta name=\"viewport\" content=\"width=device-width,"
+            "initial-scale=1\">\n"
+            "<title>{}</title>\n<style>{}</style>\n</head>\n<body>\n{}\n"
+            "</body>\n</html>\n").format(title, css, body)
+
+
 CSS = """
 nav{display:flex;gap:.1rem;font-family:var(--mono);font-size:.72rem;
   letter-spacing:.06em;text-transform:uppercase;flex-wrap:wrap}
