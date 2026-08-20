@@ -10,3 +10,8 @@ __pycache__/
 *.pyc
 .DS_Store
 preview_scorecard.html
+
+# lock files are per-process, never shared
+out/prices/*.lock
+out/prices/*.tmp
+out/prices/*.corrupt-*
