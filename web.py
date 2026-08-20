@@ -26,6 +26,7 @@ import sys
 from datetime import datetime, timezone
 
 import links
+import rating
 import words
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -105,10 +106,15 @@ def prepare(rows):
             g=[float(x) for x in (r.get("xp_next") or "").split(";") if x],
         ))
     out.sort(key=lambda d: -d["xp"])
+    # Computed here, at the page, and deliberately not written into the
+    # committed projection CSV: verify.py reproduces that file byte for byte,
+    # and a presentation number has no business changing the permanent record.
+    # Every input the rating uses is already in it.
+    rating.compute(out)
     return out
 
 
-CSS = links.CSS + words.CSS + """
+CSS = links.CSS + words.CSS + rating.BAND_CSS + """
 :root{
   --ground:#EDEFF1; --panel:#FFFFFF; --line:#D3D8DC;
   --ink:#12171C; --ink-2:#454F58; --ink-3:#5E6873;
@@ -221,7 +227,8 @@ const NG=(DATA[0]&&DATA[0].g?DATA[0].g.length:1);
 // decoration: a heading reading "Points" with nothing under it is friendlier
 // than "xP" but no more informative, and being vague is not the same as being
 // welcoming.
-const COLS=[["n","Player","",0],["t","Club","",0],["p","Position","",0],
+const COLS=[["n","Player","",0],["psr","PS Rating","out of 100",1],
+  ["t","Club","",0],["p","Position","",0],
   ["c","Price","",1],
   ["xp","Points","this week",1],
   ["tot","Next "+NG,"weeks total",1],
@@ -267,6 +274,8 @@ function render(){
       Math.max(1,Math.round(v/mx*11))+'px" title="'+v.toFixed(2)+'"></i>').join("");
     return '<tr data-i="'+d.i+'"'+(squad.includes(d.i)?' class="picked"':'')+'>'+
       '<td class="name">'+esc(d.n)+(d.f>1?' <span class="pill">DGW</span>':'')+'</td>'+
+      '<td class="num"><span class="psr psr-'+d.psr_band+'">'+d.psr+
+      '</span></td>'+
       '<td class="mono">'+d.t+'</td><td class="mono">'+POS[d.p]+'</td>'+
       '<td class="num mono">'+d.c.toFixed(1)+'</td>'+
       '<td class="num mono"><span class="bar" style="width:'+w+'px"></span>'+
@@ -657,7 +666,8 @@ JS_GLOBALS = frozenset("""
 if for while switch catch return typeof function Math JSON Object Array String
 Number Boolean Set Map Date RegExp parseInt parseFloat isNaN setTimeout
 setInterval clearTimeout encodeURIComponent decodeURIComponent localStorage
-document window console fetch alert confirm requestAnimationFrame
+document window console fetch alert confirm prompt requestAnimationFrame
+navigator location history structuredClone
 """.split())
 
 

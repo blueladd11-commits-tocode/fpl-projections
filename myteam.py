@@ -22,6 +22,8 @@ import sys
 
 import links
 import project as P
+import rating
+import ticker
 import web
 
 # kits.py renders the club shirts. It is built separately, so the page must
@@ -42,65 +44,99 @@ CSS = web.CSS + (kits.CSS if kits else "") + """
    10425px inside a 637px container and the pitch, which clips its overflow,
    rendered as an empty green box with all fifteen cards centred 5000px off to
    the right. */
-.cols{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);
+.cols{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(0,1fr);
   gap:1.1rem;align-items:start}
 .cols>*{min-width:0}
-@media (max-width:60rem){.cols{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:64rem){.cols{grid-template-columns:minmax(0,1fr)}}
 
-/* The pitch. Drawn, not photographed: a background image would be the only
-   external asset on the whole site and would cost more than it says. */
-.pitch{background:
-    linear-gradient(180deg,var(--turf-a) 0%,var(--turf-b) 100%);
-  border:1px solid var(--line);border-radius:3px;padding:.9rem .5rem 0;
-  position:relative;overflow:hidden}
-:root{--turf-a:#E4EAE6;--turf-b:#D7E0DA}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --turf-a:#111A19;--turf-b:#0E1614}}
-:root[data-theme="dark"]{--turf-a:#111A19;--turf-b:#0E1614}
-.pitch:before{content:"";position:absolute;inset:0;pointer-events:none;
+/* The pitch. Drawn in CSS, not photographed: an image would be the only
+   external asset on the whole site, and a gradient reproduces the mown stripes
+   that make a pitch read as a pitch at a fraction of the bytes.
+
+   Green stays green in both themes. A pitch that turns charcoal in dark mode
+   stops being a pitch, and this is the one surface on the site where the real
+   world already decided what colour it is. */
+.pitch{position:relative;overflow:hidden;border-radius:6px 6px 0 0;
+  border:1px solid var(--line);border-bottom:0;padding:1.6rem .6rem .8rem;
   background:
-    linear-gradient(90deg,transparent 49.7%,var(--line) 49.7%,
-      var(--line) 50.3%,transparent 50.3%) no-repeat center/1px 100%;
-  opacity:.5}
-.line{display:flex;justify-content:center;gap:.4rem;flex-wrap:wrap;
-  margin-bottom:.85rem;position:relative;z-index:1}
+    /* mown stripes, then the field itself */
+    repeating-linear-gradient(180deg,
+      rgba(255,255,255,.045) 0 44px, rgba(0,0,0,.045) 44px 88px),
+    linear-gradient(178deg,#1E7A3E 0%,#186B36 55%,#13592D 100%)}
+:root[data-theme="light"] .pitch,
+:root:not([data-theme="dark"]) .pitch{background:
+    repeating-linear-gradient(180deg,
+      rgba(255,255,255,.07) 0 44px, rgba(0,0,0,.04) 44px 88px),
+    linear-gradient(178deg,#2E9B52 0%,#248A46 55%,#1C7539 100%)}
 
-.pl{width:5.3rem;background:var(--panel);border:1px solid var(--line);
-  border-radius:3px;padding:.3rem .25rem .28rem;text-align:center;cursor:pointer;
-  position:relative}
-.pl:hover{border-color:var(--ink-3)}
-.pl:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.pl.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
-.pl .nm{font-size:.7rem;color:var(--ink);white-space:nowrap;overflow:hidden;
-  text-overflow:ellipsis;font-weight:600;line-height:1.25}
-.pl .mt{font-family:var(--mono);font-size:.6rem;color:var(--ink-2);
-  font-variant-numeric:tabular-nums;letter-spacing:-.01em}
-.pl .fx{font-family:var(--mono);font-size:.55rem;color:var(--ink-3);
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pl .kit{display:block;margin:0 auto .12rem}
-/* Doubt is worth more than precision here: a red name that turns out to play is
-   a smaller cost than a black name that turns out to be injured. */
-.pl.doubt .nm{color:var(--warn)}
-.pl.out .nm{color:var(--loss)}
+/* Markings are an SVG overlay, not stacked CSS gradients. The gradient version
+   drew the penalty area as a set of full-width bands that read as a grid laid
+   over the grass rather than as a box. An SVG says what it means, scales with
+   the pitch, and costs about three hundred bytes. */
+.marks{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;
+  z-index:0}
+.marks *{fill:none;stroke:rgba(255,255,255,.42);stroke-width:2}
 
-.arm{position:absolute;top:-.35rem;right:-.35rem;width:1.05rem;height:1.05rem;
-  border-radius:50%;font-family:var(--mono);font-size:.55rem;font-weight:700;
-  display:flex;align-items:center;justify-content:center;border:1px solid var(--line);
-  background:var(--panel);color:var(--ink-3)}
-.pl.cap .arm{background:var(--accent);color:var(--ground);border-color:var(--accent)}
-.pl.vice .arm{background:var(--accent-soft);color:var(--accent);
-  border-color:var(--accent)}
+.players{position:relative;z-index:1}
+.line{display:flex;justify-content:center;gap:.45rem;flex-wrap:wrap;
+  margin-bottom:1rem;position:relative;z-index:1}
 
-.bench{margin-top:.2rem;border-top:1px dashed var(--line);padding-top:.7rem}
+/* The player card, shaped the way the FPL app shapes it: shirt on top, a dark
+   name plate, and a lighter plate under it carrying the number. The two plates
+   are what make a row of these read as a team sheet rather than as a grid of
+   buttons. */
+.pl{width:7.1rem;cursor:pointer;position:relative;text-align:center;
+  background:none;border:0;padding:0}
+.pl .kit{display:block;margin:0 auto .2rem;width:2.9rem;height:2.9rem}
+
+.pl:focus-visible{outline:2px solid #fff;outline-offset:3px;border-radius:4px}
+
+/* Doubt is worth more than precision here: an amber flag on a player who then
+   plays costs less than a confident one who turns out to be injured. */
+.pl.doubt .plate .nm{background:#FFE9C2}
+.pl.out .plate .nm{background:#FFD2CC}
+
+
+.arm{position:absolute;top:-.2rem;right:.35rem;width:1.1rem;height:1.1rem;
+  border-radius:50%;font-family:var(--mono);font-size:.58rem;font-weight:700;
+  display:flex;align-items:center;justify-content:center;z-index:2;
+  background:#fff;color:#0B0F13;border:1px solid rgba(0,0,0,.3)}
+.pl.cap .arm{background:var(--accent);color:#0B0F13}
+.pl.vice .arm{background:#0B0F13;color:#fff}
+
+/* The bench sits off the grass, the way it does in the app. */
+.bench{background:var(--panel);border:1px solid var(--line);border-top:0;
+  border-radius:0 0 6px 6px;padding:.7rem .5rem .4rem}
 .bench .lbl{font-family:var(--mono);font-size:.58rem;letter-spacing:.12em;
-  text-transform:uppercase;color:var(--ink-3);margin-bottom:.4rem;
-  display:flex;justify-content:space-between}
-.bench .line{margin-bottom:.6rem}
-.bench .pl{opacity:.82}
-.bo{position:absolute;top:-.35rem;left:-.35rem;width:1.05rem;height:1.05rem;
-  border-radius:50%;font-family:var(--mono);font-size:.55rem;
+  text-transform:uppercase;color:var(--ink-3);margin-bottom:.5rem;
+  display:flex;justify-content:space-between;padding:0 .3rem}
+.bench .line{margin-bottom:.3rem}
+
+.bo{position:absolute;top:-.2rem;left:.35rem;width:1.1rem;height:1.1rem;
+  border-radius:50%;font-family:var(--mono);font-size:.56rem;z-index:2;
   display:flex;align-items:center;justify-content:center;
-  background:var(--ground);border:1px solid var(--line);color:var(--ink-3)}
+  background:var(--ground);border:1px solid var(--line);color:var(--ink-2)}
+
+/* Drafts. A tab strip, because the question people actually have is "which of
+   my two teams scores more", and that is only answerable side by side. */
+.drafts{display:flex;align-items:stretch;gap:.25rem;flex-wrap:wrap;
+  margin-bottom:.7rem}
+.drafts button{font-family:var(--mono);font-size:.66rem;padding:.4rem .7rem;
+  background:var(--panel);border:1px solid var(--line);color:var(--ink-2);
+  cursor:pointer;border-radius:3px;display:flex;align-items:center;gap:.4rem}
+.drafts button:hover{color:var(--ink);border-color:var(--ink-3)}
+.drafts button.on{background:var(--accent);color:var(--ground);
+  border-color:var(--accent);font-weight:700}
+.drafts button .pts{font-variant-numeric:tabular-nums;opacity:.75;
+  font-size:.62rem}
+.drafts button.on .pts{opacity:.9}
+.drafts .add{color:var(--accent);border-style:dashed}
+.dtools{display:flex;gap:.35rem;flex-wrap:wrap;margin-bottom:.8rem}
+.dtools button{font-family:var(--mono);font-size:.6rem;letter-spacing:.05em;
+  text-transform:uppercase;padding:.3rem .55rem;background:none;
+  border:1px solid var(--line);color:var(--ink-3);cursor:pointer;border-radius:3px}
+.dtools button:hover{color:var(--ink);border-color:var(--ink-3)}
+.dtools .danger:hover{color:var(--loss);border-color:var(--loss)}
 
 .tot{display:grid;grid-template-columns:repeat(auto-fit,minmax(6.2rem,1fr));
   gap:.5rem;margin-bottom:.9rem}
@@ -110,6 +146,31 @@ CSS = web.CSS + (kits.CSS if kits else "") + """
 .tot .v{font-family:var(--mono);font-size:1.15rem;color:var(--ink);
   font-variant-numeric:tabular-nums;margin-top:.1rem}
 .tot .v.bad{color:var(--loss)}
+.tot .v.good{color:var(--accent)}
+.tot .hero{border-color:var(--accent);background:var(--accent-soft)}
+.tot .hero .k{color:var(--accent)}
+.tot .hero .v{font-size:1.7rem;color:var(--accent);font-weight:700}
+.tot .v small{display:block;font-size:.58rem;color:var(--ink-3);letter-spacing:.04em;
+  text-transform:uppercase;margin-top:.15rem;font-weight:400}
+
+/* The plate under the shirt, and the three fixture cells under that. This is
+   the anatomy every serious FPL tool converges on, because it answers "who,
+   for how much, against whom" without a tap. */
+.pl .plate{display:flex;align-items:stretch;border-radius:3px 3px 0 0;
+  overflow:hidden;font-size:.68rem;line-height:1.55}
+.pl .plate .nm{flex:1;background:#fff;color:#12171C;font-weight:700;
+  padding:.12rem .28rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  text-align:left}
+.pl .plate .pr{background:#EDEFF1;color:#454F58;font-family:var(--mono);
+  padding:.1rem .28rem;font-size:.58rem}
+.pl .fcs{display:flex;border-radius:0 0 3px 3px;overflow:hidden}
+.pl .fc{flex:1;min-width:0;display:flex;flex-direction:column;
+  padding:.08rem .1rem;font-family:var(--mono);color:#12171C}
+.pl .fc b{font-size:.68rem;font-weight:700;font-variant-numeric:tabular-nums}
+.pl .fc i{font-size:.5rem;font-style:normal;opacity:.72;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.pl .fc.blank{background:#D3D8DC;color:#5E6873}
+.pl.sel .plate .nm{background:var(--accent);color:#0B0F13}
 .tot .v small{font-size:.6rem;color:var(--ink-3);letter-spacing:0}
 
 .side{background:var(--panel);border:1px solid var(--line);padding:.85rem .9rem}
@@ -143,10 +204,20 @@ CSS = web.CSS + (kits.CSS if kits else "") + """
 /* A five-man defensive line has to fit on one row on a phone or the pitch stops
    reading as a pitch. 343px of pitch, less padding and four gaps, leaves about
    60px a card - which is what sets the card width here, not taste. */
+@media (max-width:30rem){
+  /* Three fixture cells inside a 60px card gives each one 20px, which cannot
+     hold "TOT (H)". On a phone the next game is the one that matters; the other
+     two are still a tap away on the projections page. */
+  .pl .fc:nth-child(n+2){display:none}
+  .pl .fc i{font-size:.46rem}
+}
 @media (max-width:26rem){
   .pitch{padding:.7rem .35rem 0}
   .line{gap:.25rem;margin-bottom:.6rem}
-  .pl{width:3.72rem;padding:.25rem .12rem .22rem}
+  .pl{width:4.15rem;padding:0}
+  .pl .kit{width:2rem;height:2rem;margin-bottom:.12rem}
+  .pl .plate{font-size:.58rem}
+  .pl .plate .pr{display:none}
   .pl .nm{font-size:.61rem}
   .pl .mt{font-size:.54rem}
   .pl .fx{font-size:.5rem}
@@ -185,31 +256,126 @@ const FOLD={"\u00F8":"o","\u0142":"l","\u0111":"d","\u0131":"i","\u00DF":"ss",
 function norm(s){return s.toLowerCase().replace(/[\u00E0-\u017F]/g,c=>FOLD[c]||c)
   .normalize("NFD").replace(/[\u0300-\u036F]/g,"");}
 
-/* ---- state ------------------------------------------------------------- */
-// Same key as the projections page: a squad picked while browsing is already
-// here. Shape is validated, not just parseability - a stored object rather than
-// an array once threw on every subsequent load with no in-app way to recover.
+/* ---- drafts and state -------------------------------------------------- */
+// A draft is a whole team: fifteen players, who is benched and in what order,
+// and the armbands. People do not compare players in the abstract, they compare
+// TEAMS - "do I go Salah and a cheap defence, or spread it" - and that question
+// is only answerable with both teams in front of you.
+//
+// The ACTIVE draft is mirrored into the old fpl.squad / fpl.cap / fpl.vice /
+// fpl.bench keys on every save. Those are what the projections page and the
+// planner read, and they predate drafts; keeping them in step means switching
+// draft here switches what those pages show, and a squad built over there still
+// lands in the draft you are looking at.
+let drafts=[], active=0;
+
+function blankDraft(name){
+  return {name:name||"Draft 1", squad:[], bench:[], cap:null, vice:null};
+}
+function cur(){return drafts[active]||blankDraft();}
+
+// Everything below reads these, so they stay as plain top-level bindings and
+// are simply re-pointed at the active draft. Rewriting every reference to
+// cur().squad would have touched a hundred lines of verified logic for no gain.
+function bind(){
+  const d=cur();
+  squad=d.squad; bench=d.bench; cap=d.cap; vice=d.vice;
+}
+function commit(){
+  const d=cur();
+  d.squad=squad; d.bench=bench; d.cap=cap; d.vice=vice;
+}
+
+function cleanDraft(raw, fallbackName){
+  // Shape, not just parseability. A stored object where an array belonged once
+  // threw on every subsequent load, with no in-app way to recover.
+  const o = (raw && typeof raw==="object") ? raw : {};
+  const sq = Array.isArray(o.squad)
+    ? o.squad.filter(x=>typeof x==="number"&&byId[x]) : [];
+  const bn = Array.isArray(o.bench)
+    ? o.bench.filter(x=>typeof x==="number"&&sq.includes(x)) : [];
+  const cp = (typeof o.cap==="number"&&sq.includes(o.cap))?o.cap:null;
+  const vc = (typeof o.vice==="number"&&sq.includes(o.vice)&&o.vice!==cp)
+    ? o.vice : null;
+  const nm = (typeof o.name==="string"&&o.name.trim())
+    ? o.name.trim().slice(0,24) : fallbackName;
+  return {name:nm, squad:sq, bench:bn, cap:cp, vice:vc};
+}
+
 function load(){
+  let stored=null;
+  try{ stored=JSON.parse(localStorage.getItem("fpl.drafts.v1")||"null"); }
+  catch(e){ stored=null; }
+
+  if(stored && Array.isArray(stored.drafts) && stored.drafts.length){
+    drafts=stored.drafts.map((d,i)=>cleanDraft(d,"Draft "+(i+1)));
+    active=(typeof stored.active==="number" &&
+            stored.active>=0 && stored.active<drafts.length) ? stored.active : 0;
+    bind(); return;
+  }
+
+  // First run after drafts shipped: adopt whatever single squad already exists
+  // rather than greeting a returning user with an empty pitch.
+  let sq=[], bn=[], cp=null, vc=null;
   try{
     const raw=JSON.parse(localStorage.getItem("fpl.squad")||"[]");
-    squad=Array.isArray(raw)?raw.filter(x=>typeof x==="number"&&byId[x]):[];
-  }catch(e){squad=[];}
-  try{
+    sq=Array.isArray(raw)?raw.filter(x=>typeof x==="number"&&byId[x]):[];
     const c=JSON.parse(localStorage.getItem("fpl.cap")||"null");
-    cap=(typeof c==="number"&&squad.includes(c))?c:null;
+    cp=(typeof c==="number"&&sq.includes(c))?c:null;
     const v=JSON.parse(localStorage.getItem("fpl.vice")||"null");
-    vice=(typeof v==="number"&&squad.includes(v)&&v!==cap)?v:null;
+    vc=(typeof v==="number"&&sq.includes(v)&&v!==cp)?v:null;
     const b=JSON.parse(localStorage.getItem("fpl.bench")||"[]");
-    bench=Array.isArray(b)?b.filter(x=>typeof x==="number"&&squad.includes(x)):[];
-  }catch(e){cap=vice=null;bench=[];}
+    bn=Array.isArray(b)?b.filter(x=>typeof x==="number"&&sq.includes(x)):[];
+  }catch(e){}
+  drafts=[{name:"Draft 1", squad:sq, bench:bn, cap:cp, vice:vc}];
+  active=0; bind();
 }
+
 function save(){
+  commit();
   try{
+    localStorage.setItem("fpl.drafts.v1",
+      JSON.stringify({v:1, active:active, drafts:drafts}));
+    // Mirror the active draft into the keys the other pages read.
     localStorage.setItem("fpl.squad",JSON.stringify(squad));
     localStorage.setItem("fpl.cap",JSON.stringify(cap));
     localStorage.setItem("fpl.vice",JSON.stringify(vice));
     localStorage.setItem("fpl.bench",JSON.stringify(bench));
   }catch(e){}
+}
+
+function draftPoints(d){
+  // What a draft is worth, for the tab strip. Uses the same best-eleven and
+  // captain rules as the pitch, so the number on the tab and the number above
+  // the pitch can never disagree.
+  const members=d.squad.map(i=>byId[i]).filter(Boolean);
+  if(members.length<11) return null;
+  const onBench=new Set(d.bench);
+  let xi=d.squad.filter(i=>!onBench.has(i));
+  if(!legalXI(xi)){
+    const g=members.filter(x=>x.p==="GKP").sort((a,b)=>b.xp-a.xp);
+    const dd=members.filter(x=>x.p==="DEF").sort((a,b)=>b.xp-a.xp);
+    const mm=members.filter(x=>x.p==="MID").sort((a,b)=>b.xp-a.xp);
+    const ff=members.filter(x=>x.p==="FWD").sort((a,b)=>b.xp-a.xp);
+    let best=null;
+    for(const [nd,nm,nf] of SHAPES){
+      if(dd.length<nd||mm.length<nm||ff.length<nf||!g.length) continue;
+      const t=[g[0],...dd.slice(0,nd),...mm.slice(0,nm),...ff.slice(0,nf)];
+      const tot=t.reduce((s,x)=>s+x.xp,0);
+      if(!best||tot>best.tot) best={t,tot};
+    }
+    if(!best) return null;
+    xi=best.t.map(x=>x.i);
+  }
+  let tot=xi.reduce((s,i)=>s+(byId[i]?byId[i].xp:0),0);
+  if(d.cap&&xi.includes(d.cap)) tot+=byId[d.cap].xp;
+  return tot;
+}
+
+function switchTo(i){
+  save();
+  active=Math.max(0,Math.min(drafts.length-1,i));
+  bind(); sel=null; save(); render();
 }
 
 /* ---- eleven ------------------------------------------------------------ */
@@ -394,6 +560,41 @@ function applyPicks(text){
 }
 
 /* ---- render ------------------------------------------------------------ */
+// Green is a kind fixture, red a hard one, scaled to the spread actually
+// present rather than to a fixed ramp - a fixed one never reaches either end.
+const FDR_RANGE=(function(){
+  const v=[];
+  for(const t in FIX) for(const col of FIX[t]) for(const f of col) v.push(f[2]);
+  return v.length?[Math.min.apply(null,v),Math.max.apply(null,v)]:[1,1];
+})();
+function fdr(v){
+  const [lo,hi]=FDR_RANGE;
+  const t=hi>lo?Math.max(0,Math.min(1,(v-lo)/(hi-lo))):0.5;
+  return "hsl("+((1-t)*135).toFixed(0)+",58%,"+(76-t*12).toFixed(0)+"%)";
+}
+
+function fixtureCells(d){
+  // One cell per gameweek: what we think he scores, and who against. This is
+  // the row that turns a projection into a decision - 4.4 against the best
+  // defence in the league is a different number from 4.4 at home to a promoted
+  // side, and the opponent is what tells you which one you are looking at.
+  const cols=FIX[d.t]||[];
+  let out="";
+  for(let k=0;k<GWS.length;k++){
+    const col=cols[k]||[];
+    const pts=(d.g&&d.g[k]!==undefined)?d.g[k]:null;
+    if(!col.length){
+      out+='<span class="fc blank"><b>&mdash;</b><i>no game</i></span>';
+      continue;
+    }
+    const opp=col.map(c=>c[0]+(c[1]?" (H)":" (A)")).join(" + ");
+    out+='<span class="fc" style="background:'+fdr(col[0][2])+'">'+
+      '<b>'+(pts===null?"&mdash;":pts.toFixed(1))+'</b>'+
+      '<i>'+esc(opp)+'</i></span>';
+  }
+  return out;
+}
+
 function card(id,onBench,pos){
   const d=byId[id];
   if(!d) return "";
@@ -403,18 +604,142 @@ function card(id,onBench,pos){
   if(d.ps<55) cls.push("doubt");
   if(d.ps<25) cls.push("out");
   const arm=(id===cap?"C":(id===vice?"V":""));
-  return '<div class="'+cls.join(" ")+'" data-id="'+id+'" tabindex="0" role="button" '+
-    'aria-label="'+esc(d.n)+', '+POS_ONE[d.p]+', '+d.t+'">'+
+  return '<button type="button" class="'+cls.join(" ")+'" data-id="'+id+'" '+
+    'aria-label="'+esc(d.n)+', '+POS_ONE[d.p]+', '+d.t+
+    (arm?", "+(arm==="C"?"captain":"vice-captain"):"")+'">'+
     (arm?'<span class="arm">'+arm+'</span>':"")+
     (onBench&&pos?'<span class="bo">'+pos+'</span>':"")+
     KIT(d.t)+
-    '<div class="nm">'+esc(d.n)+'</div>'+
-    '<div class="mt">'+d.xp.toFixed(2)+" pts</div>"+
-    '<div class="fx">'+esc(d.t)+" \u00B7 \u00A3"+d.c.toFixed(1)+"</div>"+
-    '</div>';
+    '<span class="plate">'+
+      '<span class="nm">'+esc(d.n)+'</span>'+
+      '<span class="pr">\u00A3'+d.c.toFixed(1)+'</span>'+
+    '</span>'+
+    '<span class="fcs">'+fixtureCells(d)+'</span>'+
+    '</button>';
+}
+
+/* ---- team rating ------------------------------------------------------- */
+// One number for the whole squad, which is the question people actually ask -
+// "is my team any good" - and the one a per-player rating cannot answer.
+//
+// Scored against what is ACHIEVABLE rather than against an absolute, because
+// the ceiling moves: in a week of kind fixtures every decent squad projects
+// higher, and a rating that drifted up with it would be measuring the week
+// rather than the manager. So: where does this team sit between a competent
+// cheap squad and the best squad the model can assemble for the same 100m.
+let RATING_REF=null;
+
+// The ceiling has to be a team you could actually field, not the best eleven
+// names in the game. Built from the best legal 15 the budget allows - the same
+// greedy-then-repair routine the Build me a squad button runs - because a
+// ceiling nobody can reach makes every real squad look broken. The first
+// version used the best eleven regardless of price and rated the model own
+// optimal team 19 out of 100.
+function optimalXIPoints(){
+  const pool=DATA.filter(d=>d.e&&d.ps>=55);
+  const need={GKP:2,DEF:5,MID:5,FWD:3};
+  let sq=[];
+  const cost=()=>sq.reduce((s,i)=>s+byId[i].c,0);
+  const clubs=()=>{const c={};sq.forEach(i=>{c[byId[i].t]=(c[byId[i].t]||0)+1;});return c;};
+  const rank=pool.map(d=>[d,d.xp/Math.max(d.c,0.1)]).sort((a,b)=>b[1]-a[1]);
+  for(const [d] of rank){
+    if(sq.length>=15) break;
+    if(need[d.p]<=0||sq.includes(d.i)) continue;
+    if((clubs()[d.t]||0)>=MAX_PER_CLUB) continue;
+    let floorLeft=0;
+    for(const p of ORDER){
+      const short=need[p]-(p===d.p?1:0);
+      if(short>0) floorLeft+=short*CHEAP[p];
+    }
+    if(cost()+d.c+floorLeft>BUDGET+1e-9) continue;
+    sq.push(d.i); need[d.p]--;
+  }
+  for(let pass=0;pass<3;pass++){
+    let moved=false;
+    for(const id of sq.slice()){
+      const c0=byId[id], rest=sq.filter(i=>i!==id);
+      const spent=rest.reduce((s,i)=>s+byId[i].c,0);
+      let best=null;
+      for(const d of pool){
+        if(sq.includes(d.i)||d.p!==c0.p||d.xp<=c0.xp) continue;
+        if(spent+d.c>BUDGET) continue;
+        if(rest.filter(i=>byId[i].t===d.t).length>=MAX_PER_CLUB) continue;
+        if(!best||d.xp>best.xp) best=d;
+      }
+      if(best){sq=rest.concat([best.i]);moved=true;}
+    }
+    if(!moved) break;
+  }
+  const mem=sq.map(i=>byId[i]);
+  const by=p=>mem.filter(x=>x.p===p).sort((a,b)=>b.xp-a.xp);
+  const g=by("GKP"), d=by("DEF"), m=by("MID"), f=by("FWD");
+  if(!g.length) return null;
+  let best=null;
+  for(const [nd,nm,nf] of SHAPES){
+    if(d.length<nd||m.length<nm||f.length<nf) continue;
+    const xi=[g[0]].concat(d.slice(0,nd),m.slice(0,nm),f.slice(0,nf));
+    const tot=xi.reduce((s,x)=>s+x.xp,0)+
+      xi.slice().sort((a,b)=>b.xp-a.xp)[0].xp;   // captained, like a real team
+    if(!best||tot>best) best=tot;
+  }
+  return best;
+}
+
+function cheapestXIPoints(){
+  // The did-no-thinking team: the cheapest players we still expect to start.
+  const pool=DATA.filter(d=>d.e&&d.ps>=55);
+  const by=p=>pool.filter(x=>x.p===p).slice().sort((a,b)=>a.c-b.c||b.xp-a.xp);
+  const g=by("GKP"), d=by("DEF"), m=by("MID"), f=by("FWD");
+  if(!g.length||d.length<5||m.length<5||f.length<3) return null;
+  const xi=[g[0]].concat(d.slice(0,4),m.slice(0,4),f.slice(0,2));
+  const tot=xi.reduce((s,x)=>s+x.xp,0);
+  return tot+xi.slice().sort((a,b)=>b.xp-a.xp)[0].xp;
+}
+
+function ratingRef(){
+  if(RATING_REF) return RATING_REF;
+  RATING_REF={ceiling:optimalXIPoints(), floor:cheapestXIPoints()};
+  return RATING_REF;
+}
+
+function teamRating(){
+  const ref=ratingRef();
+  if(!ref.ceiling||!ref.floor||ref.ceiling<=ref.floor) return null;
+  const xi=starters();
+  if(!legalXI(xi)) return null;
+  let pts=xi.reduce((s,i)=>s+(byId[i]?byId[i].xp:0),0);
+  // The armband is part of the team, so it is part of the rating. A squad with
+  // the wrong captain IS a worse team, and hiding that would make the number
+  // agree with itself while disagreeing with the scoreboard.
+  if(cap&&xi.includes(cap)) pts+=byId[cap].xp;
+  const t=(pts-ref.floor)/(ref.ceiling-ref.floor);
+  return Math.max(1,Math.min(99,Math.round(t*100)));
+}
+function ratingWord(r){
+  if(r===null) return "";
+  if(r>=88) return "outstanding";
+  if(r>=76) return "strong";
+  if(r>=62) return "decent";
+  if(r>=45) return "work to do";
+  return "needs a rebuild";
+}
+
+function renderDrafts(){
+  const bar=document.getElementById("drafts");
+  bar.innerHTML=drafts.map((d,i)=>{
+    const p=draftPoints(d);
+    return '<button data-draft="'+i+'" class="'+(i===active?"on":"")+'">'+
+      esc(d.name)+'<span class="pts">'+
+      (p===null?d.squad.length+"/15":p.toFixed(1)+" pts")+'</span></button>';
+  }).join("")+
+  (drafts.length<6
+    ? '<button class="add" id="dnew" title="Start another team">+ New draft</button>'
+    : "");
 }
 
 function render(){
+  commit();
+  renderDrafts();
   const members=squad.map(i=>byId[i]).filter(Boolean);
   const xi=starters();
   const shape=shapeOf(xi);
@@ -424,6 +749,12 @@ function render(){
   const capD=byId[cap];
   const xiXp=xi.reduce((s,i)=>s+(byId[i]?byId[i].xp:0),0);
   const total=xiXp+(capD&&xi.includes(cap)?capD.xp:0);
+
+  const tr=teamRating();
+  const psrEl=document.getElementById("t-psr");
+  psrEl.innerHTML=(tr===null?"&mdash;":tr)+
+    '<small id="t-psrw">'+(tr===null?"pick a full eleven":ratingWord(tr))+'</small>';
+  psrEl.className="v"+(tr!==null&&tr>=76?" good":"");
 
   document.getElementById("t-n").innerHTML=members.length+
     '<small>/15</small>';
@@ -572,7 +903,41 @@ document.addEventListener("DOMContentLoaded",()=>{
     autoFill();save();render();
   });
   document.getElementById("clear").addEventListener("click",()=>{
-    squad=[];bench=[];cap=null;vice=null;sel=null;save();render();
+    squad.length=0;bench.length=0;cap=null;vice=null;sel=null;save();render();
+  });
+
+  document.getElementById("drafts").addEventListener("click",e=>{
+    const t=e.target.closest("button");
+    if(!t) return;
+    if(t.id==="dnew"){
+      save();
+      drafts.push(blankDraft("Draft "+(drafts.length+1)));
+      active=drafts.length-1; bind(); sel=null; save(); render();
+      return;
+    }
+    if(t.dataset.draft!==undefined) switchTo(+t.dataset.draft);
+  });
+  document.getElementById("drename").addEventListener("click",()=>{
+    const name=prompt("Name this draft", cur().name);
+    if(name===null) return;
+    cur().name=(name.trim()||cur().name).slice(0,24);
+    save(); render();
+  });
+  document.getElementById("ddup").addEventListener("click",()=>{
+    if(drafts.length>=6){flash("Six drafts is the limit.");return;}
+    save();
+    const c=cur();
+    // Copy the arrays, do not share them - two tabs pointing at one array is a
+    // duplicate that edits its own original.
+    drafts.push({name:(c.name+" copy").slice(0,24), squad:c.squad.slice(),
+                 bench:c.bench.slice(), cap:c.cap, vice:c.vice});
+    active=drafts.length-1; bind(); save(); render();
+  });
+  document.getElementById("ddel").addEventListener("click",()=>{
+    if(drafts.length<2){flash("This is your only draft.");return;}
+    if(!confirm("Delete "+cur().name+"?")) return;
+    drafts.splice(active,1);
+    active=Math.max(0,active-1); bind(); sel=null; save(); render();
   });
 
   const panel=document.getElementById("imp");
@@ -611,7 +976,7 @@ function setVice(id){
 """
 
 
-def build(rows, gw, deadline, shorts):
+def build(rows, gw, deadline, shorts, fix, gws):
     data = web.prepare(rows)
     # The shirts render client-side, so the markup has to cross into JS. One
     # string per club, looked up by short name - 20 entries, not 460 copies.
@@ -662,6 +1027,13 @@ def build(rows, gw, deadline, shorts):
     this tab, and never leaves the browser.</p>
 </section>
 
+<div class="drafts" id="drafts" role="tablist" aria-label="Your drafts"></div>
+<div class="dtools">
+  <button id="drename">Rename</button>
+  <button id="ddup">Duplicate</button>
+  <button id="ddel" class="danger">Delete</button>
+</div>
+
 <div class="act">
   <button id="fill" class="go">Build me a squad</button>
   <button id="impbtn">Import my FPL team</button>
@@ -670,6 +1042,8 @@ def build(rows, gw, deadline, shorts):
 </div>
 
 <div class="tot">
+  <div class="hero"><div class="k">PS Rating</div>
+    <div class="v" id="t-psr">&mdash;<small id="t-psrw"></small></div></div>
   <div><div class="k">Players picked</div><div class="v" id="t-n">0<small>/15</small></div></div>
   <div><div class="k">Cost</div><div class="v" id="t-cost">&pound;0.0m</div></div>
   <div><div class="k">In the bank</div><div class="v" id="t-bank">&pound;100.0m</div></div>
@@ -679,7 +1053,18 @@ def build(rows, gw, deadline, shorts):
 
 <div class="cols">
   <div>
-    <div class="pitch" id="pitch"></div>
+    <div class="pitch">
+      <svg class="marks" viewBox="0 0 300 380" preserveAspectRatio="none"
+        aria-hidden="true">
+        <rect x="1" y="1" width="298" height="378"/>
+        <rect x="90" y="1" width="120" height="52"/>
+        <rect x="123" y="1" width="54" height="22"/>
+        <path d="M117 53a40 40 0 0 0 66 0"/>
+        <line x1="1" y1="379" x2="299" y2="379"/>
+        <circle cx="150" cy="379" r="46"/>
+      </svg>
+      <div class="players" id="pitch"></div>
+    </div>
     <p class="msg" id="msg"></p>
   </div>
 
@@ -707,12 +1092,15 @@ squad and captain stored locally in this browser &middot;
 </div>
 {sprite}
 <script>const DATA={data};const CHEAP={cheap};const GW={gw};const KITS={kitmap};
+const FIX={fix};const GWS={gws};
 function KIT(t){{return KITS[t]||"";}}{js}</script>""".format(
         nav=links.nav("myteam"), gw=gw, deadline=deadline,
         projections=links.href("projections"), fixtures=links.href("fixtures"),
         sprite=sprite, data=json.dumps(data, separators=(",", ":")),
         cheap=json.dumps(cheap),
-        kitmap=json.dumps(markup, separators=(",", ":")), js=JS)
+        kitmap=json.dumps(markup, separators=(",", ":")),
+        fix=json.dumps(fix, separators=(",", ":")),
+        gws=json.dumps(gws, separators=(",", ":")), js=JS)
     return links.document("FPL my team", body, CSS)
 
 
@@ -727,11 +1115,19 @@ def main():
     manifest = json.load(open(os.path.join(snap, "manifest.json")))
     bootstrap = json.load(open(os.path.join(snap, "bootstrap.json")))
     shorts = sorted(t["short_name"] for t in bootstrap["teams"])
+    fixtures = json.load(open(os.path.join(snap, "fixtures.json")))
     rows, _, _ = P.build(snap, args.prior, quiet=True)
     gw = manifest.get("next_gw") or 1
     deadline = (manifest.get("next_deadline") or "").replace("T", " ")[:16] + " UTC"
 
-    html = build(rows, gw, deadline, shorts)
+    # Three gameweeks of opponents, matching what the cards show. Same source
+    # and same convention as the fixture ticker, so the two pages cannot
+    # disagree about who anyone is playing.
+    grid, short, _, _ = ticker.build_grid(bootstrap, fixtures, gw, 3, args.prior)
+    fix = {short[t]: [[list(c) for c in col] for col in cols]
+           for t, cols in grid.items()}
+    gws = list(range(gw, gw + 3))
+    html = build(rows, gw, deadline, shorts, fix, gws)
 
     problems = web.lint_js(html, ("#pitch", "#pick", "DOMContentLoaded"))
     if problems:

@@ -121,6 +121,12 @@ ACCURACY = {
 # Shown once, near the first table that uses these numbers. Ordered by how
 # early a reader meets the term, not alphabetically.
 GLOSSARY = (
+    ("PS Rating",
+     "Our one-number verdict on a player, out of 100. It blends what he should "
+     "score this week, how his next six weeks look, how explosive he is for the "
+     "points he is projected, and what he costs - then docks him if we are not "
+     "confident he starts. It is scored against his own position, so a "
+     "defender on 85 and a forward on 85 are both near the top of their trade."),
     ("Points",
      "How many points we expect this player to score this week. A 6.0 means "
      "we think six is his most likely return, not that he is guaranteed it."),
