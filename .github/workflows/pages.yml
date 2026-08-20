@@ -1,0 +1,37 @@
+name: pages
+
+# Publishes out/ to GitHub Pages. Runs after the hourly tick pushes, so the
+# live site tracks the record without a second schedule of its own.
+on:
+  push:
+    branches: [main]
+    paths: ["out/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never cancel a deploy in flight; let it finish and queue the next.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          # Only out/ is served. The rest of the repo stays browsable on
+          # GitHub itself, which is the point - the code being readable is
+          # what makes the accuracy record checkable.
+          path: out
+      - id: deploy
+        uses: actions/deploy-pages@v4

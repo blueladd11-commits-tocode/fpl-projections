@@ -216,6 +216,8 @@ def main():
         failures += 1
     if not run(["setpieces.py"], "publish set pieces"):
         failures += 1
+    if not run(["index.py"], "publish landing page"):
+        failures += 1
 
     # 5. the record must still hold
     if not run(["verify.py"], "verify"):

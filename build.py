@@ -16,7 +16,8 @@ import subprocess
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-PAGES = ("web.py", "ticker.py", "setpieces.py", "publish.py")
+PAGES = ("web.py", "ticker.py", "setpieces.py", "publish.py",
+         "index.py")
 
 
 def main():

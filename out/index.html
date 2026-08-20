@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fantasy Premier League projections</title>
+<style>
+nav{display:flex;gap:.1rem;font-family:var(--mono);font-size:.72rem;
+  letter-spacing:.06em;text-transform:uppercase;flex-wrap:wrap}
+nav a{padding:.4rem .75rem;border:1px solid var(--line);color:var(--ink-2);
+  text-decoration:none}
+nav a[aria-current="page"]{background:var(--accent);color:var(--ground);
+  border-color:var(--accent)}
+nav a:hover:not([aria-current]){color:var(--ink);border-color:var(--ink-3)}
+nav a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+:root{
+  --ground:#EDEFF1; --panel:#FFFFFF; --line:#D3D8DC;
+  --ink:#12171C; --ink-2:#454F58; --ink-3:#5E6873;
+  --accent:#0F7F6E; --accent-soft:#D9EFEA; --warn:#9A6B12; --loss:#A83A2E;
+  --mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#0D1116; --panel:#151B22; --line:#27313A;
+  --ink:#E6EBEF; --ink-2:#A9B5BF; --ink-3:#8A97A2;
+  --accent:#3ED9BC; --accent-soft:#12312C; --warn:#E0A83A; --loss:#E8705F;
+}}
+:root[data-theme="dark"]{
+  --ground:#0D1116; --panel:#151B22; --line:#27313A;
+  --ink:#E6EBEF; --ink-2:#A9B5BF; --ink-3:#8A97A2;
+  --accent:#3ED9BC; --accent-soft:#12312C; --warn:#E0A83A; --loss:#E8705F;
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);
+  margin:0;padding:clamp(1rem,3vw,2rem);line-height:1.5;-webkit-font-smoothing:antialiased}
+.wrap{max-width:72rem;margin:0 auto;display:flex;flex-direction:column;gap:1.4rem}
+h1{font-family:var(--mono);font-size:clamp(1.3rem,3.5vw,1.7rem);margin:0;
+  letter-spacing:-.02em;font-weight:650}
+.sub{color:var(--ink-2);font-size:.88rem;margin:.3rem 0 0}
+.sub code{font-family:var(--mono);font-size:.82rem}
+.controls{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;
+  background:var(--panel);border:1px solid var(--line);padding:.8rem}
+.seg{display:flex;border:1px solid var(--line)}
+.seg button{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;
+  background:transparent;color:var(--ink-2);border:0;padding:.42rem .7rem;
+  cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--ground)}
+.seg button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+input[type=search],select{font-family:var(--sans);font-size:.85rem;padding:.4rem .55rem;
+  background:var(--ground);color:var(--ink);border:1px solid var(--line)}
+label.chk{font-size:.8rem;color:var(--ink-2);display:flex;align-items:center;gap:.35rem;
+  cursor:pointer}
+.count{margin-left:auto;font-family:var(--mono);font-size:.76rem;color:var(--ink-3)}
+.scroll{overflow-x:auto;background:var(--panel);border:1px solid var(--line)}
+table{border-collapse:collapse;width:100%;font-size:.86rem;min-width:44rem}
+th{position:sticky;top:0;background:var(--panel);text-align:left;font-family:var(--mono);
+  font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);
+  padding:.55rem .6rem;border-bottom:1px solid var(--line);cursor:pointer;
+  white-space:nowrap;user-select:none}
+th:hover{color:var(--ink)}
+th[aria-sort]{color:var(--accent)}
+th.num,td.num{text-align:right}
+td{padding:.45rem .6rem;border-bottom:1px solid var(--line);color:var(--ink-2);
+  font-variant-numeric:tabular-nums;white-space:nowrap}
+td.name{font-weight:600;color:var(--ink)}
+td.mono{font-family:var(--mono)}
+tbody tr:hover{background:var(--accent-soft)}
+.bar{display:inline-block;height:.45rem;background:var(--accent);vertical-align:middle;
+  margin-right:.4rem;min-width:1px}
+.pill{font-family:var(--mono);font-size:.66rem;padding:.1rem .35rem;
+  border:1px solid var(--line);color:var(--ink-3)}
+.risk{color:var(--warn)}
+.spark{display:inline-flex;align-items:flex-end;gap:1px;height:12px;
+  margin-left:.45rem;vertical-align:middle}
+.spark i{width:3px;background:var(--accent);opacity:.55;display:block}
+footer{color:var(--ink-3);font-size:.76rem;font-family:var(--mono)}
+.empty{padding:2rem;text-align:center;color:var(--ink-3)}
+.layout{display:grid;grid-template-columns:1fr;gap:1.4rem}
+@media(min-width:1080px){.layout{grid-template-columns:1fr 21rem;align-items:start}}
+.squad{background:var(--panel);border:1px solid var(--line);padding:1rem;
+  position:sticky;top:1rem}
+.squad h2{font-family:var(--mono);font-size:.72rem;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ink-3);margin:0 0 .7rem}
+.tot{display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-bottom:.8rem}
+.tot div{background:var(--ground);border:1px solid var(--line);padding:.5rem .6rem}
+.tot .k{font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);
+  font-family:var(--mono)}
+.tot .v{font-family:var(--mono);font-size:1.1rem;color:var(--ink);font-weight:600;
+  font-variant-numeric:tabular-nums}
+.tot .v.bad{color:var(--loss)}
+.line{font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;color:var(--ink-3);
+  text-transform:uppercase;margin:.6rem 0 .25rem}
+.pick{display:flex;align-items:center;gap:.4rem;padding:.22rem .3rem;font-size:.8rem;
+  border-bottom:1px solid var(--line)}
+.pick .nm{flex:1;color:var(--ink);white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis}
+.pick .xp{font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--ink-2)}
+.pick button{background:none;border:0;color:var(--ink-3);cursor:pointer;font-size:1rem;
+  line-height:1;padding:0 .15rem}
+.pick button:hover{color:var(--loss)}
+.pick.benched .nm,.pick.benched .xp{opacity:.45}
+.warn{font-size:.76rem;color:var(--loss);margin:.5rem 0 0}
+.hint{font-size:.76rem;color:var(--ink-3);margin:.5rem 0 0}
+tr.picked{background:var(--accent-soft)}
+tr{cursor:pointer}
+.loss{color:var(--loss)}
+.seg.tx{margin:.3rem 0 .5rem;width:100%}
+.seg.tx button{flex:1;font-size:.66rem;padding:.3rem .2rem}
+.tx-row{display:flex;align-items:baseline;gap:.35rem;font-size:.78rem;
+  padding:.22rem 0;border-bottom:1px solid var(--line)}
+.tx-row .out{color:var(--ink-2);text-decoration:line-through;flex:1;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tx-row .arw{color:var(--ink-3);font-family:var(--mono)}
+.tx-row .in{color:var(--ink);font-weight:600;flex:1;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.tx-row .gain{font-family:var(--mono);color:var(--accent);font-weight:600}
+.tx-row .cost{font-family:var(--mono);font-size:.7rem;color:var(--ink-3);width:3.2rem;
+  text-align:right}
+
+
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(17rem,1fr));gap:1rem}
+.card{display:block;background:var(--panel);border:1px solid var(--line);
+  padding:1.1rem 1.2rem;text-decoration:none}
+.card:hover{border-color:var(--accent)}
+.card h2{font-family:var(--mono);font-size:.92rem;color:var(--ink);margin:0 0 .4rem;
+  font-weight:650}
+.card p{font-size:.85rem;color:var(--ink-2);margin:0}
+.lede{font-size:1rem;color:var(--ink-2);max-width:62ch}
+.lede strong{color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Fantasy Premier League projections</h1>
+  <p class="lede">A points model whose <strong>accuracy record is published and
+  checkable</strong>. Every projection is written before its gameweek deadline,
+  alongside the SHA-256 of the exact API snapshot it came from, and scored
+  afterwards against a baseline anyone could build in an afternoon. Weeks we
+  lose appear in the same table as weeks we win.</p>
+  <p class="lede">1 gameweek projection(s) on record, 0
+  scored so far. Updated hourly.</p>
+</header>
+<div class="cards"><a class="card" href="projections.html"><h2>Projections</h2><p>Expected points for every player over the next six gameweeks, with the chance of a double-digit haul, a squad builder and transfer suggestions.</p></a><a class="card" href="fixtures.html"><h2>Fixture ticker</h2><p>Difficulty split into attacking and defensive views &mdash; because a promoted side concedes freely <em>and</em> scores little, and one number cannot say both.</p></a><a class="card" href="setpieces.html"><h2>Set-piece takers</h2><p>Ranked penalty, free-kick and corner duty for all 20 clubs, refreshed hourly, with listed takers we do not expect to start flagged.</p></a><a class="card" href="scorecard.html"><h2>Accuracy record</h2><p>Every projection timestamped before its deadline and scored against a hard baseline. Including the weeks we lose.</p></a></div>
+<footer>Built from the free Fantasy Premier League API &middot; no affiliation
+with the Premier League &middot; generated 2026-08-20 01:15 UTC</footer>
+</div>
+</body>
+</html>
