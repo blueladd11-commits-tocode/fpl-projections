@@ -3,7 +3,22 @@
 An FPL projection engine built around one commercial bet: **we publish our
 accuracy, and nobody else does.**
 
-Zero dependencies, stdlib Python 3.9+. Run everything with `python3 <script>`.
+**Live: https://blueladd11-commits-tocode.github.io/fpl-projections/**
+
+| | |
+|---|---|
+| [Projections](https://blueladd11-commits-tocode.github.io/fpl-projections/projections.html) | xP for every player over six gameweeks, haul probabilities, squad builder |
+| [Fixture ticker](https://blueladd11-commits-tocode.github.io/fpl-projections/fixtures.html) | difficulty split into attacking and defensive, from fitted team ratings |
+| [Set-piece takers](https://blueladd11-commits-tocode.github.io/fpl-projections/setpieces.html) | ranked pen / FK / corner duty for all 20 clubs |
+| [Accuracy record](https://blueladd11-commits-tocode.github.io/fpl-projections/scorecard.html) | every projection timestamped before its deadline, scored after |
+
+Rebuilt hourly by `.github/workflows/tick.yml` and deployed by
+`pages.yml`. Zero dependencies, stdlib Python 3.9+. Run everything with
+`python3 <script>`.
+
+The repository is public for one reason: an accuracy record nobody can audit is
+just a nicer-looking assertion. `verify.py` re-runs any committed projection
+from the archived API snapshot it was built from, and anyone can run it.
 
 ---
 

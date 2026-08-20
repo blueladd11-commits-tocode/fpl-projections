@@ -69,8 +69,13 @@ def log(msg):
 def run(args, label):
     """Run a step, returning True on success. Never raises: one broken step
     must not stop the others, or a scoring bug would also stop snapshotting."""
+    # out/ is what GitHub Pages serves, and there the four pages sit in one
+    # directory, so nav must be relative. links.json holds absolute artifact
+    # URLs for artifact publishing; letting it leak into the hourly rebuild
+    # would silently repoint every nav tab on the live site off to claude.ai.
+    env = dict(os.environ, FPL_LINKS="relative")
     try:
-        p = subprocess.run([sys.executable] + args, cwd=HERE,
+        p = subprocess.run([sys.executable] + args, cwd=HERE, env=env,
                            capture_output=True, text=True, timeout=900)
     except Exception as e:
         log("{}: FAILED to launch ({})".format(label, e))
