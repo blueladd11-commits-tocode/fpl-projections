@@ -1,0 +1,68 @@
+{
+ "season": "2025-26",
+ "prior": "2024-25",
+ "pairs": 8340,
+ "train_seasons": [
+  "2024-25",
+  "2025-26"
+ ],
+ "command": "python3 backtest.py --season 2025-26 --prior 2024-25 --calibration-json out/calibration.json",
+ "mean_projected": 2.727,
+ "mean_actual": 2.686,
+ "deciles": [
+  {
+   "projected": 0.5,
+   "actual": 0.56,
+   "n": 834
+  },
+  {
+   "projected": 0.9,
+   "actual": 1.08,
+   "n": 834
+  },
+  {
+   "projected": 1.64,
+   "actual": 1.92,
+   "n": 834
+  },
+  {
+   "projected": 2.57,
+   "actual": 2.46,
+   "n": 834
+  },
+  {
+   "projected": 2.93,
+   "actual": 2.76,
+   "n": 834
+  },
+  {
+   "projected": 3.16,
+   "actual": 2.91,
+   "n": 834
+  },
+  {
+   "projected": 3.38,
+   "actual": 3.26,
+   "n": 834
+  },
+  {
+   "projected": 3.6,
+   "actual": 3.72,
+   "n": 834
+  },
+  {
+   "projected": 3.88,
+   "actual": 3.85,
+   "n": 834
+  },
+  {
+   "projected": 4.73,
+   "actual": 4.33,
+   "n": 834
+  }
+ ],
+ "top50": {
+  "projected": 7.47,
+  "actual": 7.04
+ }
+}

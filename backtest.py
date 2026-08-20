@@ -156,6 +156,65 @@ def summarise(per_gw, label, verbose):
     return ours, bias, sig
 
 
+
+def dump_calibration(args):
+    """When we say X, what actually happens - the scale question, answered.
+
+    Spearman only judges the ORDER, so a model can rank beautifully while its
+    scale drifts, and nothing in the headline metrics would catch it. This
+    walks a season with the production configuration and buckets projections
+    by size: if the top bucket's reality falls far short of its promise, the
+    big numbers are marketing; if it matches, they are calibrated.
+
+    Written to a JSON the scorecard renders, with provenance, so the table on
+    the site is regenerable by anyone with one command rather than being a
+    claim.
+    """
+    import minutes as MIN
+    path = os.path.join(HERE, "out", "minutes_model.json")
+    if not os.path.exists(path):
+        raise SystemExit("no fitted model - run `python3 minutes.py` first")
+    mm = json.load(open(path))
+    w = Walker(args.season, args.prior)
+    pairs = []
+    for gw, contexts in w.gameweeks():
+        for c in contexts:
+            if not eligible(c, args.min_matches, args.min_mins_per_match):
+                continue
+            p = MIN.p_start(mm, c, w.prior_start_rate.get(c.key))
+            p_start, p_sub, xmins = M.minutes_from_pstart(p, c.agg)
+            res = M.project(M.per90(c.agg, c.pos), c.pos, p_start, p_sub,
+                            xmins, c.fixtures, defcon=w.defcon_active,
+                            calibration=M.CALIBRATION_MINUTES)
+            if res:
+                pairs.append((res["xp"], c.actual_points))
+    pairs.sort(key=lambda t: t[0])
+    n = len(pairs)
+    deciles = []
+    for i in range(10):
+        ch = pairs[i * n // 10:(i + 1) * n // 10]
+        deciles.append(dict(
+            projected=round(sum(c[0] for c in ch) / len(ch), 2),
+            actual=round(sum(c[1] for c in ch) / len(ch), 2), n=len(ch)))
+    top50 = pairs[-50:]
+    out = dict(
+        season=args.season, prior=args.prior, pairs=n,
+        train_seasons=mm.get("train_seasons"),
+        command="python3 backtest.py --season {} --prior {} "
+                "--calibration-json out/calibration.json".format(
+                    args.season, args.prior),
+        mean_projected=round(sum(p[0] for p in pairs) / n, 3),
+        mean_actual=round(sum(p[1] for p in pairs) / n, 3),
+        deciles=deciles,
+        top50=dict(projected=round(sum(c[0] for c in top50) / 50, 2),
+                   actual=round(sum(c[1] for c in top50) / 50, 2)),
+    )
+    with open(args.calibration_json, "w") as f:
+        json.dump(out, f, indent=1)
+    print("calibration table: {}  ({} pairs)".format(args.calibration_json, n))
+    return 0
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--season", default="2025-26")
@@ -165,8 +224,13 @@ def main():
     ap.add_argument("--minutes-model", action="store_true",
                     help="use the fitted P(start) model from minutes.py")
     ap.add_argument("--calibrate", action="store_true")
+    ap.add_argument("--calibration-json", metavar="PATH",
+                    help="write the when-we-say-X-what-happens table")
     ap.add_argument("--quiet", action="store_true")
     args = ap.parse_args()
+
+    if args.calibration_json:
+        return dump_calibration(args)
 
     mm = None
     tag = ""

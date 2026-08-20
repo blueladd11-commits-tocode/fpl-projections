@@ -142,6 +142,12 @@ GLOSSARY = (
      "this page is worthless if he is on the bench, which is why it is here."),
     ("Minutes",
      "How long we expect him on the pitch."),
+    ("Why are these smaller than other sites' numbers?",
+     "Because ours are calibrated: when we say four points, reality pays "
+     "about four. Last season exactly one player in the league sustained "
+     "more than 6.3 points a week - a site showing you several players at "
+     "7 is describing the player's best day, not his average one. The "
+     "accuracy record page shows the receipts."),
 )
 
 

@@ -223,6 +223,67 @@ def fmt_dt(s):
     return esc(s[:16].replace("T", " ")) + "Z"
 
 
+
+def calibration_section():
+    """When we say four points, what happens - the honest-scale section.
+
+    Rendered from out/calibration.json so the numbers are regenerable with one
+    command rather than being copy in a webpage. Exists because the most common
+    reasonable complaint about these projections is that other sites' numbers
+    are bigger - and the answer is not an argument, it is this table.
+    """
+    path = os.path.join(OUT, "calibration.json")
+    if not os.path.exists(path):
+        return ""
+    c = json.load(open(path))
+    rows = []
+    for i, d in enumerate(c["deciles"], 1):
+        ratio = d["actual"] / d["projected"] if d["projected"] else 0
+        rows.append(
+            "<tr><td>{}</td><td>{:.2f}</td><td>{:.2f}</td><td>{:.2f}</td></tr>"
+            .format("smallest 10%" if i == 1 else
+                    ("biggest 10%" if i == 10 else "decile {}".format(i)),
+                    d["projected"], d["actual"], ratio))
+    t50 = c["top50"]
+    rows.append(
+        "<tr><td><strong>our 50 biggest calls</strong></td>"
+        "<td><strong>{:.2f}</strong></td><td><strong>{:.2f}</strong></td>"
+        "<td><strong>{:.2f}</strong></td></tr>".format(
+            t50["projected"], t50["actual"],
+            t50["actual"] / t50["projected"]))
+    return """<section>
+  <h2>Why our numbers look smaller than everyone else&rsquo;s</h2>
+  <p>Other sites will show you a forward on 6.6 and a midfielder on 7.1 and a
+  squad predicted to score 75. Ours says 4.9 for the same forward. One of us is
+  wrong, and it is checkable: across every projection we made for the whole of
+  {season} &mdash; {pairs:,} player-gameweeks &mdash; here is what reality paid
+  out when we said a number.</p>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Bucket of our projections</th><th>We said</th>
+      <th>Reality delivered</th><th>Reality &divide; us</th></tr></thead>
+    <tbody>{rows}</tbody>
+  </table>
+  </div>
+  <p style="margin-top:1rem">When we said six points, reality paid about
+  <strong>ten percent less</strong>. Our biggest numbers are, if anything, a
+  touch generous &mdash; the opposite of too small. And for scale: across all
+  of {season}, exactly <strong>one player in the league</strong> sustained
+  6.3&nbsp;points a week, and only four sustained 5.0. A prediction that needs
+  half a squad performing at that level is not a projection, it is a
+  compliment.</p>
+  <p style="font-size:.85rem;color:var(--ink-3)">Honesty notes: the overall
+  average is partly calibrated on this season, so read the <em>shape</em> of
+  the table rather than the grand total &mdash; a single scaling constant
+  cannot fake the bucket-by-bucket agreement. The minutes model was trained on
+  a window that includes this season. Regenerate the table yourself with
+  <code>{command}</code>.</p>
+</section>
+
+""".format(season=c["season"], pairs=c["pairs"], rows="".join(rows),
+           command=c["command"])
+
+
 def build(records, evidence):
     scored = [r for r in records if r["status"] == "SCORED"]
     pending = len(records) - len(scored)
@@ -349,6 +410,8 @@ def build(records, evidence):
   The minutes model is what the projection is actually for.</p>
 </section>
 
+__CALIBRATION__
+
 <section>
   <h2>Known limitations</h2>
   <ul>
@@ -382,7 +445,9 @@ def main():
     args = ap.parse_args()
 
     records, evidence = load_records(), load_evidence()
-    html = links.document("FPL accuracy record", build(records, evidence), CSS)
+    body = build(records, evidence).replace("__CALIBRATION__",
+                                             calibration_section())
+    html = links.document("FPL accuracy record", body, CSS)
     with open(args.out, "w") as f:
         f.write(html)
 

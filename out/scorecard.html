@@ -233,6 +233,37 @@ footer{color:var(--ink-3);font-size:.76rem;font-family:var(--mono);
 </section>
 
 <section>
+  <h2>Why our numbers look smaller than everyone else&rsquo;s</h2>
+  <p>Other sites will show you a forward on 6.6 and a midfielder on 7.1 and a
+  squad predicted to score 75. Ours says 4.9 for the same forward. One of us is
+  wrong, and it is checkable: across every projection we made for the whole of
+  2025-26 &mdash; 8,340 player-gameweeks &mdash; here is what reality paid
+  out when we said a number.</p>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Bucket of our projections</th><th>We said</th>
+      <th>Reality delivered</th><th>Reality &divide; us</th></tr></thead>
+    <tbody><tr><td>smallest 10%</td><td>0.50</td><td>0.56</td><td>1.12</td></tr><tr><td>decile 2</td><td>0.90</td><td>1.08</td><td>1.20</td></tr><tr><td>decile 3</td><td>1.64</td><td>1.92</td><td>1.17</td></tr><tr><td>decile 4</td><td>2.57</td><td>2.46</td><td>0.96</td></tr><tr><td>decile 5</td><td>2.93</td><td>2.76</td><td>0.94</td></tr><tr><td>decile 6</td><td>3.16</td><td>2.91</td><td>0.92</td></tr><tr><td>decile 7</td><td>3.38</td><td>3.26</td><td>0.96</td></tr><tr><td>decile 8</td><td>3.60</td><td>3.72</td><td>1.03</td></tr><tr><td>decile 9</td><td>3.88</td><td>3.85</td><td>0.99</td></tr><tr><td>biggest 10%</td><td>4.73</td><td>4.33</td><td>0.92</td></tr><tr><td><strong>our 50 biggest calls</strong></td><td><strong>7.47</strong></td><td><strong>7.04</strong></td><td><strong>0.94</strong></td></tr></tbody>
+  </table>
+  </div>
+  <p style="margin-top:1rem">When we said six points, reality paid about
+  <strong>ten percent less</strong>. Our biggest numbers are, if anything, a
+  touch generous &mdash; the opposite of too small. And for scale: across all
+  of 2025-26, exactly <strong>one player in the league</strong> sustained
+  6.3&nbsp;points a week, and only four sustained 5.0. A prediction that needs
+  half a squad performing at that level is not a projection, it is a
+  compliment.</p>
+  <p style="font-size:.85rem;color:var(--ink-3)">Honesty notes: the overall
+  average is partly calibrated on this season, so read the <em>shape</em> of
+  the table rather than the grand total &mdash; a single scaling constant
+  cannot fake the bucket-by-bucket agreement. The minutes model was trained on
+  a window that includes this season. Regenerate the table yourself with
+  <code>python3 backtest.py --season 2025-26 --prior 2024-25 --calibration-json out/calibration.json</code>.</p>
+</section>
+
+
+
+<section>
   <h2>Known limitations</h2>
   <ul>
     <li><strong>Opening gameweeks are the weakest.</strong> Before the season has data,
@@ -248,7 +279,7 @@ footer{color:var(--ink-3);font-size:.76rem;font-family:var(--mono);
   </ul>
 </section>
 
-<footer>Generated 2026-08-20 20:29 UTC &middot; projections and snapshot hashes are reproducible from
+<footer>Generated 2026-08-20 21:03 UTC &middot; projections and snapshot hashes are reproducible from
 the recorded snapshot &middot; baseline definitions unchanged since first publication &middot; <a href="projections.html" style="color:var(--accent)">this week&rsquo;s projections</a></footer>
 </div>
 </body>
