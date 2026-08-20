@@ -76,7 +76,9 @@ def settings(bootstrap):
     )
 
 
-CSS = web.CSS + (kits.CSS if kits else "") + """
+# The page's own styles, kept separate from what it inherits so the
+# collision check below can compare the two.
+OWN_CSS = """
 .cal{border-collapse:separate;border-spacing:2px;width:100%;min-width:44rem}
 .cal th,.cal td{border:0;padding:0;background:transparent}
 .cal thead th{position:sticky;top:0;z-index:2;background:var(--ground);
@@ -168,6 +170,8 @@ CSS = web.CSS + (kits.CSS if kits else "") + """
   .cell .o{font-size:.56rem}
 }
 """
+
+CSS = web.CSS + (kits.CSS if kits else "") + OWN_CSS
 
 
 JS = r"""
@@ -732,6 +736,11 @@ def main():
     rows, _, _ = P.build(snap, args.prior, quiet=True)
     html = build(rows, bootstrap, fixtures, start, args.gameweeks, args.prior)
 
+    clashes = web.css_collisions(OWN_CSS, allow=("empty",))
+    if clashes:
+        print("REFUSING TO WRITE - CSS class names collide with web.CSS: "
+              + ", ".join(clashes))
+        return 1
     problems = web.lint_js(html, ("#bd", "#hd", "#led", "DOMContentLoaded"))
     if problems:
         print("REFUSING TO WRITE - generated JavaScript looks broken:")

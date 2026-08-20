@@ -648,6 +648,24 @@ def _payload(html):
     return out
 
 
+def css_collisions(own_css, allow=()):
+    """Class names a page redefines that web.CSS already owns.
+
+    This bit three times in one afternoon, the same way each time: a page
+    inheriting web.CSS reused a class name, web's rule set a property the page
+    never overrode, and the page broke in a way no syntax check can see -
+    .pick flattened a 60-row list to one visible row, .bar painted a stray
+    accent strip and collapsed its own container, .line uppercased the pitch.
+    Pages call this in their lint step and refuse to write on a new clash.
+    `allow` is for deliberate, compatible overrides - name them, so the next
+    reader knows they are on purpose.
+    """
+    define = re.compile(r"(?:^|\}|,)\s*\.([a-z][\w-]*)")
+    base = set(define.findall(CSS))
+    own = set(define.findall(own_css))
+    return sorted((base & own) - set(allow))
+
+
 def lint_page(html):
     """Whole-page checks that apply to every builder, JS or not.
 

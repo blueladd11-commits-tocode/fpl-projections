@@ -37,7 +37,9 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "out")
 
 
-CSS = web.CSS + (kits.CSS if kits else "") + """
+# The page's own styles, kept separate from what it inherits so the
+# collision check below can compare the two.
+OWN_CSS = """
 /* minmax(0,...) on every track, not 1fr. A bare 1fr is minmax(auto,1fr), and
    that auto minimum is the grid item min-content - which for a wrapping flex
    row of player cards Chrome resolves to something enormous. The track grew to
@@ -78,7 +80,7 @@ CSS = web.CSS + (kits.CSS if kits else "") + """
 .marks *{fill:none;stroke:rgba(255,255,255,.42);stroke-width:2}
 
 .players{position:relative;z-index:1}
-.line{display:flex;justify-content:center;gap:.45rem;flex-wrap:wrap;
+.pline{display:flex;justify-content:center;gap:.45rem;flex-wrap:wrap;
   margin-bottom:1rem;position:relative;z-index:1}
 
 /* The player card, shaped the way the FPL app shapes it: shirt on top, a dark
@@ -110,7 +112,7 @@ CSS = web.CSS + (kits.CSS if kits else "") + """
 .bench .lbl{font-family:var(--mono);font-size:.58rem;letter-spacing:.12em;
   text-transform:uppercase;color:var(--ink-3);margin-bottom:.5rem;
   display:flex;justify-content:space-between;padding:0 .3rem}
-.bench .line{margin-bottom:.3rem}
+.bench .pline{margin-bottom:.3rem}
 
 .bo{position:absolute;top:-.2rem;left:.35rem;width:1.1rem;height:1.1rem;
   border-radius:50%;font-family:var(--mono);font-size:.56rem;z-index:2;
@@ -131,26 +133,33 @@ CSS = web.CSS + (kits.CSS if kits else "") + """
   font-size:.62rem}
 .drafts button.on .pts{opacity:.9}
 .drafts .add{color:var(--accent);border-style:dashed}
-.dtools{display:flex;gap:.35rem;flex-wrap:wrap;margin-bottom:.8rem}
+/* .teambar, not .bar: web.CSS owns .bar for the points meter on the
+   projections table - 7px tall with an accent fill - which is exactly the
+   stray teal strip this row sprouted, plus a 7px-tall container its children
+   overflowed. Same collision as .pick, same lesson. */
+.teambar{display:flex;justify-content:space-between;align-items:center;
+  gap:.6rem;flex-wrap:wrap;margin-bottom:.6rem}
+.teambar .drafts{margin-bottom:0}
+.dtools{display:flex;gap:.35rem;flex-wrap:wrap}
 .dtools button{font-family:var(--mono);font-size:.6rem;letter-spacing:.05em;
   text-transform:uppercase;padding:.3rem .55rem;background:none;
   border:1px solid var(--line);color:var(--ink-3);cursor:pointer;border-radius:3px}
 .dtools button:hover{color:var(--ink);border-color:var(--ink-3)}
 .dtools .danger:hover{color:var(--loss);border-color:var(--loss)}
 
-.tot{display:grid;grid-template-columns:repeat(auto-fit,minmax(6.2rem,1fr));
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(6.2rem,1fr));
   gap:.5rem;margin-bottom:.9rem}
-.tot div{background:var(--panel);border:1px solid var(--line);padding:.5rem .6rem}
-.tot .k{font-family:var(--mono);font-size:.56rem;letter-spacing:.11em;
+.tiles div{background:var(--panel);border:1px solid var(--line);padding:.5rem .6rem}
+.tiles .k{font-family:var(--mono);font-size:.56rem;letter-spacing:.11em;
   text-transform:uppercase;color:var(--ink-3)}
-.tot .v{font-family:var(--mono);font-size:1.15rem;color:var(--ink);
+.tiles .v{font-family:var(--mono);font-size:1.15rem;color:var(--ink);
   font-variant-numeric:tabular-nums;margin-top:.1rem}
-.tot .v.bad{color:var(--loss)}
-.tot .v.good{color:var(--accent)}
-.tot .hero{border-color:var(--accent);background:var(--accent-soft)}
-.tot .hero .k{color:var(--accent)}
-.tot .hero .v{font-size:1.7rem;color:var(--accent);font-weight:700}
-.tot .v small{display:block;font-size:.58rem;color:var(--ink-3);letter-spacing:.04em;
+.tiles .v.bad{color:var(--loss)}
+.tiles .v.good{color:var(--accent)}
+.tiles .hero{border-color:var(--accent);background:var(--accent-soft)}
+.tiles .hero .k{color:var(--accent)}
+.tiles .hero .v{font-size:1.7rem;color:var(--accent);font-weight:700}
+.tiles .v small{display:block;font-size:.58rem;color:var(--ink-3);letter-spacing:.04em;
   text-transform:uppercase;margin-top:.15rem;font-weight:400}
 
 /* The plate under the shirt, and the three fixture cells under that. This is
@@ -171,7 +180,7 @@ CSS = web.CSS + (kits.CSS if kits else "") + """
   overflow:hidden;text-overflow:ellipsis}
 .pl .fc.blank{background:#D3D8DC;color:#5E6873}
 .pl.sel .plate .nm{background:var(--accent);color:#0B0F13}
-.tot .v small{font-size:.6rem;color:var(--ink-3);letter-spacing:0}
+.tiles .v small{font-size:.6rem;color:var(--ink-3);letter-spacing:0}
 
 .side{background:var(--panel);border:1px solid var(--line);padding:.85rem .9rem}
 .side h2{font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;
@@ -180,15 +189,18 @@ CSS = web.CSS + (kits.CSS if kits else "") + """
 .need span{font-family:var(--mono);font-size:.62rem;padding:.16rem .42rem;
   border:1px solid var(--line);color:var(--ink-2)}
 .need span.done{border-color:var(--accent);color:var(--accent)}
-.pick{max-height:23rem;overflow-y:auto;margin:.5rem -.3rem 0}
-.pick button{display:flex;width:100%;align-items:center;gap:.45rem;
+/* .roster, not .pick: web.CSS already owns .pick for the
+   projections page, and its display:flex flattened this list to a
+   single horizontal row - 60 players rendered, 2 visible. */
+.roster{max-height:23rem;overflow-y:auto;margin:.5rem -.3rem 0}
+.roster button{display:flex;width:100%;align-items:center;gap:.45rem;
   background:none;border:0;border-bottom:1px solid var(--line);
   padding:.32rem .3rem;text-align:left;cursor:pointer;color:inherit;font:inherit}
-.pick button:hover{background:var(--accent-soft)}
-.pick button:disabled{opacity:.35;cursor:not-allowed}
-.pick .n{flex:1;font-size:.79rem;color:var(--ink);white-space:nowrap;
+.roster button:hover{background:var(--accent-soft)}
+.roster button:disabled{opacity:.35;cursor:not-allowed}
+.roster .n{flex:1;font-size:.79rem;color:var(--ink);white-space:nowrap;
   overflow:hidden;text-overflow:ellipsis}
-.pick .x{font-family:var(--mono);font-size:.68rem;color:var(--ink-2);
+.roster .x{font-family:var(--mono);font-size:.68rem;color:var(--ink-2);
   font-variant-numeric:tabular-nums}
 .msg{font-size:.78rem;color:var(--ink-2);margin:.5rem 0 0}
 .msg.bad{color:var(--loss)}
@@ -199,7 +211,12 @@ CSS = web.CSS + (kits.CSS if kits else "") + """
 .act button:hover{color:var(--ink);border-color:var(--ink-3)}
 .act button.go{border-color:var(--accent);color:var(--accent)}
 .note{font-size:.84rem;color:var(--ink-2);max-width:66ch}
-.empty{text-align:center;padding:2.4rem 1rem;color:var(--ink-3);font-size:.85rem}
+.empty{text-align:center;padding:2.6rem 1rem;color:rgba(255,255,255,.85);
+  font-size:.9rem}
+.bigbuild{font-family:var(--mono);font-size:.8rem;letter-spacing:.05em;
+  text-transform:uppercase;padding:.7rem 1.3rem;background:var(--accent);
+  color:#0B0F13;border:0;border-radius:4px;cursor:pointer;font-weight:700}
+.bigbuild:hover{filter:brightness(1.08)}
 
 /* A five-man defensive line has to fit on one row on a phone or the pitch stops
    reading as a pitch. 343px of pitch, less padding and four gaps, leaves about
@@ -210,14 +227,18 @@ CSS = web.CSS + (kits.CSS if kits else "") + """
      two are still a tap away on the projections page. */
   .pl .fc:nth-child(n+2){display:none}
   .pl .fc i{font-size:.46rem}
+  /* Five defenders across a 375px screen leaves 61px a card after padding and
+     gaps. 4.15rem is 66px, which is why the five-man line was wrapping - the
+     card width here is arithmetic, not taste. */
+  .pl{width:3.8rem;padding:0}
+  .pl .kit{width:1.9rem;height:1.9rem;margin-bottom:.12rem}
+  .pl .plate{font-size:.56rem}
+  .pl .plate .pr{display:none}
+  .pline{gap:.25rem}
 }
 @media (max-width:26rem){
   .pitch{padding:.7rem .35rem 0}
-  .line{gap:.25rem;margin-bottom:.6rem}
-  .pl{width:4.15rem;padding:0}
-  .pl .kit{width:2rem;height:2rem;margin-bottom:.12rem}
-  .pl .plate{font-size:.58rem}
-  .pl .plate .pr{display:none}
+  .pline{gap:.25rem;margin-bottom:.6rem}
   .pl .nm{font-size:.61rem}
   .pl .mt{font-size:.54rem}
   .pl .fx{font-size:.5rem}
@@ -233,6 +254,8 @@ CSS = web.CSS + (kits.CSS if kits else "") + """
   background:var(--ground);color:var(--ink);border:1px solid var(--line);padding:.4rem}
 .imp a{color:var(--accent)}
 """
+
+CSS = web.CSS + (kits.CSS if kits else "") + OWN_CSS
 
 
 JS = r"""
@@ -537,18 +560,26 @@ function importUrl(){
             : "https://fantasy.premierleague.com/api/bootstrap-static/";
 }
 function applyPicks(text){
-  let j;
-  try{ j=JSON.parse(text); }
-  catch(e){ return "That is not JSON. Copy the whole page, braces included."; }
-  if(j&&j.detail) return "FPL replied: "+j.detail+". Picks stay hidden until a "+
-    "gameweek deadline has passed, so before the season starts there is nothing "+
-    "to import yet.";
-  const picks=j&&j.picks;
+  // People paste with whatever the browser wrapped around it - selection
+  // artifacts, a stray label, whitespace. Find the {...} inside rather than
+  // demanding a surgically clean copy, and never say "JSON" to anyone.
+  const a=text.indexOf("{"), b=text.lastIndexOf("}");
+  let j=null;
+  if(a>=0&&b>a){ try{ j=JSON.parse(text.slice(a,b+1)); }catch(e){} }
+  if(!j) return "That does not look like the right page. Tap \u201Copen your "+
+    "team\u201D above, then on that page select everything, copy, and paste "+
+    "the lot here \u2014 it will look like code, and that is fine.";
+  if(j.detail) return "FPL says your team is not available yet. Teams stay "+
+    "hidden until the first deadline passes \u2014 after that this works. "+
+    "Also worth checking the team number is this season\u2019s.";
+  const picks=j.picks;
   if(!Array.isArray(picks)||!picks.length)
-    return "No picks in that JSON. Check the tab you copied ends in /picks/.";
+    return "That page did not contain a team. Use the \u201Copen your "+
+    "team\u201D link above rather than the FPL homepage.";
   const known=picks.filter(p=>byId[p.element]);
-  if(known.length<11) return "Only "+known.length+" of those players are in this "+
-    "gameweek data. That usually means the picks are from a different season.";
+  if(known.length<11) return "Only "+known.length+" of those players exist in "+
+    "this season\u2019s game \u2014 that team number looks like last "+
+    "season\u2019s. Grab the new one from your Points page.";
   // position 1-11 is the eleven, 12 the reserve keeper, 13-15 the sub order.
   const sorted=known.slice().sort((a,b)=>a.position-b.position);
   squad=sorted.map(p=>p.element);
@@ -756,34 +787,38 @@ function render(){
     '<small id="t-psrw">'+(tr===null?"pick a full eleven":ratingWord(tr))+'</small>';
   psrEl.className="v"+(tr!==null&&tr>=76?" good":"");
 
-  document.getElementById("t-n").innerHTML=members.length+
-    '<small>/15</small>';
-  document.getElementById("t-n").className="v"+(members.length>15?" bad":"");
-  document.getElementById("t-cost").textContent="\u00A3"+cost.toFixed(1)+"m";
-  document.getElementById("t-cost").className="v"+(cost>BUDGET?" bad":"");
-  document.getElementById("t-bank").textContent="\u00A3"+(BUDGET-cost).toFixed(1)+"m";
-  document.getElementById("t-bank").className="v"+(cost>BUDGET?" bad":"");
+  // Four tiles, one thing each. Formation rides under the player count and
+  // the spend under the money, because six boxes was two too many for a page
+  // a first-timer has to read at a glance.
+  const nEl=document.getElementById("t-n");
+  nEl.innerHTML=members.length+'<small>'+
+    (legalXI(xi)?("in a "+shape.DEF+"-"+shape.MID+"-"+shape.FWD):"of 15")+
+    '</small>';
+  nEl.className="v"+(members.length>15?" bad":"");
+  const bankEl=document.getElementById("t-bank");
+  bankEl.innerHTML="\u00A3"+(BUDGET-cost).toFixed(1)+
+    'm<small>\u00A3'+cost.toFixed(1)+"m spent</small>";
+  bankEl.className="v"+(cost>BUDGET?" bad":"");
   document.getElementById("t-xp").textContent=
     legalXI(xi)?total.toFixed(1):"\u2014";
-  document.getElementById("t-shape").textContent=
-    legalXI(xi)?(shape.DEF+"-"+shape.MID+"-"+shape.FWD):"\u2014";
 
   const pitch=document.getElementById("pitch");
   if(!members.length){
-    pitch.innerHTML='<div class="empty">No squad yet.<br>Pick players on the '+
-      'right, or let the model build one.</div>';
+    pitch.innerHTML='<div class="empty">No team yet.<br><br>'+
+      '<button class="bigbuild" type="button">Build me a squad</button>'+
+      '<br><br>or add players from the list.</div>';
   }else{
     const rows=ORDER.map(pos=>{
       const ids=xi.filter(i=>byId[i].p===pos);
       if(!ids.length) return "";
-      return '<div class="line">'+ids
+      return '<div class="pline">'+ids
         .sort((a,b)=>byId[b].xp-byId[a].xp)
         .map(i=>card(i,false)).join("")+"</div>";
     }).join("");
     const bo=bench.map((i,n)=>card(i,true,byId[i].p==="GKP"?"G":String(n)));
     pitch.innerHTML=rows+
       (bench.length?'<div class="bench"><div class="lbl"><span>Bench</span>'+
-        '<span>order matters</span></div><div class="line">'+
+        '<span>order matters</span></div><div class="pline">'+
         bo.join("")+"</div></div>":"");
   }
 
@@ -795,11 +830,14 @@ function render(){
                     :"15 picked. Tap Auto to set a valid eleven.")
       : (15-members.length)+" more to a full squad.");
 
-  document.getElementById("need").innerHTML=ORDER.map(pos=>{
-    const n=members.filter(d=>d.p===pos).length;
-    return '<span class="'+(n>=LIMITS[pos]?"done":"")+'">'+POS_WORD[pos]+" "+n+"/"+
-      LIMITS[pos]+"</span>";
-  }).join("");
+  // The filter buttons double as the "what do I still need" display, which
+  // saves a whole row: "Defenders 3/5" filters AND reports.
+  document.querySelectorAll(".seg button").forEach(b=>{
+    const p=b.dataset.pos;
+    if(!POS_WORD[p]) return;
+    const n=members.filter(d=>d.p===p).length;
+    b.textContent=POS_WORD[p]+" "+n+"/"+LIMITS[p];
+  });
 
   renderPick();
 }
@@ -846,6 +884,9 @@ document.addEventListener("DOMContentLoaded",()=>{
   if(squad.length&&!bench.length) autoBench();
 
   document.getElementById("pitch").addEventListener("click",e=>{
+    if(e.target.closest(".bigbuild")){
+      document.getElementById("fill").click();return;
+    }
     const el=e.target.closest(".pl");
     if(el) tapPlayer(+el.dataset.id);
   });
@@ -942,11 +983,17 @@ document.addEventListener("DOMContentLoaded",()=>{
 
   const panel=document.getElementById("imp");
   const link=document.getElementById("tlink");
+  // Before the first deadline FPL returns nothing for ANY team, so showing
+  // the paste flow would walk every new visitor into an error that is not
+  // their fault. Say so instead, once, in words.
+  document.getElementById("implocked").hidden=IMPORTABLE;
+  document.getElementById("impform").hidden=!IMPORTABLE;
   document.getElementById("impbtn").addEventListener("click",()=>{
     panel.hidden=!panel.hidden;
-    if(!panel.hidden) document.getElementById("tid").focus();
+    if(!panel.hidden&&IMPORTABLE) document.getElementById("tid").focus();
   });
   document.getElementById("noimp").addEventListener("click",()=>{panel.hidden=true;});
+  document.getElementById("noimp2").addEventListener("click",()=>{panel.hidden=true;});
   document.getElementById("tid").addEventListener("input",()=>{
     link.href=importUrl();
   });
@@ -992,63 +1039,76 @@ def build(rows, gw, deadline, shorts, fix, gws):
 {nav}
 <header>
   <h1>My team &mdash; gameweek {gw}</h1>
-  <p class="note">Your fifteen, the way you would actually line them up.</p>
-  <ul class="note" style="padding-left:1.1rem;margin:.5rem 0 0">
-    <li><strong>Tap a starter, then a substitute</strong> to swap them. We will
-      stop you if the swap would leave a formation the game does not allow.</li>
-    <li><strong>Right-click a player</strong> (or press <kbd>C</kbd>) to give
-      him the armband and double his score. <kbd>V</kbd> makes him
-      vice-captain.</li>
-    <li><strong>Not sure where to start?</strong> Hit
-      <em>Build me a squad</em> and we will pick fifteen inside the budget.</li>
-  </ul>
-  <p class="note" style="margin-top:.6rem;font-size:.8rem;color:var(--ink-3)">
-  Your squad is saved in this browser and nowhere else &mdash; nothing is
-  uploaded. It shows up on the
-  <a href="{projections}" style="color:var(--accent)">projections</a> page too.</p>
+  <p class="note">Pick your fifteen, choose a captain, and see what they
+  should score. Saved in this browser only &mdash; nothing is uploaded.</p>
+  <details class="gloss" style="margin-top:.7rem;max-width:44rem">
+    <summary>How this works</summary>
+    <dl>
+      <div><dt>Swap players</dt><dd>Tap a starter, then a substitute. We stop
+        any swap the game would not allow.</dd></div>
+      <div><dt>Captain</dt><dd>Right-click a player (or press <kbd>C</kbd>) to
+        give him the armband and double his score. <kbd>V</kbd> for
+        vice-captain.</dd></div>
+      <div><dt>Drafts</dt><dd>Keep up to six different teams and flick between
+        them &mdash; each tab shows what that team should score.</dd></div>
+      <div><dt>Stuck?</dt><dd>Hit <em>Build me a squad</em> and we pick a full
+        fifteen inside the budget for you.</dd></div>
+    </dl>
+  </details>
 </header>
 
-<section class="imp" id="imp" hidden aria-label="Import an FPL team">
-  <ol>
-    <li>Your team id is the number in the URL when you open
-      <em>Points</em> or <em>Gameweek history</em> on the FPL site. It is
-      reissued every season, so last year&rsquo;s will not work.</li>
-    <li>Team id <input type="text" id="tid" inputmode="numeric"
-      placeholder="1234567" aria-label="FPL team id">
-      <a id="tlink" href="#" target="_blank" rel="noopener">open your picks</a>
-      &mdash; opens on fantasy.premierleague.com, where you are already signed in.</li>
-    <li>Copy everything on that page and paste it here:</li>
-  </ol>
-  <textarea id="paste" placeholder="Paste the JSON from that tab"
-    aria-label="Paste picks JSON"></textarea>
-  <div class="act" style="margin:.6rem 0 0"><button id="doimp" class="go">Load
-    this team</button><button id="noimp">Cancel</button></div>
-  <p class="msg" id="impmsg">Nothing is uploaded. The paste is read here, in
-    this tab, and never leaves the browser.</p>
+<section class="imp" id="imp" hidden aria-label="Bring in my FPL team">
+  <div id="implocked" hidden>
+    <p class="note"><strong>Not just yet.</strong> FPL keeps everyone&rsquo;s
+    team hidden until the first deadline has passed, so there is nothing to
+    bring in before then &mdash; for anyone. Build your team here in the
+    meantime; from gameweek 2 this button pulls your real one in two taps.</p>
+    <div class="act" style="margin:.6rem 0 0"><button id="noimp2">Okay</button></div>
+  </div>
+  <div id="impform">
+    <ol>
+      <li>Find your team number: open your <em>Points</em> page on the FPL
+        site and it is the number in the web address. (It changes every
+        season, so last year&rsquo;s will not work.)</li>
+      <li>Team number <input type="text" id="tid" inputmode="numeric"
+        placeholder="1234567" aria-label="FPL team number">
+        then <a id="tlink" href="#" target="_blank" rel="noopener">open your
+        team</a> &mdash; it opens on the official FPL site, where you are
+        already signed in.</li>
+      <li>On that page: select everything (<kbd>Ctrl</kbd>+<kbd>A</kbd> or
+        <kbd>&#8984;</kbd>+<kbd>A</kbd>), copy, and paste it here:</li>
+    </ol>
+    <textarea id="paste" placeholder="Paste here — it will look like code. That is fine, we read it for you."
+      aria-label="Paste your team page here"></textarea>
+    <div class="act" style="margin:.6rem 0 0"><button id="doimp" class="go">Load
+      this team</button><button id="noimp">Cancel</button></div>
+    <p class="msg" id="impmsg">Nothing is uploaded. What you paste is read
+      right here and never leaves your browser.</p>
+  </div>
 </section>
 
-<div class="drafts" id="drafts" role="tablist" aria-label="Your drafts"></div>
-<div class="dtools">
-  <button id="drename">Rename</button>
-  <button id="ddup">Duplicate</button>
-  <button id="ddel" class="danger">Delete</button>
+<div class="teambar">
+  <div class="drafts" id="drafts" role="tablist" aria-label="Your teams"></div>
+  <div class="dtools">
+    <button id="drename">Rename</button>
+    <button id="ddup">Copy</button>
+    <button id="ddel" class="danger">Delete</button>
+  </div>
 </div>
 
 <div class="act">
   <button id="fill" class="go">Build me a squad</button>
-  <button id="impbtn">Import my FPL team</button>
-  <button id="auto">Auto eleven &amp; captain</button>
-  <button id="clear">Clear</button>
+  <button id="impbtn">Bring in my FPL team</button>
+  <button id="auto">Best eleven &amp; captain</button>
+  <button id="clear">Start over</button>
 </div>
 
-<div class="tot">
+<div class="tiles">
   <div class="hero"><div class="k">PS Rating</div>
-    <div class="v" id="t-psr">&mdash;<small id="t-psrw"></small></div></div>
-  <div><div class="k">Players picked</div><div class="v" id="t-n">0<small>/15</small></div></div>
-  <div><div class="k">Cost</div><div class="v" id="t-cost">&pound;0.0m</div></div>
-  <div><div class="k">In the bank</div><div class="v" id="t-bank">&pound;100.0m</div></div>
+    <div class="v" id="t-psr">&mdash;</div></div>
+  <div><div class="k">Players</div><div class="v" id="t-n">0<small>/15</small></div></div>
+  <div><div class="k">Money left</div><div class="v" id="t-bank">&pound;100.0m</div></div>
   <div><div class="k">Points this week</div><div class="v" id="t-xp">&mdash;</div></div>
-  <div><div class="k">Formation</div><div class="v" id="t-shape">&mdash;</div></div>
 </div>
 
 <div class="cols">
@@ -1070,10 +1130,9 @@ def build(rows, gw, deadline, shorts, fix, gws):
 
   <aside class="side" aria-label="Add players">
     <h2>Add players</h2>
-    <div class="need" id="need"></div>
     <div class="controls" style="padding:0;border:0;background:none;margin:0">
       <div class="seg" role="group" aria-label="Position">
-        <button data-pos="ALL" aria-pressed="true">Everyone</button>
+        <button data-pos="ALL" aria-pressed="true">All</button>
         <button data-pos="GKP" aria-pressed="false">Keepers</button>
         <button data-pos="DEF" aria-pressed="false">Defenders</button>
         <button data-pos="MID" aria-pressed="false">Midfielders</button>
@@ -1082,7 +1141,7 @@ def build(rows, gw, deadline, shorts, fix, gws):
     </div>
     <input type="search" id="q" placeholder="Search player or club"
       aria-label="Search player or club" style="width:100%;margin-top:.5rem">
-    <div class="pick" id="pick"></div>
+    <div class="roster" id="pick"></div>
   </aside>
 </div>
 
@@ -1092,7 +1151,7 @@ squad and captain stored locally in this browser &middot;
 </div>
 {sprite}
 <script>const DATA={data};const CHEAP={cheap};const GW={gw};const KITS={kitmap};
-const FIX={fix};const GWS={gws};
+const FIX={fix};const GWS={gws};const IMPORTABLE={importable};
 function KIT(t){{return KITS[t]||"";}}{js}</script>""".format(
         nav=links.nav("myteam"), gw=gw, deadline=deadline,
         projections=links.href("projections"), fixtures=links.href("fixtures"),
@@ -1100,7 +1159,8 @@ function KIT(t){{return KITS[t]||"";}}{js}</script>""".format(
         cheap=json.dumps(cheap),
         kitmap=json.dumps(markup, separators=(",", ":")),
         fix=json.dumps(fix, separators=(",", ":")),
-        gws=json.dumps(gws, separators=(",", ":")), js=JS)
+        gws=json.dumps(gws, separators=(",", ":")),
+        importable=("true" if gw > 1 else "false"), js=JS)
     return links.document("FPL my team", body, CSS)
 
 
@@ -1129,6 +1189,11 @@ def main():
     gws = list(range(gw, gw + 3))
     html = build(rows, gw, deadline, shorts, fix, gws)
 
+    clashes = web.css_collisions(OWN_CSS, allow=("empty",))
+    if clashes:
+        print("REFUSING TO WRITE - CSS class names collide with web.CSS: "
+              + ", ".join(clashes))
+        return 1
     problems = web.lint_js(html, ("#pitch", "#pick", "DOMContentLoaded"))
     if problems:
         print("REFUSING TO WRITE - generated JavaScript looks broken:")
