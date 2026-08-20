@@ -3,8 +3,27 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Fantasy Premier League projections</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2016%2016%22%3E%3Cstyle%3Epath%7Bfill:%230F7F6E%7D@media(prefers-color-scheme:dark)%7Bpath%7Bfill:%233ED9BC%7D%7D%3C/style%3E%3Cpath%20d=%22M0%207h16v2H0zM2%201h4v6H2zM10%209h4v6h-4z%22/%3E%3C/svg%3E">
+<title>Proper Score - FPL projections</title>
 <style>
+.ps-logo{display:inline-flex;align-items:center;
+  gap:calc(var(--ps,24px)*.40);text-decoration:none;color:inherit}
+.ps-logo .ps-mark{display:block;flex:none;color:var(--ink,currentColor)}
+.ps-text{display:flex;flex-direction:column;justify-content:center;
+  gap:calc(var(--ps,24px)*.09)}
+.ps-name{font-family:var(--mono,ui-monospace,"SF Mono",Menlo,monospace);
+  font-weight:650;font-size:calc(var(--ps,24px)*.86);letter-spacing:-.02em;
+  line-height:1;white-space:nowrap;color:var(--ink,currentColor)}
+.ps-desc{font-family:var(--mono,ui-monospace,"SF Mono",Menlo,monospace);
+  font-weight:400;font-size:calc(var(--ps,24px)*.29);letter-spacing:.02em;
+  line-height:1;white-space:nowrap;color:var(--ink-3,#5E6873)}
+a.ps-logo:hover .ps-mark{color:var(--accent,#0F7F6E)}
+a.ps-logo:focus-visible{outline:2px solid var(--accent,#0F7F6E);
+  outline-offset:3px}
+
+nav .home{display:flex;align-items:center;padding:.35rem .55rem;
+  color:var(--ink-3)}
+nav .home:hover{color:var(--accent)}
 nav{display:flex;gap:.1rem;font-family:var(--mono);font-size:.72rem;
   letter-spacing:.06em;text-transform:uppercase;flex-wrap:wrap}
 nav a{padding:.4rem .75rem;border:1px solid var(--line);color:var(--ink-2);
@@ -133,7 +152,7 @@ tr{cursor:pointer}
 <body>
 <div class="wrap">
 <header>
-  <h1>Fantasy Premier League projections</h1>
+  <span class="ps-logo" style="--ps:44px"><svg class="ps-mark" viewBox="0 0 16 16" width="44" height="44" fill="currentColor" aria-hidden="true"><path d="M0 7h16v2H0zM2 1h4v6H2zM10 9h4v6h-4z"/></svg><span class="ps-text"><span class="ps-name">Proper Score</span><span class="ps-desc">FPL projections, on the record</span></span></span>
   <p class="lede">A points model whose <strong>accuracy record is published and
   checkable</strong>. Every projection is written before its gameweek deadline,
   alongside the SHA-256 of the exact API snapshot it came from, and scored
@@ -144,7 +163,7 @@ tr{cursor:pointer}
 </header>
 <div class="cards"><a class="card" href="projections.html"><h2>Projections</h2><p>Expected points for every player over the next six gameweeks, with the chance of a double-digit haul, a squad builder and transfer suggestions.</p></a><a class="card" href="myteam.html"><h2>My team</h2><p>Your fifteen on a pitch: a legal eleven, a bench in the order it actually comes on, and one armband that doubles a score. Or let the model build the squad for you.</p></a><a class="card" href="planner.html"><h2>Transfer planner</h2><p>A calendar, not six stacked squads &mdash; a row is a squad slot, so a transfer is a change of occupant partway along it. Free transfers, hits, bank and chip legality all computed as you go.</p></a><a class="card" href="fixtures.html"><h2>Fixture ticker</h2><p>Difficulty split into attacking and defensive views &mdash; because a promoted side concedes freely <em>and</em> scores little, and one number cannot say both.</p></a><a class="card" href="setpieces.html"><h2>Set-piece takers</h2><p>Ranked penalty, free-kick and corner duty for all 20 clubs, refreshed hourly, with listed takers we do not expect to start flagged.</p></a><a class="card" href="scorecard.html"><h2>Accuracy record</h2><p>Every projection timestamped before its deadline and scored against a hard baseline. Including the weeks we lose.</p></a></div>
 <footer>Built from the free Fantasy Premier League API &middot; no affiliation
-with the Premier League &middot; generated 2026-08-20 03:26 UTC</footer>
+with the Premier League &middot; generated 2026-08-20 03:25 UTC</footer>
 </div>
 </body>
 </html>

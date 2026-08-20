@@ -22,9 +22,14 @@ import json
 import os
 import sys
 
+import logo
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 PATH = os.path.join(HERE, "links.json")
 
+# index is deliberately absent: the mark at the left of the nav is the route
+# home, and a Home tab beside it is one route too many. href("index") still
+# resolves - the relative fallback does not depend on membership here.
 PAGES = (("projections", "Projections"),
          ("myteam", "My team"),
          ("planner", "Planner"),
@@ -58,7 +63,9 @@ def href(page):
 
 def nav(current):
     """The shared navigation bar. `current` is a page key, not a label."""
-    out = ['<nav aria-label="Sections">']
+    out = ['<nav aria-label="Sections">',
+           '<a class="home" href="{}" aria-label="Proper Score home">{}</a>'
+           .format(href("index"), logo.mark(18))]
     for key, label in PAGES:
         cur = ' aria-current="page"' if key == current else ""
         out.append('<a href="{}"{}>{}</a>'.format(href(key), cur, label))
@@ -84,11 +91,15 @@ def document(title, body, css):
             "<meta charset=\"utf-8\">\n"
             "<meta name=\"viewport\" content=\"width=device-width,"
             "initial-scale=1\">\n"
+            + logo.favicon().link + "\n"
             "<title>{}</title>\n<style>{}</style>\n</head>\n<body>\n{}\n"
             "</body>\n</html>\n").format(title, css, body)
 
 
-CSS = """
+CSS = logo.CSS + """
+nav .home{display:flex;align-items:center;padding:.35rem .55rem;
+  color:var(--ink-3)}
+nav .home:hover{color:var(--accent)}
 nav{display:flex;gap:.1rem;font-family:var(--mono);font-size:.72rem;
   letter-spacing:.06em;text-transform:uppercase;flex-wrap:wrap}
 nav a{padding:.4rem .75rem;border:1px solid var(--line);color:var(--ink-2);

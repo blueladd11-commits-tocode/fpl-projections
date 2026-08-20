@@ -13,6 +13,7 @@ import sys
 from datetime import datetime, timezone
 
 import links
+import logo
 import web
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -65,9 +66,10 @@ def main():
         '<a class="card" href="{}"><h2>{}</h2><p>{}</p></a>'.format(
             links.href(key), title, blurb) for key, title, blurb in CARDS)
 
+    lockup = logo.wordmark(44, descriptor=True)
     body = """<div class="wrap">
 <header>
-  <h1>Fantasy Premier League projections</h1>
+  {lockup}
   <p class="lede">A points model whose <strong>accuracy record is published and
   checkable</strong>. Every projection is written before its gameweek deadline,
   alongside the SHA-256 of the exact API snapshot it came from, and scored
@@ -79,10 +81,11 @@ def main():
 <div class="cards">{cards}</div>
 <footer>Built from the free Fantasy Premier League API &middot; no affiliation
 with the Premier League &middot; generated {now} UTC</footer>
-</div>""".format(cards=cards, n_records=n_records, n_scored=n_scored,
+</div>""".format(lockup=lockup, cards=cards, n_records=n_records,
+                 n_scored=n_scored,
                  now=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M"))
 
-    html = links.document("Fantasy Premier League projections", body, CSS)
+    html = links.document("Proper Score - FPL projections", body, CSS)
     problems = web.lint_page(html)
     if problems:
         print("REFUSING TO WRITE index:")

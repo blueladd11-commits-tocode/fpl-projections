@@ -59,6 +59,26 @@ OUT = os.path.join(HERE, "out")
 # Bars are 4u wide and 6u long; the rule is 2u thick and full-bleed. Both bars
 # stop 1u short of the edge so the glyph reads as a measurement rather than as a
 # letterform — at 5u wide and flush to the edges it starts to look like a "Z".
+#
+# Rasterised at 16x16 this comes out with exactly two grey levels, 0 and 255 —
+# no anti-aliasing anywhere, because every edge is on a whole pixel:
+#
+#     . . . . . . . . . . . . . . . .
+#     . . # # # # . . . . . . . . . .
+#     . . # # # # . . . . . . . . . .      rotate 180° about the centre
+#     . . # # # # . . . . . . . . . .      and this matrix is unchanged.
+#     . . # # # # . . . . . . . . . .
+#     . . # # # # . . . . . . . . . .
+#     . . # # # # . . . . . . . . . .
+#     # # # # # # # # # # # # # # # #
+#     # # # # # # # # # # # # # # # #
+#     . . . . . . . . . . # # # # . .
+#     . . . . . . . . . . # # # # . .
+#     . . . . . . . . . . # # # # . .
+#     . . . . . . . . . . # # # # . .
+#     . . . . . . . . . . # # # # . .
+#     . . . . . . . . . . # # # # . .
+#     . . . . . . . . . . . . . . . .
 PATH = "M0 7h16v2H0zM2 1h4v6H2zM10 9h4v6h-4z"
 
 # The name, and the descriptor it is locked to. The descriptor is not
@@ -68,9 +88,12 @@ PATH = "M0 7h16v2H0zM2 1h4v6H2zM10 9h4v6h-4z"
 NAME = "Proper Score"
 DESCRIPTOR = "FPL projections, on the record"
 
-# Below this the descriptor renders under ~8px and stops being readable. An
-# illegible line of type is worse than no line, so the lockup drops it rather
-# than shipping decoration that pretends to be information.
+# The descriptor is set at .29 of the glyph size, so it is 9.3px at a 32px
+# lockup and 7.0px at the 24px header lockup. Nine is small; seven is not type,
+# it is texture. Below this threshold the line is dropped rather than faked,
+# and the header carries the name alone — an illegible descriptor would be
+# decoration pretending to be the legibility half of the naming strategy,
+# which is the one thing it must not become.
 DESCRIPTOR_MIN = 32
 
 # Favicon colours are baked, not inherited: a favicon is rasterised outside the
@@ -284,14 +307,18 @@ vector.</p>
 
 <div class="card">
 <h2>the wordmark</h2>
-<p class="note">Both words at one weight. The descriptor line appears only at
-{dmin}px and above, where it is still readable; below that it would be
-sub-8px decoration pretending to be information.</p>
+<p class="note">Both words at one weight &mdash; emphasising "Proper" would turn
+a technical term into a boast. The descriptor is locked to the name and appears
+from {dmin}px up, where it still sets at 9px; at the 24px header size it would
+be 7px, which is texture rather than type, so it is dropped instead of faked.</p>
 <div class="row">{words}</div>
 </div>
 
 <div class="card">
 <h2>site header</h2>
+<p class="note">The lockup at 24px, above the existing nav, sitting quieter than
+the <code>h1</code> below it &mdash; the page title is what the reader came for.
+No descriptor at this size: it would set at 7px.</p>
 <div class="hdr">
   <div class="top">{hdrlogo}<nav>{nav}</nav></div>
   <div>
