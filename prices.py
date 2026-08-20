@@ -91,9 +91,21 @@ def read_existing(path):
 
 
 def already_have(text, ts):
-    """Idempotent: the hourly job may run twice, and must not double-count."""
-    needle = "\n" + ts[:19] + ","
-    return text.startswith(ts[:19] + ",") or needle in text
+    """One sample per clock hour, whatever the tick cadence.
+
+    This used to key on the exact second, which made it idempotent against a
+    job running twice but not against a job running OFTEN. The tick now fires
+    every 15 minutes so that the tightest projection horizon - a two-hour
+    window - cannot be missed when GitHub delays a scheduled run, and at that
+    cadence a per-second key quadruples the series: 599 rows a sample, a whole
+    gzip rewritten into git history every time, about 59MB a season instead of
+    15MB.
+
+    Prices move once a day, around 01:30 UTC. Hourly resolution is already
+    generous, so the hour is the right key and the extra ticks cost nothing.
+    """
+    hour = ts[:13]
+    return text.startswith(hour) or ("\n" + hour) in text
 
 
 def append(ts, rows):
