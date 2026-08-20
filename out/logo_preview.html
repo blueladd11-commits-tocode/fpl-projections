@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Proper Score — logo</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2016%2016%22%3E%3Cstyle%3Epath%7Bfill:%230F7F6E%7D@media(prefers-color-scheme:dark)%7Bpath%7Bfill:%233ED9BC%7D%7D%3C/style%3E%3Cpath%20d=%22M0%207h16v2H0zM2%201h4v6H2zM10%209h4v6h-4z%22/%3E%3C/svg%3E">
+<style>
+:root{--ground:#EDEFF1;--panel:#FFFFFF;--line:#D3D8DC;--ink:#12171C;
+  --ink-2:#454F58;--ink-3:#5E6873;--accent:#0F7F6E;--accent-soft:#D9EFEA;
+  --mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,
+    sans-serif;}
+.dark{--ground:#0D1116;--panel:#151B22;--line:#27313A;--ink:#E6EBEF;
+  --ink-2:#A9B5BF;--ink-3:#8A97A2;--accent:#3ED9BC;--accent-soft:#12312C;}
+*{box-sizing:border-box}
+body{margin:0;font-family:var(--sans);line-height:1.5}
+.ground{background:var(--ground);color:var(--ink);padding:1.6rem;min-width:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;align-items:start}
+@media (max-width:70rem){.grid2{grid-template-columns:1fr}}
+h2{font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ink-3);font-weight:400;
+  margin:0 0 1rem;padding-bottom:.5rem;border-bottom:1px solid var(--line)}
+h2+p{margin-top:-.6rem}
+.note{font-size:.78rem;color:var(--ink-3);max-width:60ch;margin:0 0 1.2rem}
+.row{display:flex;align-items:flex-end;gap:1.6rem;flex-wrap:wrap;
+  margin-bottom:1.6rem}
+.spec{display:flex;flex-direction:column;align-items:flex-start;gap:.4rem}
+.cap{font-family:var(--mono);font-size:.56rem;letter-spacing:.08em;
+  color:var(--ink-3);text-transform:uppercase}
+.mag{image-rendering:pixelated;border:1px solid var(--line);display:block}
+nav{display:flex;gap:.1rem;font-family:var(--mono);font-size:.72rem;
+  letter-spacing:.06em;text-transform:uppercase;flex-wrap:wrap}
+nav a{padding:.4rem .75rem;border:1px solid var(--line);color:var(--ink-2);
+  text-decoration:none}
+nav a[aria-current="page"]{background:var(--accent);color:var(--ground);
+  border-color:var(--accent)}
+.hdr{display:flex;flex-direction:column;gap:1rem;background:var(--panel);
+  border:1px solid var(--line);padding:1.1rem}
+.hdr h1{font-family:var(--mono);font-size:1.35rem;margin:0;
+  letter-spacing:-.02em;font-weight:650}
+.hdr .sub{color:var(--ink-2);font-size:.86rem;margin:.3rem 0 0;max-width:66ch}
+.hdr .top{display:flex;align-items:center;justify-content:space-between;
+  gap:1rem;border-bottom:1px solid var(--line);padding-bottom:.9rem;
+  flex-wrap:wrap}
+.tab{display:inline-flex;align-items:center;gap:.5rem;background:var(--panel);
+  border:1px solid var(--line);border-bottom:0;padding:.45rem .8rem;
+  border-radius:6px 6px 0 0;font-size:.76rem;color:var(--ink-2);max-width:15rem}
+.tabstrip{background:var(--line);padding:.5rem .5rem 0;display:flex;gap:.3rem}
+.tab img{width:16px;height:16px;flex:0 0 16px}
+.tab span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+code{font-family:var(--mono);font-size:.7rem;color:var(--ink-2);
+  word-break:break-all}
+.card{background:var(--panel);border:1px solid var(--line);padding:1.1rem;
+  margin-bottom:1.2rem;overflow-x:auto}
+
+.ps-logo{display:inline-flex;align-items:center;
+  gap:calc(var(--ps,24px)*.40);text-decoration:none;color:inherit}
+.ps-logo .ps-mark{display:block;flex:none;color:var(--ink,currentColor)}
+.ps-text{display:flex;flex-direction:column;justify-content:center;
+  gap:calc(var(--ps,24px)*.09)}
+.ps-name{font-family:var(--mono,ui-monospace,"SF Mono",Menlo,monospace);
+  font-weight:650;font-size:calc(var(--ps,24px)*.86);letter-spacing:-.02em;
+  line-height:1;white-space:nowrap;color:var(--ink,currentColor)}
+.ps-desc{font-family:var(--mono,ui-monospace,"SF Mono",Menlo,monospace);
+  font-weight:400;font-size:calc(var(--ps,24px)*.29);letter-spacing:.02em;
+  line-height:1;white-space:nowrap;color:var(--ink-3,#5E6873)}
+a.ps-logo:hover .ps-mark{color:var(--accent,#0F7F6E)}
+a.ps-logo:focus-visible{outline:2px solid var(--accent,#0F7F6E);
+  outline-offset:3px}
+</style></head><body>
+<div class="grid2"><section class="ground">
+<h2>light ground</h2>
+
+<div class="card">
+<h2>the mark</h2>
+<p class="note">A baseline, a bar above it and the same bar below it. Rotate the
+whole thing 180&deg; and nothing changes &mdash; which is the argument: it shows
+a loss exactly as readily as a win.</p>
+<div class="row"><div class="spec"><svg class="ps-mark" viewBox="0 0 16 16" width="16" height="16" fill="currentColor" role="img" aria-label="Proper Score"><path d="M0 7h16v2H0zM2 1h4v6H2zM10 9h4v6h-4z"/></svg><span class="cap">16px</span></div><div class="spec"><svg class="ps-mark" viewBox="0 0 16 16" width="24" height="24" fill="currentColor" role="img" aria-label="Proper Score"><path d="M0 7h16v2H0zM2 1h4v6H2zM10 9h4v6h-4z"/></svg><span class="cap">24px</span></div><div class="spec"><svg class="ps-mark" viewBox="0 0 16 16" width="48" height="48" fill="currentColor" role="img" aria-label="Proper Score"><path d="M0 7h16v2H0zM2 1h4v6H2zM10 9h4v6h-4z"/></svg><span class="cap">48px</span></div><div class="spec"><svg class="ps-mark" viewBox="0 0 16 16" width="96" height="96" fill="currentColor" role="img" aria-label="Proper Score"><path d="M0 7h16v2H0zM2 1h4v6H2zM10 9h4v6h-4z"/></svg><span class="cap">96px</span></div></div>
+</div>
+
+<div class="card">
+<h2>true 16px, magnified</h2>
+<p class="note">Rasterised at 16&times;16 and blown up nearest-neighbour. This is
+the pixel grid the tab icon and the header actually get &mdash; not a scaled
+vector.</p>
+<div class="row"><div class="spec"><canvas class="mag" width="96" height="96" data-mag="6" data-dark="0" data-fill=""></canvas><span class="cap">16px &times;6</span></div><div class="spec"><canvas class="mag" width="160" height="160" data-mag="10" data-dark="0" data-fill=""></canvas><span class="cap">16px &times;10</span></div><div class="spec"><canvas class="mag" width="160" height="160" data-mag="10" data-dark="0" data-fill="#0F7F6E"></canvas><span class="cap">favicon 16px &times;10</span></div></div>
+</div>
+
+<div class="card">
+<h2>the wordmark</h2>
+<p class="note">Both words at one weight. The descriptor line appears only at
+32px and above, where it is still readable; below that it would be
+sub-8px decoration pretending to be information.</p>
+<div class="row"><div class="spec"><span class="ps-logo" style="--ps:16px"><svg class="ps-mark" viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M0 7h16v2H0zM2 1h4v6H2zM10 9h4v6h-4z"/></svg><span class="ps-text"><span class="ps-name">Proper Score</span></span></span><span class="cap">16px</span></div><div class="spec"><span class="ps-logo" style="--ps:24px"><svg class="ps-mark" viewBox="0 0 16 16" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M0 7h16v2H0zM2 1h4v6H2zM10 9h4v6h-4z"/></svg><span class="ps-text"><span class="ps-name">Proper Score</span></span></span><span class="cap">24px</span></div><div class="spec"><span class="ps-logo" style="--ps:48px"><svg class="ps-mark" viewBox="0 0 16 16" width="48" height="48" fill="currentColor" aria-hidden="true"><path d="M0 7h16v2H0zM2 1h4v6H2zM10 9h4v6h-4z"/></svg><span class="ps-text"><span class="ps-name">Proper Score</span><span class="ps-desc">FPL projections, on the record</span></span></span><span class="cap">48px</span></div></div>
+</div>
+
+<div class="card">
+<h2>site header</h2>
+<div class="hdr">
+  <div class="top"><a class="ps-logo" style="--ps:24px" href="index.html"><svg class="ps-mark" viewBox="0 0 16 16" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M0 7h16v2H0zM2 1h4v6H2zM10 9h4v6h-4z"/></svg><span class="ps-text"><span class="ps-name">Proper Score</span></span></a><nav><a href="#" aria-current="page">Projections</a><a href="#">My team</a><a href="#">Planner</a><a href="#">Fixtures</a><a href="#">Set pieces</a><a href="#">Accuracy record</a></nav></div>
+  <div>
+    <h1>Gameweek 1 projections</h1>
+    <p class="sub">Deadline 2026-08-21 17:30 UTC &middot; built 2h before the
+    deadline &middot; snapshot <code>4f2ab91c07de</code>.</p>
+  </div>
+</div>
+</div>
+
+<div class="card">
+<h2>favicon at 16px</h2>
+<div class="tabstrip"><div class="tab"><img src="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2016%2016%22%3E%3Cstyle%3Epath%7Bfill:%230F7F6E%7D@media(prefers-color-scheme:dark)%7Bpath%7Bfill:%233ED9BC%7D%7D%3C/style%3E%3Cpath%20d=%22M0%207h16v2H0zM2%201h4v6H2zM10%209h4v6h-4z%22/%3E%3C/svg%3E" alt=""><span>Proper Score — FPL projections</span></div><div class="tab"><img src="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2016%2016%22%3E%3Cstyle%3Epath%7Bfill:%230F7F6E%7D@media(prefers-color-scheme:dark)%7Bpath%7Bfill:%233ED9BC%7D%7D%3C/style%3E%3Cpath%20d=%22M0%207h16v2H0zM2%201h4v6H2zM10%209h4v6h-4z%22/%3E%3C/svg%3E" alt=""><span>Accuracy record</span></div><div class="tab"><img src="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2016%2016%22%3E%3Cstyle%3Epath%7Bfill:%230F7F6E%7D@media(prefers-color-scheme:dark)%7Bpath%7Bfill:%233ED9BC%7D%7D%3C/style%3E%3Cpath%20d=%22M0%207h16v2H0zM2%201h4v6H2zM10%209h4v6h-4z%22/%3E%3C/svg%3E" alt=""><span>Gameweek 1</span></div></div>
+<p class="note" style="margin-top:1rem">Colour is baked, not inherited &mdash; a
+favicon renders outside the page, so <code>currentColor</code> would come out
+black and vanish on a dark tab strip. The SVG carries its own
+<code>prefers-color-scheme</code> switch and falls back to the light-theme
+accent.</p>
+<p class="note"><code>data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2016%2016%22%3E%3Cstyle%3Epath%7Bfill:%230F7F6E%7D@media(prefers-color-scheme:dark)%7Bpath%7Bfill:%233ED9BC%7D%7D%3C/style%3E%3Cpath%20d=%22M0%207h16v2H0zM2%201h4v6H2zM10%209h4v6h-4z%22/%3E%3C/svg%3E</code></p>
+</div>
+</section><section class="ground dark">
+<h2>dark ground</h2>
+
+<div class="card">
+<h2>the mark</h2>
+<p class="note">A baseline, a bar above it and the same bar below it. Rotate the
+whole thing 180&deg; and nothing changes &mdash; which is the argument: it shows
+a loss exactly as readily as a win.</p>
+<div class="row"><div class="spec"><svg class="ps-mark" viewBox="0 0 16 16" width="16" height="16" fill="currentColor" role="img" aria-label="Proper Score"><path d="M0 7h16v2H0zM2 1h4v6H2zM10 9h4v6h-4z"/></svg><span class="cap">16px</span></div><div class="spec"><svg class="ps-mark" viewBox="0 0 16 16" width="24" height="24" fill="currentColor" role="img" aria-label="Proper Score"><path d="M0 7h16v2H0zM2 1h4v6H2zM10 9h4v6h-4z"/></svg><span class="cap">24px</span></div><div class="spec"><svg class="ps-mark" viewBox="0 0 16 16" width="48" height="48" fill="currentColor" role="img" aria-label="Proper Score"><path d="M0 7h16v2H0zM2 1h4v6H2zM10 9h4v6h-4z"/></svg><span class="cap">48px</span></div><div class="spec"><svg class="ps-mark" viewBox="0 0 16 16" width="96" height="96" fill="currentColor" role="img" aria-label="Proper Score"><path d="M0 7h16v2H0zM2 1h4v6H2zM10 9h4v6h-4z"/></svg><span class="cap">96px</span></div></div>
+</div>
+
+<div class="card">
+<h2>true 16px, magnified</h2>
+<p class="note">Rasterised at 16&times;16 and blown up nearest-neighbour. This is
+the pixel grid the tab icon and the header actually get &mdash; not a scaled
+vector.</p>
+<div class="row"><div class="spec"><canvas class="mag" width="96" height="96" data-mag="6" data-dark="1" data-fill=""></canvas><span class="cap">16px &times;6</span></div><div class="spec"><canvas class="mag" width="160" height="160" data-mag="10" data-dark="1" data-fill=""></canvas><span class="cap">16px &times;10</span></div><div class="spec"><canvas class="mag" width="160" height="160" data-mag="10" data-dark="1" data-fill="#3ED9BC"></canvas><span class="cap">favicon 16px &times;10</span></div></div>
+</div>
+
+<div class="card">
+<h2>the wordmark</h2>
+<p class="note">Both words at one weight. The descriptor line appears only at
+32px and above, where it is still readable; below that it would be
+sub-8px decoration pretending to be information.</p>
+<div class="row"><div class="spec"><span class="ps-logo" style="--ps:16px"><svg class="ps-mark" viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M0 7h16v2H0zM2 1h4v6H2zM10 9h4v6h-4z"/></svg><span class="ps-text"><span class="ps-name">Proper Score</span></span></span><span class="cap">16px</span></div><div class="spec"><span class="ps-logo" style="--ps:24px"><svg class="ps-mark" viewBox="0 0 16 16" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M0 7h16v2H0zM2 1h4v6H2zM10 9h4v6h-4z"/></svg><span class="ps-text"><span class="ps-name">Proper Score</span></span></span><span class="cap">24px</span></div><div class="spec"><span class="ps-logo" style="--ps:48px"><svg class="ps-mark" viewBox="0 0 16 16" width="48" height="48" fill="currentColor" aria-hidden="true"><path d="M0 7h16v2H0zM2 1h4v6H2zM10 9h4v6h-4z"/></svg><span class="ps-text"><span class="ps-name">Proper Score</span><span class="ps-desc">FPL projections, on the record</span></span></span><span class="cap">48px</span></div></div>
+</div>
+
+<div class="card">
+<h2>site header</h2>
+<div class="hdr">
+  <div class="top"><a class="ps-logo" style="--ps:24px" href="index.html"><svg class="ps-mark" viewBox="0 0 16 16" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M0 7h16v2H0zM2 1h4v6H2zM10 9h4v6h-4z"/></svg><span class="ps-text"><span class="ps-name">Proper Score</span></span></a><nav><a href="#" aria-current="page">Projections</a><a href="#">My team</a><a href="#">Planner</a><a href="#">Fixtures</a><a href="#">Set pieces</a><a href="#">Accuracy record</a></nav></div>
+  <div>
+    <h1>Gameweek 1 projections</h1>
+    <p class="sub">Deadline 2026-08-21 17:30 UTC &middot; built 2h before the
+    deadline &middot; snapshot <code>4f2ab91c07de</code>.</p>
+  </div>
+</div>
+</div>
+
+<div class="card">
+<h2>favicon at 16px</h2>
+<div class="tabstrip"><div class="tab"><img src="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2016%2016%22%3E%3Cstyle%3Epath%7Bfill:%230F7F6E%7D@media(prefers-color-scheme:dark)%7Bpath%7Bfill:%233ED9BC%7D%7D%3C/style%3E%3Cpath%20d=%22M0%207h16v2H0zM2%201h4v6H2zM10%209h4v6h-4z%22/%3E%3C/svg%3E" alt=""><span>Proper Score — FPL projections</span></div><div class="tab"><img src="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2016%2016%22%3E%3Cstyle%3Epath%7Bfill:%230F7F6E%7D@media(prefers-color-scheme:dark)%7Bpath%7Bfill:%233ED9BC%7D%7D%3C/style%3E%3Cpath%20d=%22M0%207h16v2H0zM2%201h4v6H2zM10%209h4v6h-4z%22/%3E%3C/svg%3E" alt=""><span>Accuracy record</span></div><div class="tab"><img src="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2016%2016%22%3E%3Cstyle%3Epath%7Bfill:%230F7F6E%7D@media(prefers-color-scheme:dark)%7Bpath%7Bfill:%233ED9BC%7D%7D%3C/style%3E%3Cpath%20d=%22M0%207h16v2H0zM2%201h4v6H2zM10%209h4v6h-4z%22/%3E%3C/svg%3E" alt=""><span>Gameweek 1</span></div></div>
+<p class="note" style="margin-top:1rem">Colour is baked, not inherited &mdash; a
+favicon renders outside the page, so <code>currentColor</code> would come out
+black and vanish on a dark tab strip. The SVG carries its own
+<code>prefers-color-scheme</code> switch and falls back to the light-theme
+accent.</p>
+<p class="note"><code>data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2016%2016%22%3E%3Cstyle%3Epath%7Bfill:%230F7F6E%7D@media(prefers-color-scheme:dark)%7Bpath%7Bfill:%233ED9BC%7D%7D%3C/style%3E%3Cpath%20d=%22M0%207h16v2H0zM2%201h4v6H2zM10%209h4v6h-4z%22/%3E%3C/svg%3E</code></p>
+</div>
+</section></div><section class="ground"><h2>the lockup at 96px &mdash; light ground</h2><div class="row"><span class="ps-logo" style="--ps:96px"><svg class="ps-mark" viewBox="0 0 16 16" width="96" height="96" fill="currentColor" aria-hidden="true"><path d="M0 7h16v2H0zM2 1h4v6H2zM10 9h4v6h-4z"/></svg><span class="ps-text"><span class="ps-name">Proper Score</span><span class="ps-desc">FPL projections, on the record</span></span></span></div></section><section class="ground dark"><h2>the lockup at 96px &mdash; dark ground</h2><div class="row"><span class="ps-logo" style="--ps:96px"><svg class="ps-mark" viewBox="0 0 16 16" width="96" height="96" fill="currentColor" aria-hidden="true"><path d="M0 7h16v2H0zM2 1h4v6H2zM10 9h4v6h-4z"/></svg><span class="ps-text"><span class="ps-name">Proper Score</span><span class="ps-desc">FPL projections, on the record</span></span></span></div></section>
+<script>
+document.querySelectorAll('canvas[data-mag]').forEach(function(cv){
+  var z=+cv.dataset.mag, dark=cv.dataset.dark==='1';
+  var col=cv.dataset.fill||(dark?'#E6EBEF':'#12171C');
+  var bg=dark?'#0D1116':'#EDEFF1';
+  var s='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" '+
+        'width="16" height="16" fill="'+col+'"><path d="M0 7h16v2H0zM2 1h4v6H2zM10 9h4v6h-4z"/></svg>';
+  var img=new Image();
+  img.onload=function(){
+    var o=document.createElement('canvas');o.width=16;o.height=16;
+    var oc=o.getContext('2d');oc.fillStyle=bg;oc.fillRect(0,0,16,16);
+    oc.drawImage(img,0,0,16,16);
+    var c=cv.getContext('2d');c.imageSmoothingEnabled=false;
+    c.drawImage(o,0,0,16*z,16*z);
+  };
+  img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(s);
+});
+</script>
+</body></html>

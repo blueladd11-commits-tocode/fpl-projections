@@ -736,6 +736,14 @@ def lint_js(html, required=("#tb", "DOMContentLoaded")):
     defined = set(re.findall(r"function\s+([A-Za-z_$][\w$]*)", bare))
     defined |= set(re.findall(r"(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=", bare))
     defined |= set(re.findall(r"([A-Za-z_$][\w$]*)\s*=\s*(?:function|\()", bare))
+    # Parameters count as defined. A callback passed in and then invoked -
+    # `const row=(label,fn)=>...fn(w)` - is not an undefined function, and
+    # without this the check reports one on every page that takes a callback.
+    for params in re.findall(r"function\s*[\w$]*\s*\(([^)]*)\)", bare):
+        defined |= set(re.findall(r"[A-Za-z_$][\w$]*", params))
+    for params in re.findall(r"\(([^()]*)\)\s*=>", bare):
+        defined |= set(re.findall(r"[A-Za-z_$][\w$]*", params))
+    defined |= set(re.findall(r"([A-Za-z_$][\w$]*)\s*=>", bare))
     for name in sorted(set(re.findall(r"(?<![.\w$])([A-Za-z_$][\w$]*)\s*\(", bare))):
         if name in defined or name in JS_GLOBALS:
             continue

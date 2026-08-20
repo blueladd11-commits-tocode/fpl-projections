@@ -27,6 +27,7 @@ PATH = os.path.join(HERE, "links.json")
 
 PAGES = (("projections", "Projections"),
          ("myteam", "My team"),
+         ("planner", "Planner"),
          ("fixtures", "Fixtures"),
          ("setpieces", "Set pieces"),
          ("scorecard", "Accuracy record"))

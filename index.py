@@ -22,6 +22,14 @@ CARDS = (
     ("projections", "Projections",
      "Expected points for every player over the next six gameweeks, with the "
      "chance of a double-digit haul, a squad builder and transfer suggestions."),
+    ("myteam", "My team",
+     "Your fifteen on a pitch: a legal eleven, a bench in the order it "
+     "actually comes on, and one armband that doubles a score. Or let the "
+     "model build the squad for you."),
+    ("planner", "Transfer planner",
+     "A calendar, not six stacked squads &mdash; a row is a squad slot, so a "
+     "transfer is a change of occupant partway along it. Free transfers, "
+     "hits, bank and chip legality all computed as you go."),
     ("fixtures", "Fixture ticker",
      "Difficulty split into attacking and defensive views &mdash; because a "
      "promoted side concedes freely <em>and</em> scores little, and one number "

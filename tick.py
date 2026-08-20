@@ -221,6 +221,8 @@ def main():
         failures += 1
     if not run(["myteam.py"], "publish my team"):
         failures += 1
+    if not run(["planner.py"], "publish planner"):
+        failures += 1
     if not run(["setpieces.py"], "publish set pieces"):
         failures += 1
     if not run(["index.py"], "publish landing page"):
