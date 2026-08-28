@@ -1,0 +1,26 @@
+{
+  "gameweek": 2,
+  "snapshot": "20260828T000303Z_gw2",
+  "snapshot_sha256": {
+    "bootstrap.json": "0b130ae88277dbdc7f3d460eda69f7d2540c7e1ff0a856e6c53e826e98b4ab21",
+    "fixtures.json": "250fbd11968b5fe20d5e759784242ce492258c151fd00e987bf0ba125d672bc2",
+    "setpiece_notes.json": "0e46b79481c27c358cc4c688fca1093f450c0434f6bb422bf607f7c3d4e37977",
+    "live_gw1.json": "0974be7e805ad6b65b3345bee327fee541c4e445837b2871473ed9ba1d794d87"
+  },
+  "deadline_utc": "2026-08-28T17:30:00Z",
+  "prior_season": "2025-26",
+  "model_version": "v0-baseline",
+  "calibration": 1.182,
+  "granular_team_strength": false,
+  "minutes_model": [
+    "2024-25",
+    "2025-26"
+  ],
+  "minutes_model_sha256": "b375388d621f020f3be6fd4b417e0ff609c62626fec85ea1fe8cd509cae146c3",
+  "priors_sha256": "e5234955734ce28e6f74eed1d94d1f06fad368c9246ae5dc0a8e34ea9ce21b05",
+  "n_players": 509,
+  "horizon_gws": 6,
+  "generated_at_utc": "2026-08-28T00:03:05.725871+00:00",
+  "horizon_h": 24.0,
+  "hours_before_deadline": 17.45
+}
