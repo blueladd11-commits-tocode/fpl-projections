@@ -1,0 +1,48 @@
+{
+  "gameweek": 6,
+  "skipped_no_actual": 0,
+  "excluded_ineligible": 294,
+  "mean_pred": 3.103,
+  "mean_actual": 2.953,
+  "bias": 1.051,
+  "results": [
+    {
+      "model": "v0-baseline",
+      "n": 192,
+      "mae": 2.195,
+      "rmse": 2.8285,
+      "spearman": 0.3396,
+      "top10_hit": 0.1,
+      "top30_hit": 0.297
+    },
+    {
+      "model": "naive_recent6",
+      "n": 192,
+      "mae": 2.3706,
+      "rmse": 3.027,
+      "spearman": 0.2997,
+      "top10_hit": 0.2,
+      "top30_hit": 0.261
+    },
+    {
+      "model": "fpl ep_next (pre-deadline)",
+      "n": 192,
+      "mae": 2.499,
+      "rmse": 3.4061,
+      "spearman": 0.3515,
+      "top10_hit": 0.1,
+      "top30_hit": 0.145
+    },
+    {
+      "model": "price only (baseline)",
+      "n": 192,
+      "mae": 3.4375,
+      "rmse": 3.925,
+      "spearman": 0.207,
+      "top10_hit": 0.1,
+      "top30_hit": 0.33
+    }
+  ],
+  "projections_file": "projections_gw6_20261010T085308Z_gw6.csv",
+  "actuals_source": "live API"
+}
