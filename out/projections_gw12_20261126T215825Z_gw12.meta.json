@@ -1,0 +1,36 @@
+{
+  "gameweek": 12,
+  "snapshot": "20261126T215825Z_gw12",
+  "snapshot_sha256": {
+    "bootstrap.json": "d5df84bdbae27eee4d32e17be42d30d171ca7f3e8d97198c18946973bcffa204",
+    "fixtures.json": "72782349d620d37f72dc9e66d79208534a6694fdc92586e0dddecb5e51b78afb",
+    "setpiece_notes.json": "2d06af18f2a98a3067f3313530cb7fd86e2be2b6651c3f4c12445a8537a79e46",
+    "live_gw1.json": "0974be7e805ad6b65b3345bee327fee541c4e445837b2871473ed9ba1d794d87",
+    "live_gw2.json": "a7850ee17641ddd2cc87b493000c182f99f620db11d694049b9f2d6fd059e7c1",
+    "live_gw3.json": "c33c2af4674b0a9d4276b412a441ebae8b87e01a3d093cd113446e7ef6a02482",
+    "live_gw4.json": "a4ebf3dac44cb598e6f62a1dd5333e3d5ce7206303dbda62f513830ae7cfd095",
+    "live_gw5.json": "aeee6dd5b56567b04ef9b4e5b9828ee4d81e094803dc0e6553cd3b394178c6dd",
+    "live_gw6.json": "1f0ef39d2407d056cc827cccd21f73b86dfc535f5fa683a11c051e9fcc951218",
+    "live_gw7.json": "12a434cab5aa83deb8642562e54ddd1b1573dab5f238f7adf9b6644f47888c1b",
+    "live_gw8.json": "a92196bf9e6dc6b3005c00f622bcc02ea1754a9055f13f56afdd213a8ecb4d01",
+    "live_gw9.json": "ad2152d6c5d167661d9731d08ad58fd73f6e8ae8819f4b5af4a64f796fed2274",
+    "live_gw10.json": "339c7619297458851ed58549f889b19ae5bdc9c6d9d0e41b16131ee687a799d0",
+    "live_gw11.json": "6638ca69a273140f22664e4573cdd102836d46f131cca1e4c67f37209b97b84e"
+  },
+  "deadline_utc": "2026-11-27T18:30:00Z",
+  "prior_season": "2025-26",
+  "model_version": "v0-baseline",
+  "calibration": 1.182,
+  "granular_team_strength": false,
+  "minutes_model": [
+    "2024-25",
+    "2025-26"
+  ],
+  "minutes_model_sha256": "b375388d621f020f3be6fd4b417e0ff609c62626fec85ea1fe8cd509cae146c3",
+  "priors_sha256": "e5234955734ce28e6f74eed1d94d1f06fad368c9246ae5dc0a8e34ea9ce21b05",
+  "n_players": 495,
+  "horizon_gws": 6,
+  "generated_at_utc": "2026-11-26T21:58:29.072447+00:00",
+  "horizon_h": 24.0,
+  "hours_before_deadline": 20.53
+}
